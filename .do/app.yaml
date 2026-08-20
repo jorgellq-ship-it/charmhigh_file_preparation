@@ -1,0 +1,9 @@
+name: charmhigh-file-preparation
+static_sites:
+  - name: converter
+    github:
+      repo: jorgellq-ship-it/charmhigh_file_preparation
+      branch: main
+      deploy_on_push: true
+    index_document: index.html
+

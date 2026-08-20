@@ -1,0 +1,3354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAM → CharmHigh · Conversor Pick&amp;Place</title>
+<style>
+  :root{
+    --bg: #0b0f0e;
+    --surface: #121917;
+    --surface-alt: #182220;
+    --border: #253330;
+    --border-soft: #1c2624;
+    --text: #e8ece9;
+    --muted: #7f9089;
+    --muted-2: #5a6864;
+    --copper: #c98a3e;
+    --copper-dim: #8a642f;
+    --solder: #3fa872;
+    --error: #e5636a;
+    --mono: 'JetBrains Mono','Space Mono',ui-monospace,'SFMono-Regular',Consolas,monospace;
+    --sans: Inter,ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(63,168,114,0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(201,138,62,0.10), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding:48px 22px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1200px;margin:0 auto;}
+
+  /* header */
+  header{margin-bottom:32px;}
+  h1{
+    font-family:var(--sans);
+    font-weight:800;
+    font-size:34px;
+    letter-spacing:-0.02em;
+    line-height:1.15;
+    margin:0 0 12px;
+    background:linear-gradient(120deg,#f4f1ea 0%,#f4f1ea 55%,var(--copper) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  header p{
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.6;
+    max-width:660px;
+    margin:0;
+  }
+  code, .mono{font-family:var(--mono);}
+  code{
+    font-size:0.92em;color:var(--text);
+    background:rgba(255,255,255,0.05);
+    padding:1px 5px;border-radius:5px;
+  }
+
+  section{margin-bottom:28px;}
+  .section-title{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .section-title::before{
+    content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--copper);flex-shrink:0;
+  }
+  .section-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--border-soft),transparent);}
+  .section-title + .note{margin-top:-6px;margin-bottom:14px;}
+
+  /* dropzone */
+  .dropzone{
+    border:1.5px dashed var(--border);
+    border-radius:16px;
+    padding:40px 20px;
+    text-align:center;
+    background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    transition:border-color .2s ease, background .2s ease;
+    cursor:pointer;
+  }
+  .dropzone:hover{border-color:var(--copper-dim);background:rgba(255,255,255,0.02);}
+  .dropzone.drag{border-color:var(--copper);background:rgba(201,138,62,0.06);}
+  .dropzone strong{color:var(--text);font-size:15.5px;font-weight:600;}
+  .dropzone span{display:block;color:var(--muted);font-size:13px;margin-top:8px;}
+  input[type=file]{display:none;}
+
+  /* file cards */
+  .file-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    margin-bottom:16px;
+    overflow:hidden;
+    box-shadow:0 1px 0 rgba(255,255,255,0.02) inset, 0 10px 24px rgba(0,0,0,0.18);
+    transition:border-color .15s ease;
+  }
+  .file-card:last-child{margin-bottom:0;}
+  .file-card:hover{border-color:var(--copper-dim);}
+  .file-card-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 18px;
+    border-bottom:1px solid var(--border-soft);
+    background:rgba(255,255,255,0.015);
+  }
+  .file-card-head > div:first-child{
+    display:flex;align-items:center;min-width:0;
+  }
+  .file-card-head .fname{
+    font-family:var(--mono);font-size:13.5px;color:var(--text);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .badge{
+    font-family:var(--sans);font-weight:600;font-size:10.5px;letter-spacing:.02em;
+    padding:4px 10px;border-radius:20px;border:1px solid var(--border);
+    color:var(--muted);margin-left:10px;white-space:nowrap;flex-shrink:0;
+  }
+  .badge.ok{color:var(--solder);border-color:rgba(63,168,114,0.35);background:rgba(63,168,114,0.06);}
+  .badge.warn{color:var(--copper);border-color:rgba(201,138,62,0.35);background:rgba(201,138,62,0.06);}
+  .remove-btn{
+    background:none;border:none;color:var(--muted-2);cursor:pointer;
+    font-size:16px;line-height:1;flex-shrink:0;
+    width:30px;height:30px;border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:color .15s ease, background .15s ease;
+  }
+  .remove-btn:hover{color:var(--error);background:rgba(229,99,106,0.10);}
+
+  .file-card-body{padding:18px;}
+  .row-count{color:var(--muted);font-size:12.5px;margin-bottom:14px;font-family:var(--mono);}
+
+  .map-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(152px,1fr));
+    gap:12px 14px;
+    margin-bottom:18px;
+  }
+  .map-field label{
+    display:block;font-size:11px;color:var(--muted);margin-bottom:6px;
+    font-family:var(--mono);letter-spacing:.03em;
+    height:14px;line-height:14px;
+  }
+
+  /* --- unified control sizing: inputs/selects 36px, buttons 40px --- */
+  select, input[type=text], input[type=number]{
+    width:100%;
+    height:36px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:12.5px;
+    font-variant-numeric:tabular-nums;
+    padding:0 10px;
+    border-radius:8px;
+    outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  select{padding-right:6px;cursor:pointer;}
+  select:focus, input:focus{border-color:var(--copper);box-shadow:0 0 0 3px rgba(201,138,62,0.12);}
+  select:disabled, input:disabled{opacity:0.45;cursor:not-allowed;}
+  input[type=checkbox]{
+    width:16px;height:16px;accent-color:var(--copper);
+    margin:0;cursor:pointer;flex-shrink:0;
+  }
+  input[type=checkbox]:disabled{cursor:not-allowed;}
+
+  .opts-row{
+    display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;
+    padding-top:16px;border-top:1px solid var(--border-soft);
+  }
+  .opt{display:flex;flex-direction:column;gap:6px;flex:1 1 168px;min-width:168px;}
+  .opt label{
+    font-size:11px;color:var(--muted);font-family:var(--mono);
+    height:14px;line-height:14px;
+  }
+  .opt.checkbox{
+    flex-direction:row;align-items:center;gap:9px;
+    height:36px;
+  }
+  .opt.checkbox label{
+    font-size:12.5px;color:var(--text);font-family:var(--sans);
+    height:auto;line-height:1.35;cursor:pointer;
+  }
+
+  /* preview / table cards */
+  .preview-wrap{
+    border:1px solid var(--border);
+    border-radius:16px 0 0 16px;
+    overflow:auto;
+    max-height:340px;
+    background:var(--surface);
+    box-shadow:0 10px 24px rgba(0,0,0,0.18);
+  }
+  .preview-wrap::-webkit-scrollbar{width:10px;height:10px;}
+  .preview-wrap::-webkit-scrollbar-track{background:transparent;}
+  .preview-wrap::-webkit-scrollbar-thumb{
+    background:var(--border);border-radius:8px;
+    border:2px solid var(--surface);
+  }
+  .preview-wrap::-webkit-scrollbar-thumb:hover{background:var(--copper-dim);}
+
+  table{
+    border-collapse:collapse;width:100%;
+    font-family:var(--mono);font-size:12px;
+    font-variant-numeric:tabular-nums;
+  }
+  thead th{
+    position:sticky;top:0;z-index:2;
+    background:var(--surface-alt);
+    color:var(--copper);
+    font-weight:600;
+    text-align:left;
+    height:40px;
+    padding:0 12px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  thead th:first-child{border-top-left-radius:16px;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:last-child td:first-child{border-bottom-left-radius:16px;}
+  tbody td{
+    height:40px;
+    padding:0 12px;
+    border-bottom:1px solid var(--border-soft);
+    color:var(--text);
+    white-space:nowrap;
+    vertical-align:middle;
+  }
+  tbody tr:hover td{background:rgba(255,255,255,0.025);}
+  .empty-state{
+    color:var(--muted);font-size:13px;padding:40px 24px;text-align:center;
+  }
+
+  /* buttons */
+  .btn{
+    font-family:var(--sans);font-weight:600;font-size:13.5px;
+    height:40px;padding:0 18px;
+    border-radius:10px;border:1px solid transparent;
+    cursor:pointer;white-space:nowrap;
+    transition:transform .1s ease, opacity .15s ease, box-shadow .15s ease, border-color .15s ease;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .btn:active:not(:disabled){transform:scale(0.98);}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn:focus-visible{outline:2px solid var(--copper);outline-offset:2px;}
+  .btn-ghost{background:transparent;border-color:var(--border);color:var(--text);}
+  .btn-ghost:hover:not(:disabled){border-color:var(--copper);}
+  .btn-primary{background:linear-gradient(135deg,#dc9a4a,var(--copper));color:#1a1208;}
+  .btn-primary:hover:not(:disabled){box-shadow:0 6px 18px rgba(201,138,62,0.35);}
+
+  /* export bar */
+  .export-bar{
+    margin-top:0;
+    background:rgba(18,25,23,0.85);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:18px 20px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.5);
+  }
+  .export-bar-row{
+    display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+  }
+  .export-bar-row > *{height:40px;}
+  .folder-pill{
+    flex:2 1 260px;min-width:0;
+    display:flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:12.5px;color:var(--muted);
+    border:1px solid var(--border-soft);border-radius:20px;padding:0 16px;
+    overflow:hidden;
+  }
+  .folder-pill > span:first-child{flex-shrink:0;line-height:1;}
+  .folder-pill > span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .folder-pill strong{color:var(--text);font-weight:500;}
+  .export-bar-row .btn{flex:1 1 150px;}
+  .export-bar-row input[type=text]{flex:1 1 190px;min-width:0;height:40px;}
+  .status-msg{
+    width:100%;font-family:var(--mono);font-size:12px;
+    color:var(--solder);line-height:1.5;
+  }
+  .status-msg:not(:empty){margin-top:12px;}
+  .status-msg.error{color:var(--error);}
+
+  /* tool tabs */
+  .tool-tabs{
+    display:flex;gap:4px;margin-bottom:26px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .tool-tab{
+    background:transparent;border:none;border-bottom:2px solid transparent;
+    color:var(--muted);font-family:var(--sans);font-size:14px;font-weight:600;
+    padding:0 4px 12px;margin-right:22px;cursor:pointer;white-space:nowrap;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .tool-tab:hover{color:var(--text);}
+  .tool-tab.active{color:var(--copper);border-bottom-color:var(--copper);}
+  .tool-tab:focus-visible{outline:2px solid var(--copper);outline-offset:2px;}
+
+  .origin-compare{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;
+  }
+  .compare-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,0.18);
+  }
+  .compare-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    height:42px;padding:0 16px;
+    border-bottom:1px solid var(--border-soft);background:rgba(255,255,255,0.015);
+  }
+  .compare-head strong{font-size:12.5px;font-weight:600;color:var(--text);}
+  .compare-head span{
+    font-family:var(--mono);font-size:11px;color:var(--muted);
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .compare-body{padding:16px;}
+  .compare-body svg{display:block;width:100%;height:auto;}
+
+  .panel-form{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));
+    gap:14px;
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:18px;
+  }
+  .panel-form .opt{min-width:0;}
+  .opt.hidden{display:none;}
+
+  /* stepper */
+  .stepper{
+    display:flex;gap:8px;flex-wrap:wrap;margin-bottom:30px;
+  }
+  .step{
+    display:inline-flex;align-items:center;gap:9px;
+    font-family:var(--sans);font-size:13px;font-weight:600;
+    background:transparent;border:1px solid var(--border);color:var(--muted);
+    height:40px;padding:0 18px 0 12px;border-radius:999px;cursor:pointer;
+    white-space:nowrap;
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .step:hover:not(:disabled){border-color:var(--copper-dim);color:var(--text);}
+  .step:disabled{opacity:0.45;cursor:not-allowed;}
+  .step:focus-visible{outline:2px solid var(--copper);outline-offset:2px;}
+  .step-num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--border);color:var(--muted);
+    font-size:11px;font-weight:700;flex-shrink:0;
+    transition:background .15s ease, color .15s ease;
+  }
+  .step.active{border-color:var(--copper);color:var(--text);background:rgba(201,138,62,0.08);}
+  .step.active .step-num{background:var(--copper);color:#1a1208;}
+  .step.done{color:var(--text);border-color:rgba(63,168,114,0.35);}
+  .step.done .step-num{background:var(--solder);color:#06170f;}
+
+  /* pipeline nav bar */
+  .pipeline-bar{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    margin-top:24px;padding-top:20px;border-top:1px solid var(--border-soft);
+  }
+  .pipeline-info{
+    flex:1 1 240px;min-width:0;
+    font-size:12.5px;color:var(--muted);line-height:1.55;
+  }
+
+  /* export format choice */
+  .export-choice{display:flex;gap:14px;flex-wrap:wrap;}
+  .choice{
+    flex:1 1 240px;display:flex;align-items:center;gap:14px;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:16px 18px;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .choice:hover{border-color:var(--copper-dim);background:rgba(255,255,255,0.015);}
+  .choice:has(input:checked){border-color:var(--copper);background:rgba(201,138,62,0.06);}
+  .choice > span{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .choice strong{font-size:14px;color:var(--text);font-weight:600;}
+  .choice em{font-style:normal;font-size:12px;color:var(--muted);line-height:1.4;}
+
+  /* raw text preview (dpv) */
+  .raw-preview{
+    margin:0;padding:18px;
+    font-family:var(--mono);font-size:11.5px;line-height:1.7;
+    font-variant-numeric:tabular-nums;
+    color:var(--text);white-space:pre;
+  }
+
+  /* feeder table */
+  .pitch-panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:16px 18px;margin-bottom:14px;
+  }
+  .pitch-panel-head{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+  .pitch-panel-head strong{font-size:13px;font-weight:600;color:var(--text);}
+  .pitch-panel-head span{font-size:11.5px;color:var(--muted-2);line-height:1.5;}
+  .pitch-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px;
+  }
+  .pitch-field{display:flex;flex-direction:column;gap:5px;}
+  .pitch-field label{
+    font-family:var(--mono);font-size:11px;color:var(--muted);
+    height:14px;line-height:14px;
+  }
+  .pitch-field input{height:32px;font-size:11.5px;}
+
+  .feeder-lib-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .feeder-table th, .feeder-table td{white-space:nowrap;}
+  .feeder-table td{padding:6px 12px;height:46px;}
+  .feeder-table input[type=text],
+  .feeder-table input[type=number]{
+    width:78px;height:32px;padding:0 8px;font-size:11.5px;
+  }
+  .feeder-table select{width:auto;min-width:88px;height:32px;font-size:11.5px;}
+  /* checkbox columns: Qtd(2), Remover(3), Pular(10), Vácuo(11), Visão(12) */
+  .feeder-table th:nth-child(2),  .feeder-table td:nth-child(2),
+  .feeder-table th:nth-child(3),  .feeder-table td:nth-child(3),
+  .feeder-table th:nth-child(10), .feeder-table td:nth-child(10),
+  .feeder-table th:nth-child(11), .feeder-table td:nth-child(11),
+  .feeder-table th:nth-child(12), .feeder-table td:nth-child(12){
+    text-align:center;
+  }
+  .feeder-table td:nth-child(1){
+    max-width:340px;overflow:hidden;text-overflow:ellipsis;
+  }
+  .feeder-table td.qty{color:var(--muted);}
+  .fid-badge{
+    display:inline-block;
+    font-family:var(--sans);font-weight:600;font-size:10px;letter-spacing:.02em;
+    padding:2px 8px;border-radius:10px;background:rgba(63,168,114,0.1);
+    color:var(--solder);border:1px solid rgba(63,168,114,0.3);
+    vertical-align:middle;
+  }
+
+  .table-footnote{
+    padding:12px;
+    font-family:var(--sans);font-size:11.5px;color:var(--muted-2);
+    border-top:1px solid var(--border-soft);
+    background:var(--surface);
+  }
+  .grp-fp{color:var(--text);}
+  .grp-sep{color:var(--muted-2);margin:0 7px;}
+  .grp-val{color:var(--muted);}
+
+  /* board preview + orientation */
+  .orient-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+    gap:12px;margin-bottom:16px;
+  }
+  .orient-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:14px;cursor:pointer;text-align:left;
+    display:flex;flex-direction:column;gap:8px;
+    transition:border-color .15s ease, background .15s ease;
+    font-family:var(--sans);color:var(--text);
+  }
+  .orient-card:hover{border-color:var(--copper-dim);}
+  .orient-card.selected{border-color:var(--copper);background:rgba(201,138,62,0.07);}
+  .orient-card.best .orient-tag{color:var(--solder);border-color:rgba(63,168,114,0.4);background:rgba(63,168,114,0.08);}
+  .orient-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .orient-title{font-size:13.5px;font-weight:600;}
+  .orient-tag{
+    font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted);
+    white-space:nowrap;
+  }
+  .orient-dims{font-family:var(--mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .orient-reason{font-size:11.5px;color:var(--muted-2);line-height:1.45;}
+  .orient-card.unfit{opacity:0.55;}
+  .orient-card.unfit .orient-tag{color:var(--error);border-color:rgba(229,99,106,0.4);background:rgba(229,99,106,0.08);}
+
+  .board-view-wrap{
+    border:1px solid var(--border);border-radius:16px;
+    background:var(--surface);overflow:hidden;
+    box-shadow:0 10px 24px rgba(0,0,0,0.18);
+  }
+  .board-toolbar{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:0 16px;height:44px;
+    border-bottom:1px solid var(--border-soft);
+    background:rgba(255,255,255,0.015);
+  }
+  .board-meta{
+    flex:1;min-width:0;
+    font-family:var(--mono);font-size:11.5px;color:var(--muted);
+    font-variant-numeric:tabular-nums;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .mini-toggle{
+    display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+    font-size:11.5px;color:var(--muted);white-space:nowrap;
+  }
+  .mini-toggle input[type=checkbox]{width:14px;height:14px;}
+  .board-canvas{padding:18px;display:block;}
+  .board-canvas svg{display:block;width:100%;max-width:520px;height:auto;margin:0 auto;}
+  .cmp-dot{cursor:default;}
+  .cmp-dot:hover .cmp-body{stroke:var(--text);stroke-width:0.35;}
+
+  .note{
+    font-size:12px;color:var(--muted-2);line-height:1.55;margin:10px 0 0;
+  }
+
+  /* narrow screens */
+  @media (max-width: 720px){
+    body{padding:32px 16px 48px;}
+    h1{font-size:27px;}
+    header p{font-size:14px;}
+    .export-bar-row{flex-direction:column;align-items:stretch;}
+    .export-bar-row > *{flex:1 1 auto !important;width:100%;}
+    .pipeline-bar{flex-direction:column;align-items:stretch;}
+    .pipeline-bar .btn{width:100%;}
+    .pipeline-info{order:-1;}
+    .stepper{gap:6px;}
+    .step{flex:1 1 auto;padding:0 12px;font-size:12px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Conversor Pick&amp;Place → CharmHigh</h1>
+    <p>Pipeline em três etapas: converter e aprovar o CSV, atribuir feeders e aprovar o DPV, depois exportar. Aceita arquivos de posicionamento do KiCad, Eagle, EasyEDA ou Altium.</p>
+  </header>
+
+  <nav class="tool-tabs">
+    <button class="tool-tab active" data-tool="converter">Conversor CSV → CHarmHigh</button>
+    <button class="tool-tab" data-tool="panelizer">Panelizador de DPV</button>
+    <button class="tool-tab" data-tool="origin">Origem de Gerbers</button>
+  </nav>
+
+  <div id="toolConverter">
+
+  <nav class="stepper" id="stepper">
+    <button class="step" data-step="1"><span class="step-num">1</span> Converter CSV</button>
+    <button class="step" data-step="2"><span class="step-num">2</span> Feeders &amp; DPV</button>
+    <button class="step" data-step="3"><span class="step-num">3</span> Exportar</button>
+  </nav>
+
+  <!-- ETAPA 1 -->
+  <div class="pane" id="pane1">
+    <section>
+      <p class="section-title">Arquivos de entrada</p>
+      <div class="dropzone" id="dropzone">
+        <strong>Arraste os arquivos aqui, ou clique para escolher</strong>
+        <span>Posição (.csv/.pos) e, opcionalmente, o Gerber de contorno Edge.Cuts (.gbr/.gm1/.gko) para gerar o preview da placa</span>
+        <input type="file" id="fileInput" accept=".csv,.txt,.pos,.gbr,.gm1,.gko,.gbo,.gko" multiple>
+      </div>
+    </section>
+
+    <section id="filesSection" style="display:none;">
+      <p class="section-title">Mapeamento de colunas</p>
+      <div id="fileCards"></div>
+    </section>
+
+    <section id="boardSection" style="display:none;">
+      <p class="section-title">Orientação e preview de montagem</p>
+      <div id="orientCards" class="orient-grid"></div>
+      <div class="board-view-wrap">
+        <div class="board-toolbar">
+          <div class="board-meta" id="boardMeta"></div>
+          <label class="mini-toggle"><input type="checkbox" id="showLabels" checked> designators</label>
+          <label class="mini-toggle"><input type="checkbox" id="autoAlign" checked> alinhar origem automaticamente</label>
+        </div>
+        <div class="board-canvas" id="boardCanvas"></div>
+      </div>
+      <p class="note" id="boardNote"></p>
+    </section>
+
+    <section>
+      <p class="section-title">Preview do CSV convertido</p>
+      <div class="preview-wrap" id="previewWrap">
+        <div class="empty-state">Nenhum dado carregado ainda.</div>
+      </div>
+    </section>
+
+    <div class="pipeline-bar">
+      <div class="pipeline-info" id="step1Info">Carregue ao menos um arquivo para continuar.</div>
+      <button class="btn btn-primary" id="approveCsvBtn" disabled>Aprovar CSV →</button>
+    </div>
+  </div>
+
+  <!-- ETAPA 2 -->
+  <div class="pane" id="pane2" style="display:none;">
+    <section>
+      <p class="section-title">Atribuição de feeders</p>
+      <p class="note">Cada linha agrupa componentes iguais (mesmo footprint + valor). Atribua o número de feeder da sua CHM-T36VB, ou marque <strong>Remover</strong> para tirar a peça do arquivo por completo. Designators começando com <code>FID</code> viram fiduciais automaticamente.</p>
+      <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
+        <span><strong>Gerar MStack automático para feeders em branco.</strong> Cada tipo de componente recebe uma posição livre e exclusiva entre 0 e 35. Essas peças são exportadas com <strong>Skip</strong> ligado até você confirmar a posição física na máquina.</span>
+      </label>
+      <div class="pitch-panel">
+        <div class="pitch-panel-head">
+          <strong>Passo padrão da fita (mm)</strong>
+          <span>Aplicado a grupos ainda não ajustados à mão. A EIA-481 permite 2 ou 4mm em fita de 8mm, e 2, 4 ou 8mm em fita de 12mm.</span>
+        </div>
+        <div class="pitch-grid" id="pitchGrid"></div>
+      </div>
+
+      <div class="feeder-lib-row">
+        <button class="btn btn-ghost" id="importFeederLibBtn">Importar biblioteca de feeders</button>
+        <button class="btn btn-ghost" id="exportFeederLibBtn">Exportar biblioteca de feeders</button>
+        <input type="file" id="feederLibInput" accept=".json" style="display:none;">
+      </div>
+      <div class="preview-wrap" id="feederTableWrap"></div>
+    </section>
+
+    <section>
+      <p class="section-title">Preview do DPV gerado</p>
+      <div class="preview-wrap" id="dpvPreviewWrap">
+        <div class="empty-state">Aprove o CSV para gerar o DPV.</div>
+      </div>
+    </section>
+
+    <div class="pipeline-bar">
+      <button class="btn btn-ghost" id="backTo1Btn">← Voltar</button>
+      <div class="pipeline-info" id="step2Info"></div>
+      <button class="btn btn-primary" id="approveDpvBtn">Aprovar DPV →</button>
+    </div>
+  </div>
+
+  <!-- ETAPA 3 -->
+  <div class="pane" id="pane3" style="display:none;">
+    <section>
+      <p class="section-title">Arquivos a exportar</p>
+      <div class="export-choice">
+        <label class="choice"><input type="checkbox" id="wantCsv" checked> <span><strong>CSV</strong><em>Import direto no software CharmHigh</em></span></label>
+        <label class="choice"><input type="checkbox" id="wantDpv" checked> <span><strong>DPV</strong><em>Receita completa para CHJD_SMT\Files</em></span></label>
+      </div>
+    </section>
+
+    <div class="export-bar">
+      <div class="export-bar-row">
+        <div class="folder-pill" id="folderPill">
+          <span>📁</span> <span>Pasta de destino: <strong id="folderName">nenhuma (usará download padrão do navegador)</strong></span>
+        </div>
+        <button class="btn btn-ghost" id="pickFolderBtn">Escolher pasta</button>
+        <input type="text" id="fileNameInput" value="pickplace_CHMT">
+        <button class="btn btn-primary" id="exportBtn" disabled>Exportar</button>
+      </div>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <div class="pipeline-bar">
+      <button class="btn btn-ghost" id="backTo2Btn">← Voltar</button>
+      <div class="pipeline-info">O nome base é usado para os dois arquivos, com a extensão de cada formato.</div>
+    </div>
+  </div>
+
+  </div><!-- /toolConverter -->
+
+  <div id="toolPanelizer" style="display:none;">
+    <section>
+      <p class="section-title">Arquivo DPV validado</p>
+      <div class="dropzone" id="dpvDropzone">
+        <strong>Arraste o .dpv aqui, ou clique para escolher</strong>
+        <span>Use um arquivo já testado na máquina: o painel reaproveita a lista de componentes e só acrescenta a tabela de lote</span>
+        <input type="file" id="dpvInput" accept=".dpv,.txt">
+      </div>
+      <p class="note" id="dpvInfo"></p>
+    </section>
+
+    <section id="panelConfig" style="display:none;">
+      <p class="section-title">Geometria do painel</p>
+      <div class="panel-form">
+        <div class="opt">
+          <label>Tipo de abas</label>
+          <select id="railType">
+            <option value="none">Nenhuma</option>
+            <option value="h" selected>Superior e inferior</option>
+            <option value="v">Esquerda e direita</option>
+            <option value="all">Todas as bordas</option>
+          </select>
+        </div>
+        <div class="opt" data-rail="h"><label>Aba inferior (mm)</label><input type="number" id="railBottom" step="0.1" min="0" value="10"></div>
+        <div class="opt" data-rail="h"><label>Aba superior (mm)</label><input type="number" id="railTop" step="0.1" min="0" value="10"></div>
+        <div class="opt" data-rail="v"><label>Aba esquerda (mm)</label><input type="number" id="railLeft" step="0.1" min="0" value="0"></div>
+        <div class="opt" data-rail="v"><label>Aba direita (mm)</label><input type="number" id="railRight" step="0.1" min="0" value="0"></div>
+        <div class="opt"><label>Largura da placa (mm)</label><input type="number" id="panelBoardW" step="0.1" min="0.01" value="0"></div>
+        <div class="opt"><label>Altura da placa (mm)</label><input type="number" id="panelBoardH" step="0.1" min="0.01" value="0"></div>
+        <div class="opt"><label>Colunas (X)</label><input type="number" id="panelCols" step="1" min="1" value="2"></div>
+        <div class="opt"><label>Linhas (Y)</label><input type="number" id="panelRows" step="1" min="1" value="2"></div>
+        <div class="opt"><label>Folga X (mm)</label><input type="number" id="panelGapX" step="0.1" min="0" value="0"></div>
+        <div class="opt"><label>Folga Y (mm)</label><input type="number" id="panelGapY" step="0.1" min="0" value="0"></div>
+      </div>
+    </section>
+
+    <section id="panelPreviewSection" style="display:none;">
+      <p class="section-title">Preview do painel</p>
+      <div class="board-view-wrap">
+        <div class="board-toolbar">
+          <div class="board-meta" id="panelMeta"></div>
+          <label class="mini-toggle"><input type="checkbox" id="panelShowComps" checked> componentes</label>
+          <label class="mini-toggle"><input type="checkbox" id="panelShowNums" checked> numeração</label>
+        </div>
+        <div class="board-canvas" id="panelCanvas"></div>
+      </div>
+      <p class="note" id="panelNote"></p>
+    </section>
+
+    <div class="export-bar" id="panelExportBar" style="display:none;">
+      <div class="export-bar-row">
+        <div class="folder-pill">
+          <span>📁</span> <span>Pasta de destino: <strong id="panelFolderName">nenhuma (download padrão)</strong></span>
+        </div>
+        <button class="btn btn-ghost" id="panelPickFolderBtn">Escolher pasta</button>
+        <input type="text" id="panelFileName" value="painel.dpv">
+        <button class="btn btn-primary" id="panelExportBtn" disabled>Exportar painel</button>
+      </div>
+      <div class="status-msg" id="panelStatus"></div>
+    </div>
+  </div>
+
+  <div id="toolOrigin" style="display:none;">
+    <section>
+      <p class="section-title">Pacote de Gerbers</p>
+      <div class="dropzone" id="zipDropzone">
+        <strong>Arraste o .zip aqui, ou clique para escolher</strong>
+        <span>Cobre, máscara, pasta, silk e contorno são deslocados juntos; a furação é omitida, já que o pacote é para conferir a montagem</span>
+        <input type="file" id="zipInput" accept=".zip">
+      </div>
+      <p class="note" id="zipInfo"></p>
+    </section>
+
+    <section id="posSection" style="display:none;">
+      <p class="section-title">Arquivo de posição (opcional)</p>
+      <div class="dropzone" id="posDropzone">
+        <strong>Arraste o .csv / .pos aqui</strong>
+        <span>Recebe o mesmo deslocamento dos Gerbers e é incluído no .zip de saída, para camadas e coordenadas ficarem no mesmo referencial</span>
+        <input type="file" id="posInput" accept=".csv,.pos,.txt" multiple>
+      </div>
+    </section>
+
+    <section id="originConfig" style="display:none;">
+      <p class="section-title">Deslocamento</p>
+      <div class="panel-form">
+        <div class="opt">
+          <label>Modo</label>
+          <select id="originMode">
+            <option value="outline" selected>Recentralizar pelo contorno</option>
+            <option value="free">Offset livre</option>
+          </select>
+        </div>
+        <div class="opt"><label>Offset X (mm)</label><input type="number" id="originDx" step="0.001" value="0"></div>
+        <div class="opt"><label>Offset Y (mm)</label><input type="number" id="originDy" step="0.001" value="0"></div>
+      </div>
+      <p class="note" id="originNote"></p>
+    </section>
+
+    <section id="originPreviewSection" style="display:none;">
+      <p class="section-title">Realocação da origem</p>
+      <div class="origin-compare">
+        <div class="compare-card">
+          <div class="compare-head"><strong>Antes</strong><span id="beforeCoords"></span></div>
+          <div class="compare-body" id="beforeCanvas"></div>
+        </div>
+        <div class="compare-card">
+          <div class="compare-head"><strong>Depois</strong><span id="afterCoords"></span></div>
+          <div class="compare-body" id="afterCanvas"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="originFilesSection" style="display:none;">
+      <p class="section-title">Arquivos do pacote</p>
+      <div class="preview-wrap" id="originTableWrap"></div>
+    </section>
+
+    <div class="export-bar" id="originExportBar" style="display:none;">
+      <div class="export-bar-row">
+        <div class="folder-pill">
+          <span>📁</span> <span>Pasta de destino: <strong id="originFolderName">nenhuma (download padrão)</strong></span>
+        </div>
+        <button class="btn btn-ghost" id="originPickFolderBtn">Escolher pasta</button>
+        <input type="text" id="originFileName" value="gerbers.zip">
+        <button class="btn btn-primary" id="originExportBtn" disabled>Exportar .zip</button>
+      </div>
+      <div class="status-msg" id="originStatus"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- state ----------
+  let files = []; // { id, name, rawHeaders, rows(array of arrays), mapping{}, layerMode, mirrorX, boardWidth, rotOffset, detected }
+  let dirHandle = null; // File System Access API handle, kept in memory for this session only
+  let uid = 0;
+
+  const CANON_FIELDS = [
+    {key:'designator', label:'Designator'},
+    {key:'footprint',  label:'Footprint'},
+    {key:'midx',       label:'Mid X'},
+    {key:'midy',       label:'Mid Y'},
+    {key:'refx',       label:'Ref X'},
+    {key:'refy',       label:'Ref Y'},
+    {key:'padx',       label:'Pad X'},
+    {key:'pady',       label:'Pad Y'},
+    {key:'layer',      label:'Layer'},
+    {key:'rotation',   label:'Rotation'},
+    {key:'comment',    label:'Comment'},
+  ];
+
+  const SYNONYMS = {
+    designator: ['ref','designator','refdes','name','part','component','reference'],
+    footprint:  ['footprint','package','pattern','device'],
+    midx:       ['posx','mid x','midx','x','center x','centerx','center-x','center-x mm'],
+    midy:       ['posy','mid y','midy','y','center y','centery','center-y','center-y mm'],
+    refx:       ['ref x','refx','ref-x','ref-x mm'],
+    refy:       ['ref y','refy','ref-y','ref-y mm'],
+    padx:       ['pad x','padx','pad-x','pad-x mm'],
+    pady:       ['pad y','pady','pad-y','pad-y mm'],
+    layer:      ['side','layer'],
+    rotation:   ['rot','rotation','angle'],
+    comment:    ['val','value','comment','description','part value'],
+  };
+
+  function normHeader(h){
+    return (h||'').toString().toLowerCase()
+      .replace(/[()]/g,' ')
+      .replace(/[_\-]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  // ---------- delimited parsing (comma / semicolon / tab / whitespace, quote-aware) ----------
+  function detectDelimiter(line){
+    const counts = {',': (line.match(/,/g)||[]).length, ';': (line.match(/;/g)||[]).length, '\t': (line.match(/\t/g)||[]).length};
+    let best = null, bestCount = 0;
+    for(const d in counts){ if(counts[d] > bestCount){ bestCount = counts[d]; best = d; } }
+    return bestCount > 0 ? best : null; // null => whitespace fallback
+  }
+
+  function parseLine(line, delim){
+    if(delim === null){
+      // whitespace-delimited, quote aware
+      const out = []; let cur=''; let inQ=false;
+      for(let i=0;i<line.length;i++){
+        const c = line[i];
+        if(c === '"'){
+          if(inQ && line[i+1] === '"'){ cur += '"'; i++; continue; }
+          inQ = !inQ; continue;
+        }
+        if(/\s/.test(c) && !inQ){ if(cur!==''){ out.push(cur); cur=''; } }
+        else cur += c;
+      }
+      if(cur!=='') out.push(cur);
+      return out;
+    }
+    const out = []; let cur=''; let inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c = line[i];
+      if(c === '"'){
+        if(inQ && line[i+1] === '"'){ cur += '"'; i++; continue; }
+        inQ = !inQ; continue;
+      }
+      if(c === delim && !inQ){ out.push(cur); cur=''; }
+      else cur += c;
+    }
+    out.push(cur);
+    return out.map(s=>s.trim());
+  }
+
+  function parseText(text){
+    text = String(text||'').replace(/^\uFEFF/, '');
+    const lines = text.split(/\r\n|\r|\n/).filter(l => l.trim().length>0);
+    if(lines.length === 0) return {headers:[], rows:[]};
+    const delim = detectDelimiter(lines[0]);
+    const headers = parseLine(lines[0], delim);
+    const rows = lines.slice(1).map(l => parseLine(l, delim));
+    return {headers, rows};
+  }
+
+  function autoMap(headers){
+    const mapping = {};
+    const normed = headers.map(normHeader);
+    CANON_FIELDS.forEach(f=>{
+      const syns = SYNONYMS[f.key];
+      let foundIdx = -1;
+      for(let i=0;i<normed.length;i++){
+        if(syns.includes(normed[i])){ foundIdx = i; break; }
+      }
+      mapping[f.key] = foundIdx; // -1 = not mapped
+    });
+    return mapping;
+  }
+
+  function detectFormatLabel(headers){
+    const normed = headers.map(normHeader);
+    const has = s => normed.includes(s);
+    if(has('side') && has('posx') && has('posy')) return {label:'KiCad', ok:true};
+    if((has('mid x')||has('center x')) && (has('ref x')||has('pad x'))) return {label:'Altium/EasyEDA', ok:true};
+    if(has('layer') && (has('mid x')||has('x'))) return {label:'Genérico (Eagle/outro)', ok:true};
+    return {label:'Não identificado — confira o mapeamento', ok:false};
+  }
+
+  // ---------- rendering ----------
+  const fileCardsEl = document.getElementById('fileCards');
+  const filesSectionEl = document.getElementById('filesSection');
+  const previewWrapEl = document.getElementById('previewWrap');
+  const exportBtn = document.getElementById('exportBtn');
+  const approveCsvBtn = document.getElementById('approveCsvBtn');
+  const approveDpvBtn = document.getElementById('approveDpvBtn');
+  const step1Info = document.getElementById('step1Info');
+  const step2Info = document.getElementById('step2Info');
+  const dpvPreviewWrap = document.getElementById('dpvPreviewWrap');
+  const wantCsv = document.getElementById('wantCsv');
+  const wantDpv = document.getElementById('wantDpv');
+  const autoMstack = document.getElementById('autoMstack');
+  const fileNameInput = document.getElementById('fileNameInput');
+
+  function buildMappingSelect(fileObj, fieldKey){
+    const sel = document.createElement('select');
+    const noneOpt = document.createElement('option');
+    noneOpt.value = -1; noneOpt.textContent = '— não mapear —';
+    sel.appendChild(noneOpt);
+    fileObj.rawHeaders.forEach((h,idx)=>{
+      const opt = document.createElement('option');
+      opt.value = idx; opt.textContent = h || ('coluna '+(idx+1));
+      if(fileObj.mapping[fieldKey] === idx) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    if(fileObj.mapping[fieldKey] === -1 || fileObj.mapping[fieldKey] === undefined){
+      noneOpt.selected = true;
+    }
+    sel.addEventListener('change', ()=>{
+      fileObj.mapping[fieldKey] = parseInt(sel.value,10);
+      renderAll();
+    });
+    return sel;
+  }
+
+  function renderFileCards(){
+    fileCardsEl.innerHTML = '';
+    filesSectionEl.style.display = files.length ? 'block' : 'none';
+
+    files.forEach(f=>{
+      const card = document.createElement('div');
+      card.className = 'file-card';
+
+      const head = document.createElement('div');
+      head.className = 'file-card-head';
+      const left = document.createElement('div');
+      left.innerHTML = '<span class="fname">'+esc(f.name)+'</span><span class="badge '+(f.detected.ok?'ok':'warn')+'">'+esc(f.detected.label)+'</span>';
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn'; removeBtn.textContent = '✕';
+      removeBtn.title = 'Remover arquivo';
+      removeBtn.addEventListener('click', ()=>{
+        files = files.filter(x=>x.id!==f.id);
+        renderAll();
+      });
+      head.appendChild(left); head.appendChild(removeBtn);
+
+      const body = document.createElement('div');
+      body.className = 'file-card-body';
+
+      const rowCount = document.createElement('div');
+      rowCount.className = 'row-count';
+      rowCount.textContent = f.rows.length + ' componentes detectados';
+      body.appendChild(rowCount);
+
+      const grid = document.createElement('div');
+      grid.className = 'map-grid';
+      CANON_FIELDS.forEach(field=>{
+        const wrap = document.createElement('div');
+        wrap.className = 'map-field';
+        const label = document.createElement('label');
+        label.textContent = field.label;
+        wrap.appendChild(label);
+        wrap.appendChild(buildMappingSelect(f, field.key));
+        grid.appendChild(wrap);
+      });
+      body.appendChild(grid);
+
+      const opts = document.createElement('div');
+      opts.className = 'opts-row';
+
+      // layer mode
+      const layerOpt = document.createElement('div');
+      layerOpt.className = 'opt';
+      layerOpt.innerHTML = '<label>Camada (Layer)</label>';
+      const layerSel = document.createElement('select');
+      [['auto','Detectar da coluna'],['T','Forçar Top (T)'],['B','Forçar Bottom (B)']].forEach(([v,l])=>{
+        const o = document.createElement('option'); o.value=v; o.textContent=l;
+        if(f.layerMode===v) o.selected=true;
+        layerSel.appendChild(o);
+      });
+      layerSel.addEventListener('change', ()=>{ f.layerMode = layerSel.value; renderAll(); });
+      layerOpt.appendChild(layerSel);
+      opts.appendChild(layerOpt);
+
+      // rotation offset
+      const rotOpt = document.createElement('div');
+      rotOpt.className = 'opt';
+      rotOpt.innerHTML = '<label>Offset de rotação (°)</label>';
+      const rotInput = document.createElement('input');
+      rotInput.type='number'; rotInput.value=f.rotOffset; rotInput.step='0.1';
+      rotInput.addEventListener('input', ()=>{ f.rotOffset = parseFloat(rotInput.value)||0; renderAll(); });
+      rotOpt.appendChild(rotInput);
+      opts.appendChild(rotOpt);
+
+      // mirror X
+      const mirrorOpt = document.createElement('div');
+      mirrorOpt.className = 'opt checkbox';
+      const mirrorCb = document.createElement('input');
+      mirrorCb.type='checkbox'; mirrorCb.checked=f.mirrorX;
+      mirrorCb.addEventListener('change', ()=>{ f.mirrorX = mirrorCb.checked; renderAll(); });
+      const mirrorLabel = document.createElement('label'); mirrorLabel.textContent='Espelhar eixo X (peças de baixo)';
+      mirrorOpt.appendChild(mirrorCb); mirrorOpt.appendChild(mirrorLabel);
+      opts.appendChild(mirrorOpt);
+
+      // board width (only relevant if mirror X on)
+      const bwOpt = document.createElement('div');
+      bwOpt.className = 'opt';
+      bwOpt.innerHTML = '<label>Largura da placa (mm)</label>';
+      const bwInput = document.createElement('input');
+      bwInput.type='number'; bwInput.step='0.1';
+      if(outline) f.boardWidth = +outline.bbox.w.toFixed(3);
+      bwInput.value=f.boardWidth;
+      bwInput.disabled = !!outline;
+      bwInput.title = outline ? 'Definido pelo contorno Gerber' : '';
+      bwInput.addEventListener('input', ()=>{ f.boardWidth = parseFloat(bwInput.value)||0; renderAll(); });
+      bwOpt.appendChild(bwInput);
+      opts.appendChild(bwOpt);
+
+      // mirror Y
+      const mirrorYOpt = document.createElement('div');
+      mirrorYOpt.className = 'opt checkbox';
+      const mirrorYCb = document.createElement('input');
+      mirrorYCb.type='checkbox'; mirrorYCb.checked=f.mirrorY;
+      mirrorYCb.addEventListener('change', ()=>{ f.mirrorY = mirrorYCb.checked; renderAll(); });
+      const mirrorYLabel = document.createElement('label'); mirrorYLabel.textContent='Espelhar eixo Y';
+      mirrorYOpt.appendChild(mirrorYCb); mirrorYOpt.appendChild(mirrorYLabel);
+      opts.appendChild(mirrorYOpt);
+
+      // board height (only relevant if mirror Y on)
+      const bhOpt = document.createElement('div');
+      bhOpt.className = 'opt';
+      bhOpt.innerHTML = '<label>Altura da placa (mm)</label>';
+      const bhInput = document.createElement('input');
+      bhInput.type='number'; bhInput.step='0.1';
+      if(outline) f.boardHeight = +outline.bbox.h.toFixed(3);
+      bhInput.value=f.boardHeight;
+      bhInput.disabled = !!outline;
+      bhInput.title = outline ? 'Definido pelo contorno Gerber' : '';
+      bhInput.addEventListener('input', ()=>{ f.boardHeight = parseFloat(bhInput.value)||0; renderAll(); });
+      bhOpt.appendChild(bhInput);
+      opts.appendChild(bhOpt);
+
+      body.appendChild(opts);
+
+      const note = document.createElement('div');
+      note.className = 'note';
+      const axInfo = mirrorAxes(f);
+      note.textContent = 'Espelhamento reflete em torno do eixo da placa (referência: ' + axInfo.source
+        + '), não em torno de zero, então funciona mesmo com as coordenadas absolutas que o KiCad exporta. '
+        + 'Espelhar X inverte a rotação para (180 − θ); espelhar Y, para (360 − θ). Confira no preview antes de rodar a placa.';
+      body.appendChild(note);
+
+      card.appendChild(head);
+      card.appendChild(body);
+      fileCardsEl.appendChild(card);
+    });
+  }
+
+  function normalizeLayerValue(raw, mode){
+    if(mode === 'T' || mode === 'B') return mode;
+    const v = (raw||'').toString().trim().toLowerCase();
+    if(v.startsWith('t') || v==='0') return 'T';
+    if(v.startsWith('b') || v==='1') return 'B';
+    return v ? v.toUpperCase().charAt(0) : 'T';
+  }
+
+  // Raw bounding box of one input file, in the file's own coordinate space
+  function rawFileBBox(f){
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    f.rows.forEach(r=>{
+      const xi = f.mapping.midx, yi = f.mapping.midy;
+      const x = parseFloat(xi>=0 ? r[xi] : NaN);
+      const y = parseFloat(yi>=0 ? r[yi] : NaN);
+      if(isNaN(x)||isNaN(y)) return;
+      minX=Math.min(minX,x); maxX=Math.max(maxX,x);
+      minY=Math.min(minY,y); maxY=Math.max(maxY,y);
+    });
+    if(minX===Infinity) return null;
+    return {minX,minY,maxX,maxY};
+  }
+
+  // Mirroring reflects around the board's own axis. The axis has to be expressed in the
+  // SAME coordinate space as the placement file: a .pos referenced to the board corner and
+  // a Gerber in absolute page coordinates need different axes, and mixing them throws the
+  // parts far off the board.
+  function mirrorAxes(f){
+    const cb = rawFileBBox(f);
+
+    if(outline){
+      const b = outline.bbox, W = b.w, H = b.h, tol = 1.0;
+      const ABS = {sumX: b.minX + b.maxX, sumY: b.minY + b.maxY, source:'contorno, coordenadas absolutas'};
+      const REL = {sumX: W, sumY: H, source:'contorno, origem no canto da placa'};
+
+      if(cb){
+        const insideAbs = cb.minX >= b.minX - tol && cb.maxX <= b.maxX + tol &&
+                          cb.minY >= b.minY - tol && cb.maxY <= b.maxY + tol;
+        const insideRel = cb.minX >= -tol && cb.maxX <= W + tol &&
+                          cb.minY >= -tol && cb.maxY <= H + tol;
+        if(insideAbs && insideRel){
+          // Same tie-break as computeAlignment: the better-centred reading wins
+          const ccx = (cb.minX + cb.maxX)/2, ccy = (cb.minY + cb.maxY)/2;
+          const dAbs = Math.hypot(ccx - (b.minX + b.maxX)/2, ccy - (b.minY + b.maxY)/2);
+          const dRel = Math.hypot(ccx - W/2, ccy - H/2);
+          return dAbs <= dRel ? ABS : REL;
+        }
+        if(insideRel) return REL;
+        if(insideAbs) return ABS;
+      }
+      return ABS;
+    }
+
+    const zeroBasedX = cb ? cb.minX >= -1 : true;
+    const zeroBasedY = cb ? cb.minY >= -1 : true;
+    return {
+      sumX: (f.boardWidth  && zeroBasedX) ? f.boardWidth  : (cb ? cb.minX + cb.maxX : 0),
+      sumY: (f.boardHeight && zeroBasedY) ? f.boardHeight : (cb ? cb.minY + cb.maxY : 0),
+      source: (f.boardWidth || f.boardHeight) && zeroBasedX ? 'dimensão informada' : 'extensão dos componentes',
+    };
+  }
+
+  // Alignment is computed once, on the UNROTATED rows, and reused by both the exporter and
+  // the preview. Recomputing it on already-rotated data would compare a rotated component
+  // cloud against an unrotated outline and rotate everything a second time.
+  let lastAlignment = null;
+
+  function buildOutputRows(){
+    const out = [];
+    files.forEach(f=>{
+      const ax = mirrorAxes(f);
+      f.rows.forEach(r=>{
+        const get = key => {
+          const idx = f.mapping[key];
+          return (idx!==undefined && idx>=0 && idx<r.length) ? r[idx] : '';
+        };
+        let midx = parseFloat(get('midx')); if(isNaN(midx)) midx = get('midx');
+        let midy = parseFloat(get('midy')); if(isNaN(midy)) midy = get('midy');
+        let rotation = parseFloat(get('rotation')); if(isNaN(rotation)) rotation = 0;
+
+        if(f.mirrorX && typeof midx === 'number'){
+          midx = ax.sumX - midx;
+          rotation = ((180 - rotation) % 360 + 360) % 360;
+        }
+        if(f.mirrorY && typeof midy === 'number'){
+          midy = ax.sumY - midy;
+          rotation = ((360 - rotation) % 360 + 360) % 360;
+        }
+        if(f.rotOffset){
+          rotation = ((rotation + f.rotOffset) % 360 + 360) % 360;
+        }
+
+        out.push({
+          Designator: get('designator'),
+          Footprint:  get('footprint'),
+          'Mid X': typeof midx==='number' ? midx.toFixed(6) : midx,
+          'Mid Y': typeof midy==='number' ? midy.toFixed(6) : midy,
+          'Ref X': get('refx'),
+          'Ref Y': get('refy'),
+          'Pad X': get('padx'),
+          'Pad Y': get('pady'),
+          Layer: normalizeLayerValue(get('layer'), f.layerMode),
+          Rotation: rotation.toFixed(4).replace(/\.?0+$/,'') || '0',
+          Comment: get('comment'),
+        });
+      });
+    });
+    const alignment = computeAlignment(out);
+    const transformed = applyBoardOrientation(out, alignment);
+    // From this point on the exported rows are in board-local coordinates.
+    // Keep the original offset only for diagnostics; preview/export must not subtract it twice.
+    lastAlignment = Object.assign({}, alignment, {
+      sourceOffset: alignment.cOff,
+      cOff: {x:0, y:0},
+    });
+    return transformed;
+  }
+
+  // Convert CAD/page coordinates to board-local coordinates first.  DPV component
+  // coordinates are relative to the PCB, not to the KiCad/Altium drawing page.
+  // Rotating the board on the machine table is applied after that translation.
+  function applyBoardOrientation(rows, al){
+    if(rows.length === 0) return rows;
+    if(!al || !al.W || !al.H) return rows;
+    const W = al.W, H = al.H, offX = al.cOff.x, offY = al.cOff.y;
+
+    return rows.map(r=>{
+      const x = parseFloat(r['Mid X']), y = parseFloat(r['Mid Y']);
+      if(isNaN(x) || isNaN(y)) return r;
+      const p = rotatePoint(x - offX, y - offY, W, H, boardOrientation);
+      let rot = (parseFloat(r.Rotation) || 0) + boardOrientation;
+      rot = ((rot % 360) + 360) % 360;
+      return Object.assign({}, r, {
+        'Mid X': p.x.toFixed(6),
+        'Mid Y': p.y.toFixed(6),
+        Rotation: rot.toFixed(4).replace(/\.?0+$/,'') || '0',
+      });
+    });
+  }
+
+  function renderPreview(rows){
+    if(rows.length === 0){
+      previewWrapEl.innerHTML = '<div class="empty-state">Nenhum dado carregado ainda.</div>';
+      return;
+    }
+    const cols = ['Designator','Footprint','Mid X','Mid Y','Ref X','Ref Y','Pad X','Pad Y','Layer','Rotation','Comment'];
+    let html = '<table><thead><tr>' + cols.map(c=>'<th>'+c+'</th>').join('') + '</tr></thead><tbody>';
+    const shown = rows.slice(0, 300);
+    shown.forEach(r=>{
+      html += '<tr>' + cols.map(c=>'<td>'+esc(r[c]!==undefined?r[c]:'')+'</td>').join('') + '</tr>';
+    });
+    html += '</tbody></table>';
+    if(rows.length > shown.length){
+      html += '<div class="table-footnote">mostrando '+shown.length+' de '+rows.length+' linhas — o export inclui todas</div>';
+    }
+    previewWrapEl.innerHTML = html;
+  }
+
+  function csvEscape(v){
+    v = (v===undefined || v===null) ? '' : String(v);
+    if(/[",\n]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+    return v;
+  }
+
+  function buildCsvString(rows){
+    const cols = ['Designator','Footprint','Mid X','Mid Y','Ref X','Ref Y','Pad X','Pad Y','Layer','Rotation','Comment'];
+    const lines = [cols.join(',')];
+    rows.forEach(r=>{
+      lines.push(cols.map(c=>csvEscape(r[c])).join(','));
+    });
+    return lines.join('\r\n') + '\r\n';
+  }
+
+  // ---------- feeder assignment (for .dpv generation) ----------
+  let feederAssignments = {}; // groupKey -> {feederID, deviceName, head, height, speed, angleComp, skip, vacuum, vision}
+
+  function groupKey(row){
+    return (row.Footprint||'').trim() + '::' + (row.Comment||'').trim();
+  }
+
+  function isFiducialRow(row){
+    return /^fid/i.test((row.Designator||'').trim());
+  }
+
+  function defaultAssignment(){
+    return {feederID:'', deviceName:'', head:1, height:1.0, pitch:4, pitchAuto:true, speed:100, angleComp:0, remove:false, skip:false, vacuum:false, vision:false};
+  }
+
+  function ensureAssignment(key){
+    if(!feederAssignments[key]) feederAssignments[key] = defaultAssignment();
+    return feederAssignments[key];
+  }
+
+  function computeGroups(rows){
+    const groups = {}; // key -> {footprint, comment, qty, fiducial}
+    rows.forEach(r=>{
+      const key = groupKey(r);
+      if(!groups[key]) groups[key] = {footprint:r.Footprint, comment:r.Comment, qty:0, fiducial:false};
+      groups[key].qty++;
+      if(isFiducialRow(r)) groups[key].fiducial = true;
+    });
+    // Fiducials belong in the CalibPoint table, not the placement list, so default them to removed
+    Object.keys(groups).forEach(k=>{
+      if(groups[k].fiducial && !(k in feederAssignments)){
+        ensureAssignment(k).remove = true;
+      }
+    });
+    // Apply the default tape pitch to groups the user hasn't set by hand
+    Object.keys(groups).forEach(k=>{
+      const a = ensureAssignment(k);
+      if(a.pitchAuto) a.pitch = inferPitch(groups[k].footprint);
+    });
+    return groups;
+  }
+
+  // ---------- tape pitch (feeder advance) ----------
+  // EIA-481 defines which pitches a tape width may use (8mm punched tape: P1 = 2 or 4mm;
+  // 12mm: 2, 4 or 8mm), not which one a given part uses — that is the reel maker's choice.
+  // These defaults follow common practice and stay inside the standard; all editable.
+  const PITCH_DEFAULTS = {
+    '01005': 2, '0201': 2, '0402': 2,
+    '0603': 4, '0805': 4, '1206': 4, '1210': 4,
+    '1812': 8, '2010': 8, '2512': 8,
+    'outros': 4,
+  };
+
+  function chipSizeOf(footprint){
+    const m = (footprint||'').match(/(?:^|[^0-9])(01005|0201|0402|0603|0805|1206|1210|1812|2010|2512)(?:[^0-9]|$)/);
+    return m ? m[1] : null;
+  }
+
+  function inferPitch(footprint){
+    const size = chipSizeOf(footprint);
+    if(size && PITCH_DEFAULTS[size] !== undefined) return PITCH_DEFAULTS[size];
+    return PITCH_DEFAULTS['outros'];
+  }
+
+  const pitchGridEl = document.getElementById('pitchGrid');
+
+  function renderPitchPanel(){
+    if(pitchGridEl.childElementCount) return; // built once; values persist in PITCH_DEFAULTS
+    Object.keys(PITCH_DEFAULTS).forEach(key=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'pitch-field';
+      const label = document.createElement('label');
+      label.textContent = key;
+      const input = document.createElement('input');
+      input.type='number'; input.step='2'; input.min='0'; input.value = PITCH_DEFAULTS[key];
+      input.addEventListener('input', ()=>{
+        PITCH_DEFAULTS[key] = parseFloat(input.value)||0;
+        // re-apply to every group still on automatic
+        Object.keys(feederAssignments).forEach(k=>{
+          const a = feederAssignments[k];
+          if(a.pitchAuto){
+            const fp = (k.split('::')[0]) || '';
+            a.pitch = inferPitch(fp);
+          }
+        });
+        renderFeederTable(lastRows);
+        onFeederChange();
+      });
+      wrap.appendChild(label); wrap.appendChild(input);
+      pitchGridEl.appendChild(wrap);
+    });
+  }
+
+  const feederTableWrapEl = document.getElementById('feederTableWrap');
+
+  function renderFeederTable(rows){
+    if(rows.length === 0){ feederTableWrapEl.innerHTML = '<div class="empty-state">Nenhum componente carregado.</div>'; return; }
+    const groups = computeGroups(rows);
+    const keys = Object.keys(groups);
+
+    const table = document.createElement('table');
+    table.className = 'feeder-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>Componente</th><th>Qtd</th><th>Remover</th><th>Feeder ID</th><th>Passo (mm)</th><th>Head</th><th>Altura (mm)</th><th>Veloc. (%)</th><th>Comp. ângulo (°)</th><th>Pular</th><th>Vácuo</th><th>Visão</th></tr>';
+    const tbody = document.createElement('tbody');
+
+    keys.forEach(key=>{
+      const g = groups[key];
+      const a = ensureAssignment(key);
+      const tr = document.createElement('tr');
+
+      const tdName = document.createElement('td');
+      tdName.innerHTML = '<span class="grp-fp">' + esc(g.footprint||'—') + '</span><span class="grp-sep">/</span><span class="grp-val">' + esc(g.comment||'—') + '</span>' + (g.fiducial ? ' <span class="fid-badge">FID</span>' : '');
+      tr.appendChild(tdName);
+
+      const tdQty = document.createElement('td'); tdQty.className='qty'; tdQty.textContent = g.qty;
+      tr.appendChild(tdQty);
+
+      const tdRemove = document.createElement('td');
+      const removeCb = document.createElement('input');
+      removeCb.type='checkbox'; removeCb.checked=a.remove;
+      removeCb.title='Remove esta peça do arquivo gerado';
+      tdRemove.appendChild(removeCb);
+      tr.appendChild(tdRemove);
+
+      const tdFeeder = document.createElement('td');
+      const feederInput = document.createElement('input');
+      feederInput.type='text'; feederInput.placeholder=autoMstack.checked ? 'auto' : 'ex: 12'; feederInput.value=a.feederID;
+      feederInput.addEventListener('input', ()=>{ a.feederID = feederInput.value.trim(); onFeederChange(); });
+      tdFeeder.appendChild(feederInput);
+      tr.appendChild(tdFeeder);
+
+      const tdPitch = document.createElement('td');
+      const pitchInput = document.createElement('input');
+      pitchInput.type='number'; pitchInput.step='2'; pitchInput.min='0'; pitchInput.value=a.pitch;
+      pitchInput.title = a.pitchAuto ? 'Padrão pelo tamanho do encapsulamento' : 'Definido manualmente';
+      pitchInput.addEventListener('input', ()=>{
+        a.pitch = parseFloat(pitchInput.value)||0;
+        a.pitchAuto = false;
+        pitchInput.title = 'Definido manualmente';
+        onFeederChange();
+      });
+      tdPitch.appendChild(pitchInput);
+      tr.appendChild(tdPitch);
+
+      const tdHead = document.createElement('td');
+      const headSel = document.createElement('select');
+      [1,2].forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent='Head '+h; if(a.head==h) o.selected=true; headSel.appendChild(o); });
+      headSel.addEventListener('change', ()=>{ a.head = parseInt(headSel.value,10); onFeederChange(); });
+      tdHead.appendChild(headSel);
+      tr.appendChild(tdHead);
+
+      const tdHeight = document.createElement('td');
+      const heightInput = document.createElement('input');
+      heightInput.type='number'; heightInput.step='0.01'; heightInput.value=a.height;
+      heightInput.addEventListener('input', ()=>{ a.height = parseFloat(heightInput.value)||0; onFeederChange(); });
+      tdHeight.appendChild(heightInput);
+      tr.appendChild(tdHeight);
+
+      const tdSpeed = document.createElement('td');
+      const speedInput = document.createElement('input');
+      speedInput.type='number'; speedInput.step='1'; speedInput.value=a.speed;
+      speedInput.addEventListener('input', ()=>{ a.speed = parseFloat(speedInput.value)||0; onFeederChange(); });
+      tdSpeed.appendChild(speedInput);
+      tr.appendChild(tdSpeed);
+
+      const tdAngle = document.createElement('td');
+      const angleInput = document.createElement('input');
+      angleInput.type='number'; angleInput.step='1'; angleInput.value=a.angleComp;
+      angleInput.addEventListener('input', ()=>{ a.angleComp = parseFloat(angleInput.value)||0; onFeederChange(); });
+      tdAngle.appendChild(angleInput);
+      tr.appendChild(tdAngle);
+
+      const tdSkip = document.createElement('td');
+      const skipCb = document.createElement('input'); skipCb.type='checkbox'; skipCb.checked=a.skip;
+      skipCb.addEventListener('change', ()=>{ a.skip = skipCb.checked; onFeederChange(); });
+      tdSkip.appendChild(skipCb);
+      tr.appendChild(tdSkip);
+
+      const tdVac = document.createElement('td');
+      const vacCb = document.createElement('input'); vacCb.type='checkbox'; vacCb.checked=a.vacuum;
+      vacCb.addEventListener('change', ()=>{ a.vacuum = vacCb.checked; onFeederChange(); });
+      tdVac.appendChild(vacCb);
+      tr.appendChild(tdVac);
+
+      const tdVis = document.createElement('td');
+      const visCb = document.createElement('input'); visCb.type='checkbox'; visCb.checked=a.vision;
+      visCb.addEventListener('change', ()=>{ a.vision = visCb.checked; onFeederChange(); });
+      tdVis.appendChild(visCb);
+      tr.appendChild(tdVis);
+
+      // When "Remover" is checked the rest of the row is irrelevant, so grey it out and lock it
+      const rowFields = [feederInput, pitchInput, headSel, heightInput, speedInput, angleInput, skipCb, vacCb, visCb];
+      function applyRemovedState(){
+        tr.style.opacity = a.remove ? '0.4' : '1';
+        rowFields.forEach(el=>{ el.disabled = a.remove; });
+      }
+      removeCb.addEventListener('change', ()=>{
+        a.remove = removeCb.checked;
+        applyRemovedState();
+        onFeederChange();
+      });
+      applyRemovedState();
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(thead); table.appendChild(tbody);
+    feederTableWrapEl.innerHTML = '';
+    feederTableWrapEl.appendChild(table);
+  }
+
+  // ---------- feeder library import/export (JSON, since browser storage is not persisted) ----------
+  document.getElementById('exportFeederLibBtn').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(feederAssignments, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'biblioteca_feeders_CHMT36VB.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importFeederLibBtn').addEventListener('click', ()=>{
+    document.getElementById('feederLibInput').click();
+  });
+  document.getElementById('feederLibInput').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      try{
+        const parsed = JSON.parse(ev.target.result);
+        Object.keys(parsed).forEach(k=>{ feederAssignments[k] = Object.assign(defaultAssignment(), parsed[k]); });
+        renderFeederTable(lastRows);
+        setStatus('Biblioteca de feeders importada — '+Object.keys(parsed).length+' componentes.', false);
+      }catch(err){
+        setStatus('Arquivo de biblioteca inválido: '+err.message, true);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  // ---------- .dpv (CharmHigh recipe) generation ----------
+  function normalizeAngle(a){
+    a = a % 360;
+    while(a <= -180) a += 360;
+    while(a > 180) a -= 360;
+    return a;
+  }
+
+  function trimNum(n, decimals){
+    return n.toFixed(decimals).replace(/\.?0+$/,'') || '0';
+  }
+
+  // The CHMT parser is not a real CSV parser: commas/newlines inside fields change
+  // the number of columns, and some firmware rejects UTF-8 characters outright.
+  function dpvSafeText(value, maxLength){
+    let s = String(value===undefined || value===null ? '' : value)
+      .replace(/[µμ]/g, 'u')
+      .replace(/[ΩΩ]/g, 'Ohm')
+      .replace(/°/g, 'deg');
+    if(s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    s = s.replace(/[,\r\n\t]+/g, ';')
+      .replace(/[^\x20-\x7E]/g, '?')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return maxLength ? s.slice(0, maxLength) : s;
+  }
+
+  function safeFileBase(value){
+    const noExt = baseNameNoExt(String(value||'pickplace_CHMT').trim());
+    return (dpvSafeText(noExt).replace(/[\\/:*?"<>|]/g, '_').replace(/[. ]+$/g, '') || 'pickplace_CHMT');
+  }
+
+  function validFeederId(raw, key){
+    if(!/^\d+$/.test(raw)){
+      throw new Error('Feeder inválido para "' + dpvSafeText(key) + '": use um ID inteiro entre 0 e 99.');
+    }
+    const id = Number(raw);
+    if(!Number.isInteger(id) || id < 0 || id > 99){
+      throw new Error('Feeder fora da faixa para "' + dpvSafeText(key) + '": a CHMT36VB aceita IDs de 0 a 99.');
+    }
+    return id;
+  }
+
+  // The CHMT36 uses the left feeder bank (IDs 0..35). When the user only wants
+  // to associate parts with positions, assign each unconfigured component group
+  // to a distinct free slot and keep it disabled until the physical setup is confirmed.
+  function resolveMstackAssignments(rows){
+    const groups = computeGroups(rows);
+    const explicitById = new Map();
+    const autoByKey = new Map();
+    const activeKeys = Object.keys(groups).filter(key => !ensureAssignment(key).remove);
+
+    activeKeys.forEach(key=>{
+      const a = ensureAssignment(key);
+      const raw = (a.feederID||'').trim();
+      if(raw === '') return;
+      const id = validFeederId(raw, key);
+      if(explicitById.has(id) && explicitById.get(id) !== key){
+        throw new Error('A posição MStack ' + id + ' foi atribuída a dois componentes diferentes: "' +
+          dpvSafeText(explicitById.get(id)) + '" e "' + dpvSafeText(key) + '". Use uma posição exclusiva para cada componente.');
+      }
+      explicitById.set(id, key);
+    });
+
+    if(autoMstack.checked){
+      const freeIds = [];
+      for(let id=0; id<=35; id++){
+        if(!explicitById.has(id)) freeIds.push(id);
+      }
+      const pendingKeys = activeKeys.filter(key => (ensureAssignment(key).feederID||'').trim() === '');
+      if(pendingKeys.length > freeIds.length){
+        throw new Error('Não há posições livres suficientes no MStack esquerdo (0–35): ' + pendingKeys.length +
+          ' componentes estão sem feeder, mas só existem ' + freeIds.length + ' posições livres. Atribua feeders/trays manualmente ou remova grupos não montados.');
+      }
+      pendingKeys.forEach((key, i)=> autoByKey.set(key, freeIds[i]));
+    }
+
+    return {autoByKey, explicitById};
+  }
+
+  function buildDpvString(rows, outBasename){
+    const L = [];
+    const push = s => L.push(s);
+    const pad = n => String(n).padStart(2,'0');
+    const now = new Date();
+
+    push('separated');
+    outBasename = safeFileBase(outBasename);
+    push('FILE,' + outBasename + '.dpv');
+    push('PCBFILE,' + outBasename + '.csv');
+    push('DATE,' + now.getFullYear() + '/' + pad(now.getMonth()+1) + '/' + pad(now.getDate()));
+    push('TIME,' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()));
+    push('PANELYPE,0');
+
+    // Resolve per-row placement data, skipping NoMount groups entirely.
+    // Automatic MStack assignments are unique per component group and always skipped.
+    const mstack = resolveMstackAssignments(rows);
+    const placed = [];
+    const usedFeeders = {}; // numeric Station.ID -> {a, note, forceSkip}
+    rows.forEach(r=>{
+      const key = groupKey(r);
+      const a = ensureAssignment(key);
+      if(a.remove) return; // excluded from the file entirely (equivalent to the original script's NoMount)
+      const idRaw = (a.feederID||'').trim();
+
+      let feederIdOut, place, note, automatic = false;
+      if(idRaw === '' && autoMstack.checked){
+        feederIdOut = mstack.autoByKey.get(key);
+        place = false;
+        automatic = true;
+        note = 'AUTO ' + (r.Comment||'') + ' ' + (r.Footprint||'');
+      } else if(idRaw === ''){
+        feederIdOut = 99; place = false;
+        note = (r.Comment||'') + ' ' + (r.Footprint||'');
+      } else {
+        feederIdOut = validFeederId(idRaw, key); place = !a.skip;
+        note = a.deviceName || ((r.Comment||'') + ' ' + (r.Footprint||''));
+      }
+      if(idRaw !== '' || automatic){
+        if(!usedFeeders[feederIdOut]) usedFeeders[feederIdOut] = {a, note, forceSkip:automatic};
+      }
+
+      const x = Number(r['Mid X']), y = Number(r['Mid Y']);
+      if(!Number.isFinite(x) || !Number.isFinite(y)){
+        throw new Error('Coordenada inválida em ' + dpvSafeText(r.Designator||'componente') + '. Confira o mapeamento Mid X / Mid Y.');
+      }
+      if(x < 0 || y < 0 || x > MACHINE.maxX || y > MACHINE.maxY){
+        throw new Error('Coordenada fora da área útil em ' + dpvSafeText(r.Designator||'componente') +
+          ' (' + trimNum(x,3) + ', ' + trimNum(y,3) + ' mm). Limite: ' + MACHINE.maxX + ' x ' + MACHINE.maxY + ' mm.');
+      }
+
+      let rot = parseFloat(r.Rotation); if(isNaN(rot)) rot = 0;
+      rot = rot - 90 + (a.angleComp||0);
+      rot = normalizeAngle(rot);
+      if((r.Layer||'').toUpperCase() === 'B') rot = -rot;
+
+      let mount = 0;
+      if(!place) mount += 1;
+      if(a.vacuum) mount += 2;
+      if(a.vision) mount += 4;
+
+      placed.push({
+        head: a.head||1,
+        feederIdOut, x, y,
+        rot, height: a.height||1.0, mount, speed: a.speed||100,
+        designator: dpvSafeText(r.Designator||'', 31), note: dpvSafeText(note, 31),
+      });
+    });
+
+    // feeders table
+    push('');
+    push('Table,No.,ID,DeltX,DeltY,FeedRates,Note,Height,Speed,Status,nPixSizeX,nPixSizeY,HeightTake,DelayTake,nPullStripSpeed,nThreshold,nVisualRadio');
+    let stationNo = 0;
+    Object.keys(usedFeeders).forEach(id=>{
+      const {a, note, forceSkip} = usedFeeders[id];
+      let mount = 0;
+      if(a.skip || forceSkip) mount += 1;
+      if(a.vacuum) mount += 2;
+      if(a.vision) mount += 4;
+      push(['Station', stationNo, id, 0, 0, trimNum(a.pitch||0,2), dpvSafeText(note,31), trimNum(a.height||1.0,4), a.speed||100, mount, 0, 0, 0, 0, 0, 0, 0].join(','));
+      stationNo++;
+    });
+
+    // batch (single board, no panel array)
+    push('');
+    push('Table,No.,ID,DeltX,DeltY');
+    push('Panel_Coord,0,1,0,0,0');
+
+    // components
+    push('');
+    push('Table,No.,ID,PHead,STNo.,DeltX,DeltY,Angle,Height,Skip,Speed,Explain,Note');
+    placed.forEach((c, i)=>{
+      push(['EComponent', i, i+1, c.head, c.feederIdOut, trimNum(c.x,6), trimNum(c.y,6), trimNum(c.rot,4), trimNum(c.height,4), c.mount, c.speed, c.designator, c.note].join(','));
+    });
+
+    // IC tray (not supported by this tool yet — header kept for file compatibility)
+    push('');
+    push('Table,No.,ID,CenterX,CenterY,IntervalX,IntervalY,NumX,NumY,Start');
+
+    // fiducials / calibration
+    const fiducials = rows.filter(isFiducialRow);
+    push('');
+    push('Table,No.,nType,nAlg,nFinished');
+    const calibType = fiducials.length >= 2 ? 1 : 0;
+    push('PcbCalib,0,' + calibType + ',0,0');
+
+    push('');
+    push('Table,No.,ID,offsetX,offsetY,Note,Model,Type,DevX,DevY');
+    fiducials.slice(0,3).forEach((f,i)=>{
+      push(['CalibPoint', i, i+1, trimNum(parseFloat(f['Mid X'])||0,6), trimNum(parseFloat(f['Mid Y'])||0,6), dpvSafeText(f.Designator||('Mark'+(i+1)),31), 0, 0, 0, 0].join(','));
+    });
+
+    push('');
+    push('Table,No.,PCBX1,PCBY1,PCBX2,PCBY2,PCBX3,PCBY3,SMTX1,SMTY1,SMTX2,SMTY2,SMTX3,SMTY3,DeltaAngle');
+    push('CalibFator,0,0,0,0,0,0,0,0,0,0,0,0,0,0');
+
+    return L.join('\r\n') + '\r\n';
+  }
+
+  let lastRows = [];
+  let filenameManuallyEdited = false;
+
+  function toDateStamp(d){
+    d = d || new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return pad(d.getDate()) + pad(d.getMonth()+1) + String(d.getFullYear()).slice(-2);
+  }
+
+  function baseNameNoExt(name){
+    return name.replace(/\.[^/.]+$/, '');
+  }
+
+  function stripSideSuffix(name){
+    return name.replace(/[-_ ]?(top|bottom|bot)([-_ ]?pos)?\s*$/i, '');
+  }
+
+  function computeSuggestedFilename(){
+    if(files.length === 0) return 'pickplace_CHMT';
+    const cleaned = files.map(f => stripSideSuffix(baseNameNoExt(f.name)));
+    return cleaned[0] + '_converted_' + toDateStamp();
+  }
+
+  function updateSuggestedFilename(){
+    if(filenameManuallyEdited) return;
+    fileNameInput.value = computeSuggestedFilename();
+  }
+
+  // ---------- Gerber (RS-274X) outline parser ----------
+  // Only what an Edge.Cuts layer needs: format spec, units, linear/arc interpolation.
+  let outline = null;        // {name, unit, polylines, bbox}
+  let ignoredLayers = [];    // gerbers that are not the board profile
+
+  function looksLikeGerber(text){
+    return /%FS[LT][AI]X\d\dY\d\d\*%/.test(text) || (/^G0?4/m.test(text) && /D0?[123]\*/.test(text));
+  }
+
+  // Which layer is this? Prefer the Gerber X2 file attribute, fall back to the filename.
+  function classifyGerber(text, name){
+    const ff = text.match(/%TF\.FileFunction,([^*%]+)\*%/i);
+    if(ff){
+      const fn = ff[1].toLowerCase();
+      if(fn.startsWith('profile')) return 'profile';
+      return fn.split(',')[0];
+    }
+    const n = name.toLowerCase();
+    if(/edge[_-]?cuts|profile|outline|boardoutline|\.gm1$|\.gko$/.test(n)) return 'profile';
+    if(/\.gtl$|\.gbl$|_cu\b|copper/.test(n)) return 'copper';
+    if(/\.gto$|\.gbo$|silk/.test(n)) return 'legend';
+    if(/\.gts$|\.gbs$|mask/.test(n)) return 'soldermask';
+    if(/\.gtp$|\.gbp$|paste/.test(n)) return 'paste';
+    if(/\.drl$|\.xln$|drill/.test(n)) return 'drill';
+    return 'desconhecido';
+  }
+
+  function parseGerberOutline(text, name){
+    const fsMatch = text.match(/%FS([LT])([AI])X(\d)(\d)Y(\d)(\d)\*%/);
+    const moMatch = text.match(/%MO(MM|IN)\*%/);
+    if(!fsMatch) return null;
+
+    const zeroMode = fsMatch[1];          // L = leading zeros omitted (modern default)
+    const absolute = fsMatch[2] === 'A';
+    const xIntDigits = parseInt(fsMatch[3],10), xDecDigits = parseInt(fsMatch[4],10);
+    const yIntDigits = parseInt(fsMatch[5],10), yDecDigits = parseInt(fsMatch[6],10);
+    const unit = moMatch ? (moMatch[1] === 'MM' ? 'mm' : 'in') : 'mm';
+    const toMM = unit === 'in' ? 25.4 : 1;
+
+    function coord(raw, axis){
+      if(raw === undefined) return undefined;
+      const decDigits = axis === 'Y' ? yDecDigits : xDecDigits;
+      const intDigits = axis === 'Y' ? yIntDigits : xIntDigits;
+      const neg = raw.startsWith('-');
+      let digits = raw.replace(/^[+-]/, '');
+      if(zeroMode === 'T'){
+        // trailing zeros omitted: pad on the right to full width
+        const total = intDigits + decDigits;
+        digits = digits.padEnd(total, '0');
+      }
+      const v = parseInt(digits, 10) / Math.pow(10, decDigits);
+      return (neg ? -v : v) * toMM;
+    }
+
+    // strip extended (%...%) blocks, then work command by command
+    const body = text.replace(/%[^%]*%/g, '');
+    const cmds = body.split('*');
+
+    const polylines = [];
+    let cur = null;
+    let x = 0, y = 0, interp = 1; // 1 = linear, 2 = CW arc, 3 = CCW arc
+    let multiQuadrant = true;
+    let unsupportedSingleQuadrantArc = false;
+
+    const flush = ()=>{ if(cur && cur.length > 1) polylines.push(cur); cur = null; };
+
+    cmds.forEach(raw=>{
+      const cmd = raw.trim();
+      if(!cmd || cmd.startsWith('G04') || cmd.startsWith('G4')) return;
+
+      const tok = {};
+      const re = /([GXYIJD])([+-]?\d+)/g;
+      let m;
+      while((m = re.exec(cmd)) !== null) tok[m[1]] = m[2];
+
+      if(tok.G !== undefined){
+        const g = parseInt(tok.G, 10);
+        if(g === 1 || g === 2 || g === 3) interp = g;
+        else if(g === 74) multiQuadrant = false;
+        else if(g === 75) multiQuadrant = true;
+      }
+
+      const nx = tok.X !== undefined ? coord(tok.X, 'X') : undefined;
+      const ny = tok.Y !== undefined ? coord(tok.Y, 'Y') : undefined;
+      const i  = tok.I !== undefined ? coord(tok.I, 'X') : undefined;
+      const j  = tok.J !== undefined ? coord(tok.J, 'Y') : undefined;
+      const d  = tok.D !== undefined ? parseInt(tok.D, 10) : undefined;
+
+      const tx = absolute ? (nx !== undefined ? nx : x) : x + (nx || 0);
+      const ty = absolute ? (ny !== undefined ? ny : y) : y + (ny || 0);
+
+      if(d === 2){                 // move: start a new polyline
+        flush();
+        cur = [{x:tx, y:ty}];
+        x = tx; y = ty;
+      } else if(d === 1){          // draw
+        if(!cur) cur = [{x, y}];
+        if(interp === 1){
+          cur.push({x:tx, y:ty});
+        } else {
+          if(!multiQuadrant){ unsupportedSingleQuadrantArc = true; return; }
+          // arc: I/J are offsets from the current point to the arc centre
+          const cx = x + (i || 0), cy = y + (j || 0);
+          const r = Math.hypot(x - cx, y - cy);
+          let a0 = Math.atan2(y - cy, x - cx);
+          let a1 = Math.atan2(ty - cy, tx - cx);
+          const cw = (interp === 2);
+          if(cw){ while(a1 >= a0) a1 -= 2*Math.PI; }
+          else  { while(a1 <= a0) a1 += 2*Math.PI; }
+          // full circle when start and end coincide
+          if(Math.abs(tx - x) < 1e-9 && Math.abs(ty - y) < 1e-9){
+            a1 = a0 + (cw ? -2*Math.PI : 2*Math.PI);
+          }
+          const steps = Math.max(6, Math.ceil(Math.abs(a1 - a0) / (Math.PI/36)));
+          for(let s = 1; s <= steps; s++){
+            const a = a0 + (a1 - a0) * (s/steps);
+            cur.push({x: cx + r*Math.cos(a), y: cy + r*Math.sin(a)});
+          }
+        }
+        x = tx; y = ty;
+      } else if(d === 3){          // flash: irrelevant for an outline
+        flush();
+        x = tx; y = ty;
+      } else if(tok.X !== undefined || tok.Y !== undefined){
+        x = tx; y = ty;
+      }
+    });
+    flush();
+
+    if(unsupportedSingleQuadrantArc || polylines.length === 0) return null;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    polylines.forEach(pl => pl.forEach(p=>{
+      if(p.x < minX) minX = p.x; if(p.x > maxX) maxX = p.x;
+      if(p.y < minY) minY = p.y; if(p.y > maxY) maxY = p.y;
+    }));
+
+    return {name, unit, polylines, bbox:{minX, minY, maxX, maxY,
+      w: maxX - minX, h: maxY - minY}};
+  }
+
+  // ---------- orientation ----------
+  const MACHINE = {name:'CHM-T36VB', maxX:345, maxY:360};
+  let boardOrientation = 0; // 0 / 90 / 180 / 270, counter-clockwise
+
+  // Rotate a point inside a WxH box; returns coords in the rotated box
+  function rotatePoint(px, py, W, H, deg){
+    switch(deg){
+      case 90:  return {x: H - py, y: px};
+      case 180: return {x: W - px, y: H - py};
+      case 270: return {x: py,     y: W - px};
+      default:  return {x: px,     y: py};
+    }
+  }
+  function rotatedSize(W, H, deg){
+    return (deg === 90 || deg === 270) ? {w:H, h:W} : {w:W, h:H};
+  }
+
+  // Board extents come from the outline when present, otherwise from component spread
+  function getBoardBox(){
+    if(outline) return {w: outline.bbox.w, h: outline.bbox.h, fromOutline:true};
+    if(lastRows.length === 0) return null;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    lastRows.forEach(r=>{
+      const x = parseFloat(r['Mid X']), y = parseFloat(r['Mid Y']);
+      if(isNaN(x)||isNaN(y)) return;
+      minX=Math.min(minX,x); maxX=Math.max(maxX,x);
+      minY=Math.min(minY,y); maxY=Math.max(maxY,y);
+    });
+    if(minX===Infinity) return null;
+    return {w:maxX-minX, h:maxY-minY, minX, minY, fromOutline:false};
+  }
+
+  function scoreOrientations(){
+    const box = getBoardBox();
+    if(!box) return [];
+    return [0,90,180,270].map(deg=>{
+      const s = rotatedSize(box.w, box.h, deg);
+      const fits = s.w <= MACHINE.maxX && s.h <= MACHINE.maxY;
+      const reasons = [];
+      let score = 0;
+
+      if(!fits){
+        reasons.push('não cabe na área útil de ' + MACHINE.maxX + '×' + MACHINE.maxY + 'mm');
+        score -= 1000;
+      } else {
+        // The long axis along X keeps the head's Y travel (the slower axis) shorter
+        if(s.w >= s.h){ score += 20; reasons.push('lado maior no eixo X, reduz curso em Y'); }
+        else { reasons.push('lado maior no eixo Y'); }
+        // Folgas
+        const slackX = MACHINE.maxX - s.w, slackY = MACHINE.maxY - s.h;
+        score += Math.min(slackX, slackY) * 0.05;
+      }
+
+      // Fiducials: better calibration when they sit far apart, ideally on a diagonal
+      const fids = lastRows.filter(isFiducialRow);
+      if(fids.length >= 2){
+        const pts = fids.map(f=>{
+          const x = parseFloat(f['Mid X']) - (box.minX||0);
+          const y = parseFloat(f['Mid Y']) - (box.minY||0);
+          return rotatePoint(x, y, box.w, box.h, deg);
+        });
+        let maxD = 0, pair = null;
+        for(let a=0;a<pts.length;a++) for(let b=a+1;b<pts.length;b++){
+          const d = Math.hypot(pts[a].x-pts[b].x, pts[a].y-pts[b].y);
+          if(d > maxD){ maxD = d; pair = [pts[a], pts[b]]; }
+        }
+        if(pair){
+          const dx = Math.abs(pair[0].x - pair[1].x), dy = Math.abs(pair[0].y - pair[1].y);
+          if(dx > s.w*0.5 && dy > s.h*0.3){ score += 8; reasons.push('fiduciais bem espalhados na diagonal'); }
+        }
+      }
+
+      // Bottom-side jobs are clamped mirrored; 0° keeps operator mental model simplest
+      if(deg === 0){ score += 3; reasons.push('sem rotação, coordenadas iguais ao CAD'); }
+
+      return {deg, size:s, fits, score, reasons};
+    }).sort((a,b)=> b.score - a.score);
+  }
+
+  // The .pos may be referenced to KiCad's auxiliary origin while the Gerber uses absolute
+  // coordinates (or vice versa). Work out which reading puts the parts inside the board.
+  function componentBBox(rows){
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    rows.forEach(r=>{
+      const x=parseFloat(r['Mid X']), y=parseFloat(r['Mid Y']);
+      if(isNaN(x)||isNaN(y)) return;
+      minX=Math.min(minX,x); maxX=Math.max(maxX,x);
+      minY=Math.min(minY,y); maxY=Math.max(maxY,y);
+    });
+    if(minX===Infinity) return null;
+    return {minX,minY,maxX,maxY,w:maxX-minX,h:maxY-minY};
+  }
+
+  // Returns offsets that map outline and components into a shared, 0-based space
+  function computeAlignment(rows){
+    if(!outline){
+      const cb = componentBBox(rows);
+      if(!cb) return {oOff:{x:0,y:0}, cOff:{x:0,y:0}, mode:'sem contorno', W:0, H:0};
+      // Preserve a plausible auxiliary-origin export (including its board margin).
+      // Absolute page coordinates and negative coordinates are translated to 0-based;
+      // leaving them untouched is a common cause of CHMT "file error".
+      const alreadyBoardLocal = cb.minX >= -0.001 && cb.minY >= -0.001 &&
+        cb.maxX <= MACHINE.maxX && cb.maxY <= MACHINE.maxY;
+      return alreadyBoardLocal
+        ? {oOff:{x:0,y:0}, cOff:{x:0,y:0}, mode:'origem auxiliar preservada', W:cb.maxX, H:cb.maxY}
+        : {oOff:{x:0,y:0}, cOff:{x:cb.minX,y:cb.minY}, mode:'coordenadas absolutas recentralizadas', W:cb.w, H:cb.h};
+    }
+    const ob = outline.bbox;
+    const W = ob.w, H = ob.h;
+
+    if(!autoAlignCb.checked){
+      return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:'manual (origem auxiliar)', W, H};
+    }
+
+    const cb = componentBBox(rows);
+    if(!cb) return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:'origem auxiliar', W, H};
+
+    const tol = 1.0; // mm
+    // A: both datasets share the Gerber's absolute space
+    const insideAbs = (cb.minX >= ob.minX - tol && cb.minY >= ob.minY - tol &&
+                       cb.maxX <= ob.maxX + tol && cb.maxY <= ob.maxY + tol);
+    // B: the .pos is already 0-based on the board's bottom-left corner
+    const insideAux = (cb.minX >= -tol && cb.minY >= -tol &&
+                       cb.maxX <= W + tol && cb.maxY <= H + tol);
+
+    const ABS = {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:ob.minX, y:ob.minY}, mode:'coordenadas absolutas', W, H};
+    const AUX = {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:'origem auxiliar no canto da placa', W, H};
+
+    if(insideAbs && insideAux){
+      // Both readings fit; the right one leaves the parts better centred on the board
+      const ccx = (cb.minX + cb.maxX)/2, ccy = (cb.minY + cb.maxY)/2;
+      const dAbs = Math.hypot(ccx - (ob.minX + ob.maxX)/2, ccy - (ob.minY + ob.maxY)/2);
+      const dAux = Math.hypot(ccx - W/2, ccy - H/2);
+      return dAbs <= dAux ? ABS : AUX;
+    }
+    if(insideAbs) return ABS;
+    if(insideAux) return AUX;
+    // Neither fits: fall back to absolute and let the warning explain
+    return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:ob.minX, y:ob.minY}, mode:'não identificado', W, H};
+  }
+  const boardSectionEl = document.getElementById('boardSection');
+  const boardCanvasEl = document.getElementById('boardCanvas');
+  const boardMetaEl = document.getElementById('boardMeta');
+  const boardNoteEl = document.getElementById('boardNote');
+  const orientCardsEl = document.getElementById('orientCards');
+  const showLabelsCb = document.getElementById('showLabels');
+  const autoAlignCb = document.getElementById('autoAlign');
+
+  function esc(s){
+    return String(s===undefined||s===null?'':s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function renderBoardPreview(){
+    if(lastRows.length === 0){ boardSectionEl.style.display = 'none'; return; }
+    const al = lastAlignment;
+    if(!al || !al.W || !al.H){ boardSectionEl.style.display = 'none'; return; }
+    boardSectionEl.style.display = 'block';
+
+    const W = al.W, H = al.H;
+    const size = rotatedSize(W, H, boardOrientation);
+    const unit = Math.max(size.w, size.h);
+
+    // When the placement data is mirrored (bottom-side job) the board is physically flipped
+    // over, so the outline has to be flipped too or an asymmetric board won't line up.
+    const active = files.filter(f => f.rows.length);
+    const flipX = active.length > 0 && active.every(f => f.mirrorX);
+    const flipY = active.length > 0 && active.every(f => f.mirrorY);
+
+    // Components are already rotated by buildOutputRows; only the outline still needs it.
+    const pts = [];
+    lastRows.forEach(row=>{
+      const px = parseFloat(row['Mid X']) - al.cOff.x;
+      const py = parseFloat(row['Mid Y']) - al.cOff.y;
+      if(isNaN(px) || isNaN(py)) return;
+      pts.push({row, cx: px, cy: size.h - py,
+                outside:(px < -1 || py < -1 || px > size.w + 1 || py > size.h + 1)});
+    });
+
+    let vMinX = 0, vMinY = 0, vMaxX = size.w, vMaxY = size.h;
+    pts.forEach(p=>{
+      if(p.cx < vMinX) vMinX = p.cx;  if(p.cx > vMaxX) vMaxX = p.cx;
+      if(p.cy < vMinY) vMinY = p.cy;  if(p.cy > vMaxY) vMaxY = p.cy;
+    });
+
+    // A square frame sized by the board's longest side keeps the drawing scale identical at
+    // 0/90/180/270 — rotating then only rotates, instead of restretching the whole view.
+    const pad = Math.max(4, unit * 0.07);
+    const side = Math.max(W, H, vMaxX - vMinX, vMaxY - vMinY) + pad*2;
+    const cxMid = (vMinX + vMaxX)/2, cyMid = (vMinY + vMaxY)/2;
+    const vb = [cxMid - side/2, cyMid - side/2, side, side];
+
+    let svg = '<svg viewBox="'+vb.join(' ')+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Preview de montagem da placa">';
+
+    // machine origin marker at bottom-left
+    svg += '<g stroke="#3a4a46" stroke-width="'+(unit*0.004)+'" stroke-linecap="round">'
+        +  '<line x1="0" y1="'+size.h+'" x2="'+(unit*0.09)+'" y2="'+size.h+'"/>'
+        +  '<line x1="0" y1="'+size.h+'" x2="0" y2="'+(size.h - unit*0.09)+'"/></g>'
+        +  '<text x="'+(unit*0.014)+'" y="'+(size.h - unit*0.024)+'" font-size="'+(unit*0.024)
+        +  '" fill="#5a6864" font-family="monospace">0,0</text>';
+
+    if(outline){
+      svg += '<g fill="none" stroke="#3fa872" stroke-width="'+(unit*0.004)+'" stroke-linejoin="round" stroke-linecap="round" opacity="0.85">';
+      outline.polylines.forEach(pl=>{
+        const ptsStr = pl.map(p=>{
+          let lx = p.x - outline.bbox.minX;
+          let ly = p.y - outline.bbox.minY;
+          if(flipX) lx = W - lx;
+          if(flipY) ly = H - ly;
+          const rp = rotatePoint(lx, ly, W, H, boardOrientation);
+          return rp.x.toFixed(3) + ',' + (size.h - rp.y).toFixed(3);
+        });
+        svg += '<polyline points="'+ptsStr.join(' ')+'"/>';
+      });
+      svg += '</g>';
+    } else {
+      svg += '<rect x="0" y="0" width="'+size.w.toFixed(2)+'" height="'+size.h.toFixed(2)
+          +  '" fill="none" stroke="#334441" stroke-width="'+(unit*0.004)
+          +  '" stroke-dasharray="'+(unit*0.02)+' '+(unit*0.015)+'"/>';
+    }
+
+    const r = unit * 0.008;
+    const showLabels = showLabelsCb.checked;
+    const labelSize = unit * 0.019;
+    let outsideCount = 0;
+
+    pts.forEach(p=>{
+      const row = p.row;
+      const cx = p.cx, cy = p.cy;
+      if(p.outside) outsideCount++;
+
+      const isFid = isFiducialRow(row);
+      const isBottom = (row.Layer||'').toUpperCase() === 'B';
+      const a = feederAssignments[groupKey(row)];
+      const removed = a && a.remove;
+      let fill = isBottom ? '#4d90c4' : '#c98a3e';
+      if(removed) fill = '#5a6864';
+      if(p.outside) fill = '#e5636a';
+
+      const rad = (parseFloat(row.Rotation) || 0) * Math.PI/180;
+      const tx = cx + Math.cos(rad)*r*1.9;
+      const ty = cy - Math.sin(rad)*r*1.9;
+
+      svg += '<g class="cmp-dot"><title>'+esc(row.Designator)+' · '+esc(row.Footprint)
+          +  (row.Comment ? ' · '+esc(row.Comment) : '')
+          +  ' · '+(isBottom?'bottom':'top')+' · '+esc(row.Rotation)+'°'
+          +  (p.outside ? ' · FORA DO CONTORNO' : '')+'</title>';
+      if(isFid){
+        svg += '<circle class="cmp-body" cx="'+cx.toFixed(3)+'" cy="'+cy.toFixed(3)+'" r="'+(r*1.6).toFixed(3)
+            +  '" fill="none" stroke="'+(p.outside?'#e5636a':'#3fa872')+'" stroke-width="'+(r*0.5).toFixed(3)+'"/>'
+            +  '<circle cx="'+cx.toFixed(3)+'" cy="'+cy.toFixed(3)+'" r="'+(r*0.45).toFixed(3)+'" fill="'+(p.outside?'#e5636a':'#3fa872')+'"/>';
+      } else {
+        svg += '<line x1="'+cx.toFixed(3)+'" y1="'+cy.toFixed(3)+'" x2="'+tx.toFixed(3)+'" y2="'+ty.toFixed(3)
+            +  '" stroke="'+fill+'" stroke-width="'+(r*0.45).toFixed(3)+'" opacity="0.8"/>'
+            +  '<circle class="cmp-body" cx="'+cx.toFixed(3)+'" cy="'+cy.toFixed(3)+'" r="'+r.toFixed(3)
+            +  '" fill="'+fill+'" opacity="'+(removed?0.45:0.92)+'"/>';
+      }
+      if(showLabels){
+        svg += '<text x="'+cx.toFixed(3)+'" y="'+(cy - r*2.3).toFixed(3)+'" font-size="'+labelSize.toFixed(3)
+            +  '" fill="#7f9089" text-anchor="middle" font-family="monospace">'+esc(row.Designator)+'</text>';
+      }
+      svg += '</g>';
+    });
+
+    svg += '</svg>';
+    boardCanvasEl.innerHTML = svg;
+
+    boardMetaEl.textContent = size.w.toFixed(2) + ' × ' + size.h.toFixed(2) + ' mm · '
+      + lastRows.length + ' componentes · '
+      + (outline ? outline.name : 'sem Gerber de contorno')
+      + (boardOrientation ? ' · girado ' + boardOrientation + '°' : '');
+
+    const ignoredMsg = ignoredLayers.length
+      ? ' ' + ignoredLayers.length + ' outro(s) Gerber ignorado(s) ('
+        + ignoredLayers.slice(0,3).map(l=>l.name).join(', ')
+        + (ignoredLayers.length > 3 ? ', …' : '') + '): só o contorno define as bordas da placa.'
+      : '';
+
+    if(outline){
+      boardNoteEl.textContent = (outsideCount
+        ? outsideCount + ' de ' + lastRows.length + ' componentes (em vermelho) caem fora do contorno (leitura de origem: ' + al.mode
+          + '). Em geral isso significa que o Gerber e o .pos foram exportados com origens diferentes. Desmarque o alinhamento automático para forçar a origem auxiliar, ou reexporte os dois com a origem auxiliar no canto inferior esquerdo da placa.'
+        : 'Todos os componentes caem dentro do contorno. Leitura de origem: ' + al.mode + '.') + ignoredMsg;
+    } else if(ignoredLayers.length){
+      boardNoteEl.textContent = 'Nenhum Gerber de contorno reconhecido entre os ' + ignoredLayers.length
+        + ' arquivos carregados. Envie o Edge.Cuts (no KiCad sai como "*-Edge_Cuts.gbr"; em Altium, o layer Profile/.gm1). Cobre, silk e máscara não definem as bordas da placa.'
+        + ' O preview abaixo usa apenas a extensão dos componentes.';
+    } else {
+      boardNoteEl.textContent = 'Sem o Gerber de contorno (Edge.Cuts) o preview mostra apenas a extensão dos componentes: as bordas reais e as margens da placa não aparecem, e a checagem de encaixe na área útil fica aproximada.';
+    }
+  }
+  function renderOrientationCards(){
+    const list = scoreOrientations();
+    if(list.length === 0){ orientCardsEl.innerHTML = ''; return; }
+    const best = list[0];
+    orientCardsEl.innerHTML = '';
+    // keep a stable visual order (0/90/180/270) while flagging the best one
+    list.slice().sort((a,b)=>a.deg-b.deg).forEach(o=>{
+      const btn = document.createElement('button');
+      btn.className = 'orient-card'
+        + (o.deg === boardOrientation ? ' selected' : '')
+        + (o.deg === best.deg && o.fits ? ' best' : '')
+        + (o.fits ? '' : ' unfit');
+      btn.innerHTML =
+        '<div class="orient-head"><span class="orient-title">' + (o.deg ? 'Girar ' + o.deg + '°' : 'Sem rotação') + '</span>'
+        + '<span class="orient-tag">' + (!o.fits ? 'não cabe' : (o.deg === best.deg ? 'sugerido' : 'ok')) + '</span></div>'
+        + '<div class="orient-dims">' + o.size.w.toFixed(1) + ' × ' + o.size.h.toFixed(1) + ' mm</div>'
+        + '<div class="orient-reason">' + o.reasons.join(' · ') + '</div>';
+      btn.addEventListener('click', ()=>{
+        boardOrientation = o.deg;
+        renderAll();
+      });
+      orientCardsEl.appendChild(btn);
+    });
+  }
+
+  showLabelsCb.addEventListener('change', renderBoardPreview);
+  autoAlignCb.addEventListener('change', ()=> renderAll());
+
+  // ---------- pipeline state ----------
+  let currentStep = 1;
+  let csvApproved = false;
+  let dpvApproved = false;
+  let dpvValidationError = '';
+
+  const panes = {1:document.getElementById('pane1'), 2:document.getElementById('pane2'), 3:document.getElementById('pane3')};
+  const stepBtns = Array.from(document.querySelectorAll('.step'));
+
+  function goToStep(n){
+    if(n === 2 && !csvApproved) return;
+    if(n === 3 && !dpvApproved) return;
+    currentStep = n;
+    Object.keys(panes).forEach(k=>{ panes[k].style.display = (parseInt(k,10) === n) ? 'block' : 'none'; });
+    if(n === 2) renderDpvPreview();
+    updatePipelineUI();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function updatePipelineUI(){
+    stepBtns.forEach(btn=>{
+      const n = parseInt(btn.dataset.step, 10);
+      btn.classList.toggle('active', n === currentStep);
+      const done = (n === 1 && csvApproved) || (n === 2 && dpvApproved);
+      btn.classList.toggle('done', done && n !== currentStep);
+      btn.disabled = (n === 2 && !csvApproved) || (n === 3 && !dpvApproved);
+    });
+
+    const hasRows = lastRows.length > 0;
+    approveCsvBtn.disabled = !hasRows;
+    step1Info.textContent = hasRows
+      ? lastRows.length + ' componentes convertidos a partir de ' + files.length + ' arquivo(s). Confira o preview acima antes de aprovar.'
+      : 'Carregue ao menos um arquivo para continuar.';
+
+    if(csvApproved){
+      const groups = computeGroups(lastRows);
+      const keys = Object.keys(groups);
+      const removed = keys.filter(k => ensureAssignment(k).remove).length;
+      const assigned = keys.filter(k=>{
+        const a = ensureAssignment(k);
+        return !a.remove && (a.feederID||'').trim() !== '';
+      }).length;
+      const pending = keys.length - assigned - removed;
+      step2Info.textContent = assigned + ' de ' + keys.length + ' grupos com feeder atribuído'
+        + (removed ? ', ' + removed + ' removidos do arquivo' : '')
+        + (pending
+          ? (autoMstack.checked
+            ? '. Os ' + pending + ' pendentes receberão posições MStack automáticas e exclusivas, com skip ligado.'
+            : '. Os ' + pending + ' pendentes vão para o feeder 99 com skip ligado.')
+          : '.');
+    }
+
+    exportBtn.disabled = !(dpvApproved && (wantCsv.checked || wantDpv.checked));
+    approveDpvBtn.disabled = !csvApproved || !!dpvValidationError;
+  }
+
+  // Any change to input data or mapping invalidates downstream approvals
+  function invalidateDownstream(){
+    if(csvApproved || dpvApproved){
+      csvApproved = false;
+      dpvApproved = false;
+      if(currentStep !== 1){
+        currentStep = 1;
+        Object.keys(panes).forEach(k=>{ panes[k].style.display = (k === '1') ? 'block' : 'none'; });
+      }
+    }
+  }
+
+  function renderAll(){
+    invalidateDownstream();
+    dpvValidationError = '';
+    renderPitchPanel();
+    renderFileCards();
+    lastRows = buildOutputRows();
+    renderPreview(lastRows);
+    renderOrientationCards();
+    renderBoardPreview();
+    renderFeederTable(lastRows);
+    updateSuggestedFilename();
+    updatePipelineUI();
+  }
+
+  function onFeederChange(){
+    if(currentStep === 2) renderDpvPreview();
+    updatePipelineUI();
+  }
+
+  autoMstack.addEventListener('change', ()=>{
+    renderFeederTable(lastRows);
+    onFeederChange();
+  });
+
+  function renderDpvPreview(){
+    if(lastRows.length === 0){
+      dpvPreviewWrap.innerHTML = '<div class="empty-state">Aprove o CSV para gerar o DPV.</div>';
+      return;
+    }
+    try{
+      const dpv = buildDpvString(lastRows, fileNameInput.value || 'pickplace_CHMT');
+      const lines = dpv.split('\r\n');
+      const shown = lines.slice(0, 120).join('\n');
+      const pre = document.createElement('pre');
+      pre.className = 'raw-preview';
+      pre.textContent = shown + (lines.length > 120 ? '\n\n… ' + (lines.length - 120) + ' linhas restantes (o arquivo exportado inclui tudo)' : '');
+      dpvValidationError = '';
+      dpvPreviewWrap.innerHTML = '';
+      dpvPreviewWrap.appendChild(pre);
+    }catch(err){
+      dpvValidationError = err.message;
+      dpvApproved = false;
+      dpvPreviewWrap.innerHTML = '<div class="empty-state">DPV bloqueado: ' + esc(err.message) + '</div>';
+    }
+    updatePipelineUI();
+  }
+
+  // ---------- file loading ----------
+  function addFiles(fileList){
+    const arr = Array.from(fileList);
+    let pending = arr.length;
+    if(pending === 0) return;
+    arr.forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = e=>{
+        const text = e.target.result;
+        const lowerName = file.name.toLowerCase();
+        const gerberExt = /\.(gbr|gm1|gko|gbo|gbl|gtl)$/i.test(lowerName);
+
+        // A Gerber outline is a different kind of input: it feeds the preview, not the placement list
+        if(gerberExt || looksLikeGerber(text)){
+          const kind = classifyGerber(text, file.name);
+          if(kind === 'profile'){
+            const parsed = parseGerberOutline(text, file.name);
+            if(parsed) outline = parsed;
+            else setStatus('Não consegui interpretar o contorno em "' + file.name + '".', true);
+          } else {
+            // copper/silk/mask layers carry no board boundary, so they must not become the outline
+            if(!ignoredLayers.some(l => l.name === file.name)){
+              ignoredLayers.push({name:file.name, kind});
+            }
+          }
+          pending--;
+          if(pending===0) renderAll();
+          return;
+        }
+
+        const {headers, rows} = parseText(text);
+        const mapping = autoMap(headers);
+        const detected = detectFormatLabel(headers);
+        let layerMode = 'auto';
+        if(mapping.layer === -1){
+          if(lowerName.includes('bottom') || lowerName.includes('bot')) layerMode = 'B';
+          else if(lowerName.includes('top')) layerMode = 'T';
+        }
+        files.push({
+          id: 'f'+(uid++),
+          name: file.name,
+          rawHeaders: headers,
+          rows: rows,
+          mapping: mapping,
+          detected: detected,
+          layerMode: layerMode,
+          mirrorX: lowerName.includes('bottom') || lowerName.includes('bot'),
+          boardWidth: 0,
+          mirrorY: false,
+          boardHeight: 0,
+          rotOffset: 0,
+        });
+        pending--;
+        if(pending===0) renderAll();
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  dropzone.addEventListener('click', ()=>fileInput.click());
+  fileInput.addEventListener('change', e=>{ addFiles(e.target.files); fileInput.value=''; });
+  ['dragenter','dragover'].forEach(evt=>{
+    dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(evt=>{
+    dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.remove('drag'); });
+  });
+  dropzone.addEventListener('drop', e=>{
+    if(e.dataTransfer.files && e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  });
+
+  // ---------- export ----------
+  const pickFolderBtn = document.getElementById('pickFolderBtn');
+  const folderNameEl = document.getElementById('folderName');
+  const statusEl = document.getElementById('statusMsg');
+  fileNameInput.addEventListener('input', ()=>{ filenameManuallyEdited = true; });
+  wantCsv.addEventListener('change', updatePipelineUI);
+  wantDpv.addEventListener('change', updatePipelineUI);
+
+  function setStatus(msg, isError){
+    statusEl.textContent = msg || '';
+    statusEl.classList.toggle('error', !!isError);
+  }
+
+  // ---------- pipeline navigation ----------
+  stepBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=> goToStep(parseInt(btn.dataset.step,10)));
+  });
+  approveCsvBtn.addEventListener('click', ()=>{
+    if(lastRows.length === 0) return;
+    csvApproved = true;
+    goToStep(2);
+  });
+  approveDpvBtn.addEventListener('click', ()=>{
+    dpvApproved = true;
+    goToStep(3);
+  });
+  document.getElementById('backTo1Btn').addEventListener('click', ()=> goToStep(1));
+  document.getElementById('backTo2Btn').addEventListener('click', ()=> goToStep(2));
+
+  pickFolderBtn.addEventListener('click', async ()=>{
+    if(!('showDirectoryPicker' in window)){
+      setStatus('Este navegador não suporta escolher pasta diretamente (funciona no Chrome/Edge desktop). O export vai usar o download padrão.', true);
+      return;
+    }
+    try{
+      dirHandle = await window.showDirectoryPicker();
+      folderNameEl.textContent = dirHandle.name + ' (mantida enquanto esta aba estiver aberta)';
+      setStatus('Pasta selecionada. Os próximos exports vão salvar direto ali até você trocar.', false);
+    }catch(err){
+      if(err.name !== 'AbortError') setStatus('Não foi possível acessar a pasta: '+err.message, true);
+    }
+  });
+
+  async function writeOut(name, content, mime){
+    if(dirHandle){
+      const perm = await dirHandle.queryPermission({mode:'readwrite'});
+      if(perm !== 'granted'){
+        const req = await dirHandle.requestPermission({mode:'readwrite'});
+        if(req !== 'granted') throw new Error('permissão negada para a pasta');
+      }
+      const fileHandle = await dirHandle.getFileHandle(name, {create:true});
+      const writable = await fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      return 'folder';
+    }
+    const blob = new Blob([content], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return 'download';
+  }
+
+  exportBtn.addEventListener('click', async ()=>{
+    if(lastRows.length === 0) return;
+    const requestedBase = baseNameNoExt((fileNameInput.value || 'pickplace_CHMT').trim());
+    const base = safeFileBase(requestedBase);
+    const written = [];
+    let mode = null;
+
+    try{
+      if(wantCsv.checked){
+        mode = await writeOut(base + '.csv', buildCsvString(lastRows), 'text/csv;charset=utf-8');
+        written.push(base + '.csv');
+      }
+      if(wantDpv.checked){
+        mode = await writeOut(base + '.dpv', buildDpvString(lastRows, base), 'text/plain;charset=us-ascii');
+        written.push(base + '.dpv');
+      }
+    }catch(err){
+      setStatus('Falha ao salvar: ' + err.message, true);
+      return;
+    }
+
+    if(written.length === 0){ setStatus('Selecione ao menos um formato para exportar.', true); return; }
+    const renamed = base !== requestedBase ? ' (nome ajustado para compatibilidade: "' + base + '")' : '';
+    setStatus((mode === 'folder'
+      ? 'Salvo em "' + dirHandle.name + '/": ' + written.join(', ')
+      : 'Baixado pela pasta de downloads padrão: ' + written.join(', ')) + renamed, false);
+  });
+
+  // ============================================================
+  //  PANELIZADOR — takes a validated .dpv and adds a batch table
+  // ============================================================
+  // Keeps EComponent coordinates local to the single board and expresses rails/gaps only
+  // in Panel_Coord. Existing calibration is reset because it belongs to the old geometry.
+
+  let dpv = null; // parsed DPV plus exact row indices used for safe table replacement
+
+  function parseDpvFile(text){
+    const lines = String(text||'').replace(/^\uFEFF/, '').split(/\r\n|\r|\n/);
+    const comps = [], calib = [];
+    const batchHeaders = [], batchRows = [], calibRows = [];
+    let malformedComponents = 0;
+    let panelCoordFields = 5;
+
+    lines.forEach((line, i)=>{
+      const f = line.split(',').map(v=>v.trim());
+      if(f[0] === 'EComponent'){
+        const x = Number(f[5]), y = Number(f[6]);
+        if(f.length < 13 || !Number.isFinite(x) || !Number.isFinite(y)) malformedComponents++;
+        else {
+          comps.push({i, x, y, ref: f[11] || ''});
+          if(f.length === 13) panelCoordFields = 6; // CHMT36VB variant observed in machine-saved files
+        }
+      } else if(f[0] === 'CalibPoint'){
+        calibRows.push(i);
+        calib.push({i, x:Number(f[3]), y:Number(f[4])});
+      } else if(f[0] === 'Panel_Coord' || f[0] === 'Panel_Array'){
+        batchRows.push(i);
+        if(f[0] === 'Panel_Coord' && f.length >= 6) panelCoordFields = 6;
+      } else if(f[0] === 'Table'){
+        const isCoord = f[2] === 'ID' && f[3] === 'DeltX' && f[4] === 'DeltY';
+        const isArray = f[2] === 'ID' && f[3] === 'IntervalX' && f[4] === 'IntervalY' && f[5] === 'NumX' && f[6] === 'NumY';
+        if(isCoord || isArray) batchHeaders.push(i);
+      }
+    });
+
+    if(malformedComponents) return {error:malformedComponents + ' linha(s) EComponent têm colunas ou coordenadas inválidas'};
+    if(comps.length === 0) return null;
+    return {lines, comps, calib, batchHeaders, batchRows, calibRows, panelCoordFields};
+  }
+
+  function compBBox(){
+    if(!dpv) return null;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    dpv.comps.forEach(c=>{
+      if(isNaN(c.x)||isNaN(c.y)) return;
+      minX=Math.min(minX,c.x); maxX=Math.max(maxX,c.x);
+      minY=Math.min(minY,c.y); maxY=Math.max(maxY,c.y);
+    });
+    if(minX===Infinity) return null;
+    return {minX,minY,maxX,maxY,w:maxX-minX,h:maxY-minY};
+  }
+
+  const railTypeEl = document.getElementById('railType');
+  const panelInputs = {
+    railBottom: document.getElementById('railBottom'),
+    railTop: document.getElementById('railTop'),
+    railLeft: document.getElementById('railLeft'),
+    railRight: document.getElementById('railRight'),
+    boardW: document.getElementById('panelBoardW'),
+    boardH: document.getElementById('panelBoardH'),
+    cols: document.getElementById('panelCols'),
+    rows: document.getElementById('panelRows'),
+    gapX: document.getElementById('panelGapX'),
+    gapY: document.getElementById('panelGapY'),
+  };
+
+  function railValues(){
+    const t = railTypeEl.value;
+    const h = (t === 'h' || t === 'all'), v = (t === 'v' || t === 'all');
+    return {
+      bottom: h ? Number(panelInputs.railBottom.value) : 0,
+      top:    h ? Number(panelInputs.railTop.value)    : 0,
+      left:   v ? Number(panelInputs.railLeft.value)   : 0,
+      right:  v ? Number(panelInputs.railRight.value)  : 0,
+    };
+  }
+
+  function panelGeometry(){
+    const r = railValues();
+    const bw = Number(panelInputs.boardW.value);
+    const bh = Number(panelInputs.boardH.value);
+    const cols = Number(panelInputs.cols.value);
+    const rows = Number(panelInputs.rows.value);
+    const gapX = Number(panelInputs.gapX.value);
+    const gapY = Number(panelInputs.gapY.value);
+    const pitchX = bw + gapX, pitchY = bh + gapY;
+    return {
+      rails:r, bw, bh, cols, rows, gapX, gapY, pitchX, pitchY,
+      panelW: r.left + cols*bw + (cols-1)*gapX + r.right,
+      panelH: r.bottom + rows*bh + (rows-1)*gapY + r.top,
+      count: cols*rows,
+    };
+  }
+
+  function panelGeometryError(g, bbox){
+    const nums = [g.bw,g.bh,g.cols,g.rows,g.gapX,g.gapY,g.rails.left,g.rails.right,g.rails.top,g.rails.bottom];
+    if(nums.some(v=>!Number.isFinite(v))) return 'Preencha todos os campos da geometria com números válidos.';
+    if(g.bw <= 0 || g.bh <= 0) return 'A largura e a altura da placa precisam ser maiores que zero.';
+    if(!Number.isInteger(g.cols) || !Number.isInteger(g.rows) || g.cols < 1 || g.rows < 1) return 'Colunas e linhas precisam ser números inteiros maiores que zero.';
+    if([g.gapX,g.gapY,g.rails.left,g.rails.right,g.rails.top,g.rails.bottom].some(v=>v < 0)) return 'Abas e folgas não podem ser negativas.';
+    if(g.panelW <= 0 || g.panelH <= 0) return 'A geometria calculada do painel é inválida.';
+    if(bbox && (bbox.minX < -0.001 || bbox.minY < -0.001)) return 'O DPV contém componentes com coordenadas negativas; corrija a origem antes de panelizar.';
+    if(bbox && (bbox.maxX > g.bw + 0.5 || bbox.maxY > g.bh + 0.5)) return 'Há componentes além das dimensões informadas para a placa.';
+    if(g.panelW > MACHINE.maxX || g.panelH > MACHINE.maxY) return 'O painel não cabe na área útil de ' + MACHINE.maxX + ' x ' + MACHINE.maxY + ' mm.';
+    return '';
+  }
+
+  // Boards are numbered left→right, bottom→top, the same order the machine uses
+  function boardOrigins(g){
+    const out = [];
+    for(let row=0; row<g.rows; row++){
+      for(let col=0; col<g.cols; col++){
+        out.push({col, row, dx: col*g.pitchX, dy: row*g.pitchY});
+      }
+    }
+    return out;
+  }
+
+  function buildPanelDpv(outputBase){
+    if(!dpv) return '';
+    const g = panelGeometry();
+    const geometryError = panelGeometryError(g, compBBox());
+    if(geometryError) throw new Error(geometryError);
+    const lines = dpv.lines.slice();
+    const safeBase = safeFileBase(outputBase||'painel');
+    const fileHeader = lines.findIndex(line => line.startsWith('FILE,'));
+    if(fileHeader >= 0) lines[fileHeader] = 'FILE,' + safeBase + '.dpv';
+
+    // A calibração pertence à geometria antiga. Mantê-la faz algumas versões do
+    // software ignorarem Panel_Coord e também reaplica um CalibFator já inválido.
+    lines.forEach((line,i)=>{
+      if(line.startsWith('PANELYPE,')) lines[i] = 'PANELYPE,0';
+      else if(line.startsWith('PcbCalib,')) lines[i] = 'PcbCalib,0,0,0,0';
+      else if(line.startsWith('CalibFator,')){
+        const fieldCount = Math.max(2, line.split(',').length);
+        lines[i] = ['CalibFator', ...Array(fieldCount-1).fill('0')].join(',');
+      }
+    });
+
+    // Rebuild the batch table: one PCB origin per board, including the left/bottom rails
+    const rowsOut = boardOrigins(g).map((b,i)=>{
+      const fields = ['Panel_Coord', i, i+1, trimNum(g.rails.left + b.dx,6), trimNum(g.rails.bottom + b.dy,6)];
+      if(dpv.panelCoordFields >= 6) fields.push(0);
+      return fields.join(',');
+    });
+
+    // Remove individual rows instead of one broad interval: malformed/non-contiguous
+    // tables must never cause unrelated Station/EComponent data to be deleted.
+    const remove = new Set([...dpv.batchHeaders, ...dpv.batchRows, ...dpv.calibRows]);
+    let insertAt = remove.size ? Math.min(...remove) : lines.findIndex(line=>line.startsWith('Table,No.,ID,PHead,STNo.'));
+    if(insertAt < 0) insertAt = lines.length;
+    const output = [];
+    let inserted = false;
+    lines.forEach((line,i)=>{
+      if(!inserted && i >= insertAt){
+        output.push('Table,No.,ID,DeltX,DeltY', '', ...rowsOut, '');
+        inserted = true;
+      }
+      if(!remove.has(i)) output.push(line);
+    });
+    if(!inserted) output.push('', 'Table,No.,ID,DeltX,DeltY', '', ...rowsOut);
+    return output.join('\r\n').replace(/(?:\r\n)+$/,'') + '\r\n';
+  }
+
+  const panelCanvasEl = document.getElementById('panelCanvas');
+  const panelMetaEl = document.getElementById('panelMeta');
+  const panelNoteEl = document.getElementById('panelNote');
+  const panelShowComps = document.getElementById('panelShowComps');
+  const panelShowNums = document.getElementById('panelShowNums');
+
+  function renderPanelPreview(){
+    const panelExport = document.getElementById('panelExportBtn');
+    if(!dpv){ panelExport.disabled = true; return; }
+    const g = panelGeometry();
+    const bbox = compBBox();
+    const geometryError = panelGeometryError(g, bbox);
+    if(geometryError){
+      panelCanvasEl.innerHTML = '<div class="empty-state">' + esc(geometryError) + '</div>';
+      panelMetaEl.textContent = '';
+      panelNoteEl.textContent = geometryError;
+      panelExport.disabled = true;
+      return;
+    }
+    const unit = Math.max(g.panelW, g.panelH);
+    const pad = unit * 0.05;
+    const vb = [-pad, -pad, g.panelW + pad*2, g.panelH + pad*2];
+    const Y = y => g.panelH - y; // SVG grows downward
+
+    let svg = '<svg viewBox="'+vb.join(' ')+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Preview do painel">';
+    svg += '<defs><pattern id="rail" width="'+(unit*0.02)+'" height="'+(unit*0.02)
+        +  '" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">'
+        +  '<line x1="0" y="0" x2="0" y2="'+(unit*0.02)+'" stroke="#3a4a46" stroke-width="'+(unit*0.004)+'"/></pattern></defs>';
+
+    // panel outline, rails hatched underneath the boards
+    svg += '<rect x="0" y="0" width="'+g.panelW.toFixed(2)+'" height="'+g.panelH.toFixed(2)
+        +  '" fill="url(#rail)" stroke="#3fa872" stroke-width="'+(unit*0.003)+'"/>';
+
+    const r = unit * 0.0035;
+
+    boardOrigins(g).forEach((b, idx)=>{
+      const x0 = g.rails.left + b.dx, y0 = g.rails.bottom + b.dy;
+      svg += '<rect x="'+x0.toFixed(2)+'" y="'+Y(y0 + g.bh).toFixed(2)
+          +  '" width="'+g.bw.toFixed(2)+'" height="'+g.bh.toFixed(2)
+          +  '" fill="#121917" stroke="#4d90c4" stroke-width="'+(unit*0.0025)+'"/>';
+
+      if(panelShowComps.checked){
+        dpv.comps.forEach(c=>{
+          if(isNaN(c.x)||isNaN(c.y)) return;
+          svg += '<circle cx="'+(x0 + c.x).toFixed(2)+'" cy="'+Y(y0 + c.y).toFixed(2)
+              +  '" r="'+r.toFixed(3)+'" fill="#c98a3e" opacity="0.85"/>';
+        });
+      }
+      if(panelShowNums.checked){
+        svg += '<text x="'+(x0 + g.bw/2).toFixed(2)+'" y="'+Y(y0 + g.bh/2).toFixed(2)
+            +  '" font-size="'+(unit*0.05).toFixed(2)+'" fill="#7f9089" text-anchor="middle"'
+            +  ' dominant-baseline="central" font-family="monospace" opacity="0.55">'+(idx+1)+'</text>';
+      }
+    });
+
+    // machine origin
+    svg += '<g stroke="#c98a3e" stroke-width="'+(unit*0.004)+'" stroke-linecap="round">'
+        +  '<line x1="0" y1="'+g.panelH+'" x2="'+(unit*0.06)+'" y2="'+g.panelH+'"/>'
+        +  '<line x1="0" y1="'+g.panelH+'" x2="0" y2="'+(g.panelH - unit*0.06)+'"/></g>';
+    svg += '</svg>';
+    panelCanvasEl.innerHTML = svg;
+
+    panelMetaEl.textContent = g.panelW.toFixed(1) + ' × ' + g.panelH.toFixed(1) + ' mm · '
+      + g.count + ' placas (' + g.cols + '×' + g.rows + ') · '
+      + (dpv.comps.length * g.count) + ' colocações';
+
+    panelNoteEl.textContent = 'Folga na mesa: ' + (MACHINE.maxX - g.panelW).toFixed(1)
+      + 'mm em X e ' + (MACHINE.maxY - g.panelH).toFixed(1)
+      + 'mm em Y. A calibração do DPV original será zerada; calibre novamente usando pontos nos cantos opostos do painel inteiro.';
+    panelExport.disabled = false;
+  }
+
+  function updateRailFieldVisibility(){
+    const t = railTypeEl.value;
+    document.querySelectorAll('[data-rail]').forEach(el=>{
+      const kind = el.dataset.rail;
+      const show = (t === 'all') || (t === kind);
+      el.classList.toggle('hidden', !show);
+    });
+  }
+
+  Object.values(panelInputs).forEach(el=> el.addEventListener('input', renderPanelPreview));
+  railTypeEl.addEventListener('change', ()=>{ updateRailFieldVisibility(); renderPanelPreview(); });
+  panelShowComps.addEventListener('change', renderPanelPreview);
+  panelShowNums.addEventListener('change', renderPanelPreview);
+
+  // --- dpv loading ---
+  const dpvDropzone = document.getElementById('dpvDropzone');
+  const dpvInputEl = document.getElementById('dpvInput');
+  const dpvInfoEl = document.getElementById('dpvInfo');
+
+  function loadDpv(file){
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const parsed = parseDpvFile(e.target.result);
+      if(!parsed || parsed.error){
+        dpv = null;
+        document.getElementById('panelExportBtn').disabled = true;
+        document.getElementById('panelConfig').style.display = 'none';
+        document.getElementById('panelPreviewSection').style.display = 'none';
+        document.getElementById('panelExportBar').style.display = 'none';
+        dpvInfoEl.textContent = 'Não foi possível usar "' + file.name + '": ' + (parsed && parsed.error ? parsed.error : 'nenhuma linha EComponent válida encontrada') + '.';
+        return;
+      }
+      dpv = parsed;
+      const bb = compBBox();
+      if(bb){
+        // suggest board size from component extents, rounded up — the real outline is bigger
+        panelInputs.boardW.value = Math.max(0, Math.ceil(bb.maxX + 2));
+        panelInputs.boardH.value = Math.max(0, Math.ceil(bb.maxY + 2));
+      }
+      dpvInfoEl.textContent = file.name + ' · ' + parsed.comps.length + ' componentes · '
+        + parsed.calib.length + ' ponto(s) de calibração anterior(es), que serão removidos · '
+        + (parsed.batchRows.length ? 'já tinha tabela de painel (será substituída)' : 'sem tabela de painel');
+      document.getElementById('panelConfig').style.display = 'block';
+      document.getElementById('panelPreviewSection').style.display = 'block';
+      document.getElementById('panelExportBar').style.display = 'block';
+      document.getElementById('panelFileName').value = baseNameNoExt(file.name) + '_painel_' + toDateStamp() + '.dpv';
+      updateRailFieldVisibility();
+      renderPanelPreview();
+    };
+    reader.readAsText(file);
+  }
+
+  dpvDropzone.addEventListener('click', ()=> dpvInputEl.click());
+  dpvInputEl.addEventListener('change', e=>{ if(e.target.files[0]) loadDpv(e.target.files[0]); dpvInputEl.value=''; });
+  ['dragenter','dragover'].forEach(ev=> dpvDropzone.addEventListener(ev, e=>{ e.preventDefault(); dpvDropzone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev=> dpvDropzone.addEventListener(ev, e=>{ e.preventDefault(); dpvDropzone.classList.remove('drag'); }));
+  dpvDropzone.addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) loadDpv(e.dataTransfer.files[0]); });
+
+  // --- panel export ---
+  const panelStatusEl = document.getElementById('panelStatus');
+  document.getElementById('panelPickFolderBtn').addEventListener('click', async ()=>{
+    if(!('showDirectoryPicker' in window)){
+      panelStatusEl.textContent = 'Este navegador não permite escolher pasta; o export usará o download padrão.';
+      panelStatusEl.classList.add('error');
+      return;
+    }
+    try{
+      dirHandle = await window.showDirectoryPicker();
+      document.getElementById('panelFolderName').textContent = dirHandle.name;
+      panelStatusEl.classList.remove('error');
+      panelStatusEl.textContent = 'Pasta selecionada.';
+    }catch(err){ if(err.name !== 'AbortError'){ panelStatusEl.textContent = err.message; panelStatusEl.classList.add('error'); } }
+  });
+
+  document.getElementById('panelExportBtn').addEventListener('click', async ()=>{
+    if(!dpv) return;
+    const base = safeFileBase(document.getElementById('panelFileName').value || 'painel');
+    const name = base + '.dpv';
+    try{
+      const mode = await writeOut(name, buildPanelDpv(base), 'text/plain;charset=us-ascii');
+      panelStatusEl.classList.remove('error');
+      panelStatusEl.textContent = mode === 'folder'
+        ? 'Salvo em "' + dirHandle.name + '/' + name + '".'
+        : 'Baixado como "' + name + '".';
+    }catch(err){
+      panelStatusEl.classList.add('error');
+      panelStatusEl.textContent = 'Falha ao salvar: ' + err.message;
+    }
+  });
+
+  // ============================================================
+  //  ORIGEM DE GERBERS — shifts a whole fabrication package
+  // ============================================================
+
+  // --- minimal ZIP reader/writer on native (De)CompressionStream ---
+  const CRC_TABLE = (()=>{
+    const t = new Uint32Array(256);
+    for(let n=0;n<256;n++){
+      let c = n;
+      for(let k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(bytes){
+    let c = 0xFFFFFFFF;
+    for(let i=0;i<bytes.length;i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  async function inflateRaw(bytes){
+    const ds = new DecompressionStream('deflate-raw');
+    const stream = new Blob([bytes]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+  async function deflateRaw(bytes){
+    const cs = new CompressionStream('deflate-raw');
+    const stream = new Blob([bytes]).stream().pipeThrough(cs);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  async function readZip(buffer){
+    const dv = new DataView(buffer);
+    const u8 = new Uint8Array(buffer);
+    if(u8.length < 22) throw new Error('arquivo .zip truncado');
+    // locate End Of Central Directory
+    let eocd = -1;
+    for(let i = u8.length - 22; i >= 0 && i > u8.length - 65558; i--){
+      if(dv.getUint32(i, true) === 0x06054b50){ eocd = i; break; }
+    }
+    if(eocd < 0) throw new Error('não é um arquivo .zip válido');
+    const count = dv.getUint16(eocd + 10, true);
+    let ptr = dv.getUint32(eocd + 16, true);
+    if(count === 0xFFFF || ptr === 0xFFFFFFFF) throw new Error('ZIP64 não é suportado');
+
+    const entries = [];
+    let totalSize = 0;
+    for(let n = 0; n < count; n++){
+      if(ptr < 0 || ptr + 46 > u8.length) throw new Error('diretório central truncado');
+      if(dv.getUint32(ptr, true) !== 0x02014b50) throw new Error('diretório central corrompido');
+      const flags = dv.getUint16(ptr + 8, true);
+      const method = dv.getUint16(ptr + 10, true);
+      const expectedCrc = dv.getUint32(ptr + 16, true);
+      const compSize = dv.getUint32(ptr + 20, true);
+      const fullSize = dv.getUint32(ptr + 24, true);
+      const nameLen = dv.getUint16(ptr + 28, true);
+      const extraLen = dv.getUint16(ptr + 30, true);
+      const cmtLen = dv.getUint16(ptr + 32, true);
+      const localOff = dv.getUint32(ptr + 42, true);
+      if(flags & 1) throw new Error('arquivo criptografado dentro do ZIP não é suportado');
+      if(method !== 0 && method !== 8) throw new Error('método de compressão ZIP ' + method + ' não suportado');
+      if(ptr + 46 + nameLen + extraLen + cmtLen > u8.length) throw new Error('entrada truncada no diretório central');
+      if(localOff + 30 > u8.length || dv.getUint32(localOff, true) !== 0x04034b50) throw new Error('cabeçalho local inválido');
+      const name = new TextDecoder().decode(u8.subarray(ptr + 46, ptr + 46 + nameLen));
+
+      const lNameLen = dv.getUint16(localOff + 26, true);
+      const lExtraLen = dv.getUint16(localOff + 28, true);
+      const dataStart = localOff + 30 + lNameLen + lExtraLen;
+      if(dataStart + compSize > u8.length) throw new Error('dados comprimidos truncados em "' + name + '"');
+      totalSize += fullSize;
+      if(totalSize > 256 * 1024 * 1024) throw new Error('conteúdo descompactado excede o limite seguro de 256 MB');
+      entries.push({name, method, expectedCrc, fullSize, raw: u8.subarray(dataStart, dataStart + compSize)});
+      ptr += 46 + nameLen + extraLen + cmtLen;
+    }
+
+    for(const e of entries){
+      const bytes = e.method === 0 ? e.raw : await inflateRaw(e.raw);
+      if(bytes.length !== e.fullSize || crc32(bytes) !== e.expectedCrc) throw new Error('CRC ou tamanho inválido em "' + e.name + '"');
+      e.bytes = bytes;
+      e.text = new TextDecoder().decode(bytes);
+    }
+    return entries;
+  }
+
+  async function writeZip(files){ // files: [{name, text}] or [{name, bytes}]
+    const enc = new TextEncoder();
+    const parts = [], central = [];
+    let offset = 0;
+
+    for(const f of files){
+      const data = f.bytes ? new Uint8Array(f.bytes) : enc.encode(String(f.text===undefined ? '' : f.text));
+      const crc = crc32(data);
+      let body, method = 0;
+      try{ body = await deflateRaw(data); method = 8; }
+      catch(_){ body = data; method = 0; }
+      if(body.length >= data.length){ body = data; method = 0; }
+
+      const nameBytes = enc.encode(f.name);
+      const local = new Uint8Array(30 + nameBytes.length);
+      const ldv = new DataView(local.buffer);
+      ldv.setUint32(0, 0x04034b50, true);
+      ldv.setUint16(4, 20, true);
+      ldv.setUint16(6, 0x0800, true); // UTF-8 filename
+      ldv.setUint16(8, method, true);
+      ldv.setUint32(14, crc, true);
+      ldv.setUint32(18, body.length, true);
+      ldv.setUint32(22, data.length, true);
+      ldv.setUint16(26, nameBytes.length, true);
+      local.set(nameBytes, 30);
+      parts.push(local, body);
+
+      const cen = new Uint8Array(46 + nameBytes.length);
+      const cdv = new DataView(cen.buffer);
+      cdv.setUint32(0, 0x02014b50, true);
+      cdv.setUint16(4, 20, true);
+      cdv.setUint16(6, 20, true);
+      cdv.setUint16(8, 0x0800, true);
+      cdv.setUint16(10, method, true);
+      cdv.setUint32(16, crc, true);
+      cdv.setUint32(20, body.length, true);
+      cdv.setUint32(24, data.length, true);
+      cdv.setUint16(28, nameBytes.length, true);
+      cdv.setUint32(42, offset, true);
+      cen.set(nameBytes, 46);
+      central.push(cen);
+      offset += local.length + body.length;
+    }
+
+    const cenSize = central.reduce((a, c) => a + c.length, 0);
+    const end = new Uint8Array(22);
+    const edv = new DataView(end.buffer);
+    edv.setUint32(0, 0x06054b50, true);
+    edv.setUint16(8, files.length, true);
+    edv.setUint16(10, files.length, true);
+    edv.setUint32(12, cenSize, true);
+    edv.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end], {type:'application/zip'});
+  }
+
+  // --- Gerber coordinate shifting ---
+  // Only absolute X/Y move. Arc I/J offsets are relative to the current point and must be
+  // left alone, or every rounded corner turns into garbage.
+  function shiftGerber(text, dxMM, dyMM){
+    const fs = text.match(/%FS([LT])([AI])X(\d)(\d)Y(\d)(\d)\*%/);
+    if(!fs) return {error:'sem especificação de formato (%FS)'};
+    if(fs[1] === 'T') return {error:'supressão de zeros à direita (T) não suportada com segurança'};
+    if(fs[2] === 'I') return {error:'coordenadas incrementais não suportadas'};
+    const internalOffset = text.match(/%OFA([+-]?(?:\d+(?:\.\d*)?|\.\d+))B([+-]?(?:\d+(?:\.\d*)?|\.\d+))\*%/i);
+    if(/%OF/i.test(text) && !internalOffset) return {error:'comando de offset interno %OF não reconhecido'};
+    if(internalOffset && (Number(internalOffset[1]) !== 0 || Number(internalOffset[2]) !== 0)){
+      return {error:'Gerber já contém offset interno %OF; normalize-o no CAD antes de deslocar'};
+    }
+    const bodyOnly = text.replace(/%[^%]*%/g, '');
+    if(/[XY][+-]?(?:\d+\.\d*|\.\d+)/.test(bodyOnly)) return {error:'coordenadas Gerber com ponto decimal não são suportadas com segurança'};
+    const decX = parseInt(fs[4], 10), decY = parseInt(fs[6], 10);
+    const mo = text.match(/%MO(MM|IN)\*%/);
+    const toFile = (mo && mo[1] === 'IN') ? (1/25.4) : 1;
+    const offX = Math.round(dxMM * toFile * Math.pow(10, decX));
+    const offY = Math.round(dyMM * toFile * Math.pow(10, decY));
+
+    // split on %...% blocks so aperture defs, macros and step-and-repeat stay untouched
+    const out = text.replace(/%[^%]*%|[^%]+/g, chunk=>{
+      if(chunk.startsWith('%')) return chunk;
+      const commands = chunk.split('*');
+      return commands.map((command,i)=>{
+        const terminator = i < commands.length-1 ? '*' : '';
+        if(/^\s*G0?4\b/i.test(command)) return command + terminator;
+        return command.replace(/([XY])([+-]?\d+)/g, (m, ax, num)=>{
+          const v = parseInt(num, 10) + (ax === 'X' ? offX : offY);
+          return ax + v;
+        }) + terminator;
+      }).join('');
+    });
+    return {text: out};
+  }
+
+  // --- Excellon drill shifting ---
+  // Zero-suppressed integer formats are ambiguous across vendors, so only decimal
+  // coordinates are accepted; anything else aborts rather than risk silent corruption.
+  function shiftExcellon(text, dxMM, dyMM){
+    const isMetric = /METRIC|M71/.test(text);
+    const isInch = /INCH|M72/.test(text);
+    if(!isMetric && !isInch) return {error:'unidades não declaradas (sem METRIC/INCH)'};
+    const toFile = isInch ? (1/25.4) : 1;
+
+    const lines = text.split(/\r\n|\r|\n/);
+    let sawCoord = false, sawInteger = false;
+    const body = lines.map(line=>{
+      if(line.startsWith(';') || line.startsWith('T') && !/[XY]-?\d/.test(line)) return line;
+      return line.replace(/([XY])(-?[\d.]+)/g, (m, ax, num)=>{
+        sawCoord = true;
+        if(!num.includes('.')){ sawInteger = true; return m; }
+        const v = parseFloat(num) + (ax === 'X' ? dxMM : dyMM) * toFile;
+        return ax + v.toFixed(4).replace(/0+$/,'').replace(/\.$/,'.0');
+      });
+    });
+
+    if(!sawCoord) return {text: text, untouched:true};
+    if(sawInteger) return {error:'coordenadas inteiras com supressão de zeros ambígua; reexporte a furação em formato decimal'};
+    return {text: body.join('\n')};
+  }
+
+  function classifyPackageFile(name, text){
+    const n = name.toLowerCase();
+    if(/\.(drl|xln|nc|tap)$/.test(n) || /^\s*M48\b/m.test(text) ||
+       (/\.(txt)$/.test(n) && /(?:METRIC|INCH|M7[12])/i.test(text) && /(?:^|\n)T\d+C?[\d.]+/i.test(text))) return 'furação';
+    if(looksLikeGerber(text)) return classifyGerber(text, name);
+    return 'outro';
+  }
+
+  // --- state + UI ---
+  let zipEntries = null, originResults = null, zipLoadToken = 0;
+  const zipInfoEl = document.getElementById('zipInfo');
+  const originNoteEl = document.getElementById('originNote');
+  const originTableWrapEl = document.getElementById('originTableWrap');
+  const originModeEl = document.getElementById('originMode');
+  const originDxEl = document.getElementById('originDx');
+  const originDyEl = document.getElementById('originDy');
+  const originExportBtn = document.getElementById('originExportBtn');
+  const originStatusEl = document.getElementById('originStatus');
+
+  function packageOutline(){
+    if(!zipEntries) return null;
+    for(const e of zipEntries){
+      if(!e.text || !looksLikeGerber(e.text)) continue;
+      if(classifyGerber(e.text, e.name) !== 'profile') continue;
+      const parsed = parseGerberOutline(e.text, e.name);
+      if(parsed) return parsed;
+    }
+    return null;
+  }
+
+  function recomputeOrigin(){
+    if(!zipEntries) return;
+    const mode = originModeEl.value;
+    let dx = 0, dy = 0;
+
+    if(mode === 'outline'){
+      const ol = packageOutline();
+      if(!ol){
+        originNoteEl.textContent = 'Nenhum Gerber de contorno reconhecido no pacote. Troque para "offset livre" e informe o deslocamento à mão.';
+        originDxEl.value = 0; originDyEl.value = 0;
+        originDxEl.disabled = originDyEl.disabled = true;
+        originTableWrapEl.innerHTML = '<div class="empty-state">Sem contorno para calcular o deslocamento.</div>';
+        document.getElementById('originPreviewSection').style.display = 'none';
+        originExportBtn.disabled = true;
+        return;
+      }
+      dx = -ol.bbox.minX; dy = -ol.bbox.minY;
+      originDxEl.value = dx.toFixed(3); originDyEl.value = dy.toFixed(3);
+      originDxEl.disabled = originDyEl.disabled = true;
+      originNoteEl.textContent = 'Contorno em ' + ol.name + ': canto inferior esquerdo em ('
+        + ol.bbox.minX.toFixed(3) + ', ' + ol.bbox.minY.toFixed(3) + ') mm, placa de '
+        + ol.bbox.w.toFixed(2) + ' × ' + ol.bbox.h.toFixed(2) + ' mm. Esse é o deslocamento aplicado a todos os arquivos.';
+    } else {
+      originDxEl.disabled = originDyEl.disabled = false;
+      dx = parseFloat(originDxEl.value)||0;
+      dy = parseFloat(originDyEl.value)||0;
+      originNoteEl.textContent = 'Deslocamento manual aplicado aos Gerbers e arquivos de posição. A furação continua omitida neste pacote de montagem.';
+    }
+
+    originResults = zipEntries.map(e=>{
+      const kind = classifyPackageFile(e.name, e.text);
+      // This is an assembly package, not a fabrication one: the drill has no role here, and
+      // omitting it keeps the zip from ever being mistaken for something a fab could use.
+      if(kind === 'furação') return {name:e.name, kind, omit:true};
+      if(kind === 'outro') return {name:e.name, kind, bytes:e.bytes, untouched:true};
+      const r = shiftGerber(e.text, dx, dy);
+      return {name:e.name, kind, ...r};
+    });
+
+    posFiles.forEach(pf=>{
+      const r = shiftPositionFile(pf.text, dx, dy);
+      originResults.push({name:pf.name, kind:'posição', ...r});
+    });
+
+    renderOriginPreview(dx, dy);
+    renderOriginTable();
+  }
+
+  // Both frames share one viewBox that covers the origin and both board positions, so the
+  // move is visible at a glance instead of each frame re-fitting its own content.
+  function renderOriginPreview(dx, dy){
+    const section = document.getElementById('originPreviewSection');
+    const ol = packageOutline();
+    if(!ol){ section.style.display = 'none'; return; }
+    section.style.display = 'block';
+
+    const b = ol.bbox;
+    const minX = Math.min(0, b.minX, b.minX + dx);
+    const maxX = Math.max(0, b.maxX, b.maxX + dx);
+    const minY = Math.min(0, b.minY, b.minY + dy);
+    const maxY = Math.max(0, b.maxY, b.maxY + dy);
+    const w = maxX - minX, h = maxY - minY;
+    const unit = Math.max(w, h) || 1;
+    const pad = unit * 0.09;
+    const vb = [minX - pad, -(maxY + pad), w + pad*2, h + pad*2];
+
+    function frame(shiftX, shiftY, active){
+      const stroke = active ? '#3fa872' : '#5a6864';
+      let svg = '<svg viewBox="'+vb.join(' ')+'" xmlns="http://www.w3.org/2000/svg">';
+      // machine origin crosshair at 0,0
+      svg += '<g stroke="#c98a3e" stroke-width="'+(unit*0.006)+'" stroke-linecap="round" opacity="0.9">'
+          +  '<line x1="'+(-unit*0.05)+'" y1="0" x2="'+(unit*0.05)+'" y2="0"/>'
+          +  '<line x1="0" y1="'+(-unit*0.05)+'" x2="0" y2="'+(unit*0.05)+'"/></g>';
+      svg += '<g fill="none" stroke="'+stroke+'" stroke-width="'+(unit*0.006)
+          +  '" stroke-linejoin="round" stroke-linecap="round"'
+          +  (active ? '' : ' stroke-dasharray="'+(unit*0.02)+' '+(unit*0.015)+'"')+'>';
+      ol.polylines.forEach(pl=>{
+        const pts = pl.map(p=> (p.x + shiftX).toFixed(3) + ',' + (-(p.y + shiftY)).toFixed(3));
+        svg += '<polyline points="'+pts.join(' ')+'"/>';
+      });
+      svg += '</g>';
+      // the board's own bottom-left corner
+      const cx = b.minX + shiftX, cy = -(b.minY + shiftY);
+      svg += '<circle cx="'+cx.toFixed(3)+'" cy="'+cy.toFixed(3)+'" r="'+(unit*0.018)
+          +  '" fill="'+stroke+'"/>';
+      svg += '</svg>';
+      return svg;
+    }
+
+    document.getElementById('beforeCanvas').innerHTML = frame(0, 0, false);
+    document.getElementById('afterCanvas').innerHTML = frame(dx, dy, true);
+    document.getElementById('beforeCoords').textContent =
+      'canto em ' + b.minX.toFixed(2) + ', ' + b.minY.toFixed(2) + ' mm';
+    document.getElementById('afterCoords').textContent =
+      'canto em ' + (b.minX + dx).toFixed(2) + ', ' + (b.minY + dy).toFixed(2) + ' mm';
+  }
+
+  // --- position file shifting ---
+  // Rewrites only the numeric coordinate fields, keeping the header, quoting, separator and
+  // decimal precision of the original. Touching as little as possible is the whole point.
+  let posFiles = [];
+
+  function rawSplitLine(line, delim){
+    if(delim === null) return null; // whitespace-delimited files are rewritten as-is
+    const out = []; let cur = '', inQ = false;
+    for(let i=0;i<line.length;i++){
+      const c = line[i];
+      if(c === '"') inQ = !inQ;
+      if(c === delim && !inQ){ out.push(cur); cur = ''; continue; }
+      cur += c;
+    }
+    out.push(cur);
+    return out;
+  }
+
+  function shiftPositionFile(text, dxMM, dyMM){
+    const lines = text.split(/\r\n|\r|\n/);
+    let firstIdx = -1, delim = null, mapping = null;
+    for(let i=0;i<Math.min(lines.length,100);i++){
+      if(!lines[i].trim()) continue;
+      const candidateDelim = detectDelimiter(lines[i]);
+      if(candidateDelim === null) continue;
+      const candidateHeaders = parseLine(lines[i].replace(/^\uFEFF/, ''), candidateDelim);
+      const candidateMapping = autoMap(candidateHeaders);
+      if(candidateMapping.midx >= 0 && candidateMapping.midy >= 0){
+        firstIdx = i; delim = candidateDelim; mapping = candidateMapping; break;
+      }
+    }
+    if(firstIdx < 0) return {error:'cabeçalho com colunas X/Y não reconhecido (CSV por vírgula, ponto e vírgula ou tabulação)'};
+
+    const eol = text.includes('\r\n') ? '\r\n' : '\n';
+    let changed = 0;
+    const out = lines.map((line, i)=>{
+      if(i <= firstIdx || !line.trim()) return line;
+      const cells = rawSplitLine(line, delim);
+      if(!cells || cells.length <= Math.max(mapping.midx, mapping.midy)) return line;
+
+      [[mapping.midx, dxMM], [mapping.midy, dyMM]].forEach(([idx, d])=>{
+        const raw = cells[idx];
+        const trimmed = raw.trim();
+        const quoted = trimmed.startsWith('"') && trimmed.endsWith('"');
+        const inner = quoted ? trimmed.slice(1,-1) : trimmed;
+        const numberMatch = inner.match(/^([+-]?)(\d*)([.,]?)(\d*)$/);
+        if(!numberMatch || (!numberMatch[2] && !numberMatch[4])) return;
+        const decimalMark = numberMatch[3] || '.';
+        const normalized = (numberMatch[1]||'') + (numberMatch[2]||'0') + '.' + (numberMatch[4]||'0');
+        const v = Number(normalized);
+        if(!Number.isFinite(v)) return;
+        const offsetDecimals = (trimNum(Math.abs(d),6).split('.')[1]||'').length;
+        const dec = Math.max(numberMatch[4].length, offsetDecimals);
+        let nv = (v + d).toFixed(dec);
+        if(decimalMark === ',') nv = nv.replace('.', ',');
+        cells[idx] = quoted ? '"' + nv + '"' : nv;
+        changed++;
+      });
+      return cells.join(delim);
+    });
+
+    if(!changed) return {error:'nenhuma coordenada numérica encontrada'};
+    return {text: out.join(eol)};
+  }
+
+  const posDropzone = document.getElementById('posDropzone');
+  const posInputEl = document.getElementById('posInput');
+
+  function loadPosFiles(fileList){
+    const arr = Array.from(fileList);
+    let pending = arr.length;
+    if(!pending) return;
+    arr.forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = e=>{
+        posFiles = posFiles.filter(f => f.name !== file.name);
+        posFiles.push({name:file.name, text:e.target.result});
+        if(--pending === 0) recomputeOrigin();
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  posDropzone.addEventListener('click', ()=> posInputEl.click());
+  posInputEl.addEventListener('change', e=>{ loadPosFiles(e.target.files); posInputEl.value=''; });
+  ['dragenter','dragover'].forEach(ev=> posDropzone.addEventListener(ev, e=>{ e.preventDefault(); posDropzone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev=> posDropzone.addEventListener(ev, e=>{ e.preventDefault(); posDropzone.classList.remove('drag'); }));
+  posDropzone.addEventListener('drop', e=>{ if(e.dataTransfer.files.length) loadPosFiles(e.dataTransfer.files); });
+
+  function renderOriginTable(){
+    if(!originResults) return;
+    const errors = originResults.filter(r=>r.error);
+    let html = '<table><thead><tr><th>Arquivo</th><th>Tipo</th><th>Situação</th></tr></thead><tbody>';
+    originResults.forEach(r=>{
+      const status = r.error
+        ? '<span style="color:var(--error);">' + esc(r.error) + '</span>'
+        : (r.omit
+            ? '<span style="color:var(--copper);">omitido (pacote de montagem)</span>'
+            : (r.untouched
+                ? '<span style="color:var(--muted-2);">copiado sem alteração</span>'
+                : '<span style="color:var(--solder);">deslocado</span>'));
+      html += '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.kind) + '</td><td>' + status + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    originTableWrapEl.innerHTML = html;
+
+    originExportBtn.disabled = errors.length > 0;
+    if(errors.length){
+      originStatusEl.classList.add('error');
+      originStatusEl.textContent = 'Exportação bloqueada: ' + errors.length
+        + ' Gerber(s) não puderam ser deslocados. Um pacote com camadas em referenciais diferentes não serve para conferir a montagem.';
+    } else {
+      originStatusEl.classList.remove('error');
+      const omitted = originResults.filter(r=>r.omit).length;
+      originStatusEl.textContent = omitted
+        ? omitted + ' arquivo(s) de furação omitido(s): este pacote é para montagem, não para fabricação.'
+        : '';
+    }
+  }
+
+  originModeEl.addEventListener('change', recomputeOrigin);
+  originDxEl.addEventListener('input', ()=>{ if(originModeEl.value === 'free') recomputeOrigin(); });
+  originDyEl.addEventListener('input', ()=>{ if(originModeEl.value === 'free') recomputeOrigin(); });
+
+  const zipDropzone = document.getElementById('zipDropzone');
+  const zipInputEl = document.getElementById('zipInput');
+
+  function loadZip(file){
+    const token = ++zipLoadToken;
+    zipEntries = null;
+    originResults = null;
+    posFiles = [];
+    originExportBtn.disabled = true;
+    document.getElementById('posSection').style.display = 'none';
+    document.getElementById('originConfig').style.display = 'none';
+    document.getElementById('originPreviewSection').style.display = 'none';
+    document.getElementById('originFilesSection').style.display = 'none';
+    document.getElementById('originExportBar').style.display = 'none';
+    zipInfoEl.textContent = 'Lendo "' + file.name + '"…';
+    const reader = new FileReader();
+    reader.onload = async e=>{
+      try{
+        const parsedEntries = (await readZip(e.target.result)).filter(en=> !en.name.endsWith('/'));
+        if(token !== zipLoadToken) return;
+        zipEntries = parsedEntries;
+      }catch(err){
+        if(token !== zipLoadToken) return;
+        zipEntries = null;
+        zipInfoEl.textContent = 'Não consegui abrir "' + file.name + '": ' + err.message;
+        return;
+      }
+      zipInfoEl.textContent = file.name + ' · ' + zipEntries.length + ' arquivos';
+      document.getElementById('posSection').style.display = 'block';
+      document.getElementById('originConfig').style.display = 'block';
+      document.getElementById('originFilesSection').style.display = 'block';
+      document.getElementById('originExportBar').style.display = 'block';
+      document.getElementById('originFileName').value = baseNameNoExt(file.name) + '_origem_' + toDateStamp() + '.zip';
+      recomputeOrigin();
+    };
+    reader.onerror = ()=>{
+      if(token !== zipLoadToken) return;
+      zipInfoEl.textContent = 'Não consegui ler "' + file.name + '".';
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  zipDropzone.addEventListener('click', ()=> zipInputEl.click());
+  zipInputEl.addEventListener('change', e=>{ if(e.target.files[0]) loadZip(e.target.files[0]); zipInputEl.value=''; });
+  ['dragenter','dragover'].forEach(ev=> zipDropzone.addEventListener(ev, e=>{ e.preventDefault(); zipDropzone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev=> zipDropzone.addEventListener(ev, e=>{ e.preventDefault(); zipDropzone.classList.remove('drag'); }));
+  zipDropzone.addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) loadZip(e.dataTransfer.files[0]); });
+
+  document.getElementById('originPickFolderBtn').addEventListener('click', async ()=>{
+    if(!('showDirectoryPicker' in window)){
+      originStatusEl.textContent = 'Este navegador não permite escolher pasta; o export usará o download padrão.';
+      originStatusEl.classList.add('error');
+      return;
+    }
+    try{
+      dirHandle = await window.showDirectoryPicker();
+      document.getElementById('originFolderName').textContent = dirHandle.name;
+      originStatusEl.classList.remove('error');
+    }catch(err){ if(err.name !== 'AbortError') originStatusEl.textContent = err.message; }
+  });
+
+  originExportBtn.addEventListener('click', async ()=>{
+    if(!originResults || originResults.some(r=>r.error)) return;
+    const base = safeFileBase(document.getElementById('originFileName').value || 'gerbers');
+    const name = base + '.zip';
+    try{
+      const blob = await writeZip(originResults.filter(r=>!r.omit).map(r=>({name:r.name, text:r.text, bytes:r.bytes})));
+      if(dirHandle){
+        const perm = await dirHandle.queryPermission({mode:'readwrite'});
+        if(perm !== 'granted' && (await dirHandle.requestPermission({mode:'readwrite'})) !== 'granted'){
+          throw new Error('permissão negada para a pasta');
+        }
+        const fh = await dirHandle.getFileHandle(name, {create:true});
+        const w = await fh.createWritable();
+        await w.write(blob); await w.close();
+        originStatusEl.classList.remove('error');
+        originStatusEl.textContent = 'Salvo em "' + dirHandle.name + '/' + name + '".';
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      originStatusEl.classList.remove('error');
+      originStatusEl.textContent = 'Baixado como "' + name + '".';
+    }catch(err){
+      originStatusEl.classList.add('error');
+      originStatusEl.textContent = 'Falha ao gerar o .zip: ' + err.message;
+    }
+  });
+
+  // --- tool tabs ---
+  document.querySelectorAll('.tool-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tool-tab').forEach(t=> t.classList.toggle('active', t === tab));
+      const tool = tab.dataset.tool;
+      document.getElementById('toolConverter').style.display = tool === 'converter' ? 'block' : 'none';
+      document.getElementById('toolPanelizer').style.display = tool === 'panelizer' ? 'block' : 'none';
+      document.getElementById('toolOrigin').style.display   = tool === 'origin'    ? 'block' : 'none';
+    });
+  });
+
+  goToStep(1);
+  renderAll();
+})();
+</script>
+</body>
+</html>
