@@ -8,7 +8,6 @@ Conversor executado inteiramente no navegador para preparar arquivos Pick and Pl
 - atribuição manual de feeders;
 - geração automática do MStack para cada grupo de componente sem feeder;
 - associações automáticas com `Skip` ativado por segurança;
-- panelização de coordenadas;
 - correção de origem e visualização de contornos Gerber;
 - importação e exportação da biblioteca de feeders.
 
@@ -37,4 +36,3 @@ O botão de deploy direto exige que o repositório seja público. Para repositó
 ## Segurança da máquina
 
 As posições MStack criadas automaticamente ficam com `Skip` ligado. Confirme feeder, altura, passo da fita, cabeça, rotação e coordenadas antes de liberar a montagem. Faça o primeiro teste em baixa velocidade e sem componentes nas cabeças.
-
