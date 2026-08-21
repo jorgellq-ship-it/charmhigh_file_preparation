@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAM → CharmHigh · Conversor Pick&amp;Place</title>
+<meta name="description" content="Converta Pick &amp; Place em CSV e DPV para a CharmHigh CHMT36VB, configure feeders e MStack e corrija a origem dos Gerbers diretamente no navegador.">
+<title>Preparador de arquivos CharmHigh · CSV, DPV e Gerbers</title>
 <style>
   :root{
     --bg: #0b0f0e;
@@ -56,6 +57,15 @@
     line-height:1.6;
     max-width:660px;
     margin:0;
+  }
+  header .eyebrow{
+    color:var(--solder);
+    font-size:11px;
+    font-weight:750;
+    letter-spacing:0.14em;
+    line-height:1.3;
+    margin:0 0 10px;
+    text-transform:uppercase;
   }
   code, .mono{font-family:var(--mono);}
   code{
@@ -532,47 +542,48 @@
 <div class="wrap">
 
   <header>
-    <h1>Conversor Pick&amp;Place → CharmHigh</h1>
-    <p>Pipeline em três etapas: converter e aprovar o CSV, atribuir feeders e aprovar o DPV, depois exportar. Aceita arquivos de posicionamento do KiCad, Eagle, EasyEDA ou Altium.</p>
+    <p class="eyebrow">Do CAD à máquina, com mais confiança</p>
+    <h1>Preparador de arquivos para CharmHigh</h1>
+    <p>Transforme arquivos Pick &amp; Place em CSV e DPV prontos para revisão na CHMT36VB. Confira a orientação da placa, organize feeders e MStack e corrija a origem dos Gerbers — tudo direto no navegador.</p>
   </header>
 
   <nav class="tool-tabs">
-    <button class="tool-tab active" data-tool="converter">Conversor CSV → CHarmHigh</button>
-    <button class="tool-tab" data-tool="origin">Origem de Gerbers</button>
+    <button class="tool-tab active" data-tool="converter">Pick &amp; Place → CSV/DPV</button>
+    <button class="tool-tab" data-tool="origin">Corrigir origem dos Gerbers</button>
   </nav>
 
   <div id="toolConverter">
 
   <nav class="stepper" id="stepper">
-    <button class="step" data-step="1"><span class="step-num">1</span> Converter CSV</button>
-    <button class="step" data-step="2"><span class="step-num">2</span> Feeders &amp; DPV</button>
-    <button class="step" data-step="3"><span class="step-num">3</span> Exportar</button>
+    <button class="step" data-step="1"><span class="step-num">1</span> Importar e conferir</button>
+    <button class="step" data-step="2"><span class="step-num">2</span> Configurar montagem</button>
+    <button class="step" data-step="3"><span class="step-num">3</span> Gerar arquivos</button>
   </nav>
 
   <!-- ETAPA 1 -->
   <div class="pane" id="pane1">
     <section>
-      <p class="section-title">Arquivos de entrada</p>
+      <p class="section-title">Pick &amp; Place e contorno da placa</p>
       <div class="dropzone" id="dropzone">
-        <strong>Arraste os arquivos aqui, ou clique para escolher</strong>
-        <span>Posição (.csv/.pos) e, opcionalmente, o Gerber de contorno Edge.Cuts (.gbr/.gm1/.gko) para gerar o preview da placa</span>
+        <strong>Solte os arquivos aqui ou escolha no computador</strong>
+        <span>Adicione um ou mais arquivos de posição (.csv/.pos). Inclua o Gerber de contorno Edge.Cuts (.gbr/.gm1/.gko) para visualizar as bordas reais da placa. O processamento acontece somente no seu navegador.</span>
         <input type="file" id="fileInput" accept=".csv,.txt,.pos,.gbr,.gm1,.gko,.gbo,.gko" multiple>
       </div>
     </section>
 
     <section id="filesSection" style="display:none;">
-      <p class="section-title">Mapeamento de colunas</p>
+      <p class="section-title">Confira o mapeamento das colunas</p>
       <div id="fileCards"></div>
     </section>
 
     <section id="boardSection" style="display:none;">
-      <p class="section-title">Orientação e preview de montagem</p>
+      <p class="section-title">Escolha a orientação e confira a placa</p>
       <div id="orientCards" class="orient-grid"></div>
       <div class="board-view-wrap">
         <div class="board-toolbar">
           <div class="board-meta" id="boardMeta"></div>
-          <label class="mini-toggle"><input type="checkbox" id="showLabels" checked> designators</label>
-          <label class="mini-toggle"><input type="checkbox" id="autoAlign" checked> alinhar origem automaticamente</label>
+          <label class="mini-toggle"><input type="checkbox" id="showLabels" checked> mostrar referências</label>
+          <label class="mini-toggle"><input type="checkbox" id="autoAlign" checked> alinhar origens automaticamente</label>
         </div>
         <div class="board-canvas" id="boardCanvas"></div>
       </div>
@@ -580,82 +591,82 @@
     </section>
 
     <section>
-      <p class="section-title">Preview do CSV convertido</p>
+      <p class="section-title">Resultado convertido</p>
       <div class="preview-wrap" id="previewWrap">
-        <div class="empty-state">Nenhum dado carregado ainda.</div>
+        <div class="empty-state">Adicione um arquivo Pick &amp; Place para visualizar a conversão.</div>
       </div>
     </section>
 
     <div class="pipeline-bar">
-      <div class="pipeline-info" id="step1Info">Carregue ao menos um arquivo para continuar.</div>
-      <button class="btn btn-primary" id="approveCsvBtn" disabled>Aprovar CSV →</button>
+      <div class="pipeline-info" id="step1Info">Comece adicionando um arquivo Pick &amp; Place.</div>
+      <button class="btn btn-primary" id="approveCsvBtn" disabled>Confirmar conversão →</button>
     </div>
   </div>
 
   <!-- ETAPA 2 -->
   <div class="pane" id="pane2" style="display:none;">
     <section>
-      <p class="section-title">Atribuição de feeders</p>
-      <p class="note">Cada linha agrupa componentes iguais (mesmo footprint + valor). Atribua o número de feeder da sua CHM-T36VB, ou marque <strong>Remover</strong> para tirar a peça do arquivo por completo. Designators começando com <code>FID</code> viram fiduciais automaticamente.</p>
+      <p class="section-title">Componentes, feeders e MStack</p>
+      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
       <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
         <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
-        <span><strong>Gerar MStack automático para feeders em branco.</strong> Cada tipo de componente recebe uma posição livre e exclusiva entre 0 e 35. Essas peças são exportadas com <strong>Skip</strong> ligado até você confirmar a posição física na máquina.</span>
+        <span><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
       </label>
       <div class="pitch-panel">
         <div class="pitch-panel-head">
           <strong>Passo padrão da fita (mm)</strong>
-          <span>Aplicado a grupos ainda não ajustados à mão. A EIA-481 permite 2 ou 4mm em fita de 8mm, e 2, 4 ou 8mm em fita de 12mm.</span>
+          <span>Usado nos grupos que ainda não foram ajustados manualmente. A EIA-481 permite 2 ou 4 mm em fitas de 8 mm e 2, 4 ou 8 mm em fitas de 12 mm.</span>
         </div>
         <div class="pitch-grid" id="pitchGrid"></div>
       </div>
 
       <div class="feeder-lib-row">
-        <button class="btn btn-ghost" id="importFeederLibBtn">Importar biblioteca de feeders</button>
-        <button class="btn btn-ghost" id="exportFeederLibBtn">Exportar biblioteca de feeders</button>
+        <button class="btn btn-ghost" id="importFeederLibBtn">Carregar configuração de feeders</button>
+        <button class="btn btn-ghost" id="exportFeederLibBtn">Salvar configuração de feeders</button>
         <input type="file" id="feederLibInput" accept=".json" style="display:none;">
       </div>
       <div class="preview-wrap" id="feederTableWrap"></div>
     </section>
 
     <section>
-      <p class="section-title">Preview do DPV gerado</p>
+      <p class="section-title">Prévia da receita DPV</p>
       <div class="preview-wrap" id="dpvPreviewWrap">
-        <div class="empty-state">Aprove o CSV para gerar o DPV.</div>
+        <div class="empty-state">Confirme a conversão para montar a receita DPV.</div>
       </div>
     </section>
 
     <div class="pipeline-bar">
-      <button class="btn btn-ghost" id="backTo1Btn">← Voltar</button>
+      <button class="btn btn-ghost" id="backTo1Btn">← Rever conversão</button>
       <div class="pipeline-info" id="step2Info"></div>
-      <button class="btn btn-primary" id="approveDpvBtn">Aprovar DPV →</button>
+      <button class="btn btn-primary" id="approveDpvBtn">Confirmar DPV →</button>
     </div>
   </div>
 
   <!-- ETAPA 3 -->
   <div class="pane" id="pane3" style="display:none;">
     <section>
-      <p class="section-title">Arquivos a exportar</p>
+      <p class="section-title">Escolha os arquivos que deseja gerar</p>
       <div class="export-choice">
-        <label class="choice"><input type="checkbox" id="wantCsv" checked> <span><strong>CSV</strong><em>Import direto no software CharmHigh</em></span></label>
-        <label class="choice"><input type="checkbox" id="wantDpv" checked> <span><strong>DPV</strong><em>Receita completa para CHJD_SMT\Files</em></span></label>
+        <label class="choice"><input type="checkbox" id="wantCsv" checked> <span><strong>CSV</strong><em>Tabela de montagem convertida para o software CharmHigh</em></span></label>
+        <label class="choice"><input type="checkbox" id="wantDpv" checked> <span><strong>DPV</strong><em>Receita da CHMT36VB com componentes, Stations e MStack</em></span></label>
       </div>
     </section>
 
     <div class="export-bar">
       <div class="export-bar-row">
         <div class="folder-pill" id="folderPill">
-          <span>📁</span> <span>Pasta de destino: <strong id="folderName">nenhuma (usará download padrão do navegador)</strong></span>
+          <span>📁</span> <span>Destino: <strong id="folderName">pasta de downloads do navegador</strong></span>
         </div>
-        <button class="btn btn-ghost" id="pickFolderBtn">Escolher pasta</button>
+        <button class="btn btn-ghost" id="pickFolderBtn">Escolher outra pasta</button>
         <input type="text" id="fileNameInput" value="pickplace_CHMT">
-        <button class="btn btn-primary" id="exportBtn" disabled>Exportar</button>
+        <button class="btn btn-primary" id="exportBtn" disabled>Gerar e baixar</button>
       </div>
       <div class="status-msg" id="statusMsg"></div>
     </div>
 
     <div class="pipeline-bar">
-      <button class="btn btn-ghost" id="backTo2Btn">← Voltar</button>
-      <div class="pipeline-info">O nome base é usado para os dois arquivos, com a extensão de cada formato.</div>
+      <button class="btn btn-ghost" id="backTo2Btn">← Rever DPV</button>
+      <div class="pipeline-info">O mesmo nome-base será usado nos arquivos selecionados; apenas a extensão será diferente.</div>
     </div>
   </div>
 
@@ -663,32 +674,32 @@
 
   <div id="toolOrigin" style="display:none;">
     <section>
-      <p class="section-title">Pacote de Gerbers</p>
+      <p class="section-title">Pacote Gerber da placa</p>
       <div class="dropzone" id="zipDropzone">
-        <strong>Arraste o .zip aqui, ou clique para escolher</strong>
-        <span>Cobre, máscara, pasta, silk e contorno são deslocados juntos; a furação é omitida, já que o pacote é para conferir a montagem</span>
+        <strong>Selecione o pacote .zip dos Gerbers</strong>
+        <span>A ferramenta encontra o contorno e desloca cobre, máscara, pasta, silk e perfil juntos, sem alterar a posição relativa entre as camadas. A furação não entra no novo pacote de conferência da montagem.</span>
         <input type="file" id="zipInput" accept=".zip">
       </div>
       <p class="note" id="zipInfo"></p>
     </section>
 
     <section id="posSection" style="display:none;">
-      <p class="section-title">Arquivo de posição (opcional)</p>
+      <p class="section-title">Posições da montagem (opcional)</p>
       <div class="dropzone" id="posDropzone">
-        <strong>Arraste o .csv / .pos aqui</strong>
-        <span>Recebe o mesmo deslocamento dos Gerbers e é incluído no .zip de saída, para camadas e coordenadas ficarem no mesmo referencial</span>
+        <strong>Adicione os arquivos .csv ou .pos</strong>
+        <span>As coordenadas recebem exatamente o mesmo deslocamento dos Gerbers e seguem no .zip final, mantendo fabricação e montagem no mesmo referencial.</span>
         <input type="file" id="posInput" accept=".csv,.pos,.txt" multiple>
       </div>
     </section>
 
     <section id="originConfig" style="display:none;">
-      <p class="section-title">Deslocamento</p>
+      <p class="section-title">Como reposicionar a origem</p>
       <div class="panel-form">
         <div class="opt">
           <label>Modo</label>
           <select id="originMode">
-            <option value="outline" selected>Recentralizar pelo contorno</option>
-            <option value="free">Offset livre</option>
+            <option value="outline" selected>Levar o canto do contorno para X0 / Y0</option>
+            <option value="free">Informar deslocamento manual</option>
           </select>
         </div>
         <div class="opt"><label>Offset X (mm)</label><input type="number" id="originDx" step="0.001" value="0"></div>
@@ -698,7 +709,7 @@
     </section>
 
     <section id="originPreviewSection" style="display:none;">
-      <p class="section-title">Realocação da origem</p>
+      <p class="section-title">Comparação visual</p>
       <div class="origin-compare">
         <div class="compare-card">
           <div class="compare-head"><strong>Antes</strong><span id="beforeCoords"></span></div>
@@ -712,18 +723,18 @@
     </section>
 
     <section id="originFilesSection" style="display:none;">
-      <p class="section-title">Arquivos do pacote</p>
+      <p class="section-title">Conteúdo do novo pacote</p>
       <div class="preview-wrap" id="originTableWrap"></div>
     </section>
 
     <div class="export-bar" id="originExportBar" style="display:none;">
       <div class="export-bar-row">
         <div class="folder-pill">
-          <span>📁</span> <span>Pasta de destino: <strong id="originFolderName">nenhuma (download padrão)</strong></span>
+          <span>📁</span> <span>Destino: <strong id="originFolderName">pasta de downloads do navegador</strong></span>
         </div>
-        <button class="btn btn-ghost" id="originPickFolderBtn">Escolher pasta</button>
+        <button class="btn btn-ghost" id="originPickFolderBtn">Escolher outra pasta</button>
         <input type="text" id="originFileName" value="gerbers.zip">
-        <button class="btn btn-primary" id="originExportBtn" disabled>Exportar .zip</button>
+        <button class="btn btn-primary" id="originExportBtn" disabled>Gerar pacote corrigido</button>
       </div>
       <div class="status-msg" id="originStatus"></div>
     </div>
@@ -741,17 +752,17 @@
   let uid = 0;
 
   const CANON_FIELDS = [
-    {key:'designator', label:'Designator'},
-    {key:'footprint',  label:'Footprint'},
-    {key:'midx',       label:'Mid X'},
-    {key:'midy',       label:'Mid Y'},
-    {key:'refx',       label:'Ref X'},
-    {key:'refy',       label:'Ref Y'},
+    {key:'designator', label:'Referência / Designator'},
+    {key:'footprint',  label:'Encapsulamento / Footprint'},
+    {key:'midx',       label:'Centro X / Mid X'},
+    {key:'midy',       label:'Centro Y / Mid Y'},
+    {key:'refx',       label:'Referência X / Ref X'},
+    {key:'refy',       label:'Referência Y / Ref Y'},
     {key:'padx',       label:'Pad X'},
     {key:'pady',       label:'Pad Y'},
-    {key:'layer',      label:'Layer'},
-    {key:'rotation',   label:'Rotation'},
-    {key:'comment',    label:'Comment'},
+    {key:'layer',      label:'Lado / Layer'},
+    {key:'rotation',   label:'Rotação / Rotation'},
+    {key:'comment',    label:'Valor / Comment'},
   ];
 
   const SYNONYMS = {
@@ -865,7 +876,7 @@
   function buildMappingSelect(fileObj, fieldKey){
     const sel = document.createElement('select');
     const noneOpt = document.createElement('option');
-    noneOpt.value = -1; noneOpt.textContent = '— não mapear —';
+    noneOpt.value = -1; noneOpt.textContent = '— ignorar esta coluna —';
     sel.appendChild(noneOpt);
     fileObj.rawHeaders.forEach((h,idx)=>{
       const opt = document.createElement('option');
@@ -909,7 +920,7 @@
 
       const rowCount = document.createElement('div');
       rowCount.className = 'row-count';
-      rowCount.textContent = f.rows.length + ' componentes detectados';
+      rowCount.textContent = f.rows.length + ' ' + (f.rows.length === 1 ? 'componente encontrado' : 'componentes encontrados');
       body.appendChild(rowCount);
 
       const grid = document.createElement('div');
@@ -931,9 +942,9 @@
       // layer mode
       const layerOpt = document.createElement('div');
       layerOpt.className = 'opt';
-      layerOpt.innerHTML = '<label>Camada (Layer)</label>';
+      layerOpt.innerHTML = '<label>Lado da placa</label>';
       const layerSel = document.createElement('select');
-      [['auto','Detectar da coluna'],['T','Forçar Top (T)'],['B','Forçar Bottom (B)']].forEach(([v,l])=>{
+      [['auto','Detectar automaticamente'],['T','Superior / Top (T)'],['B','Inferior / Bottom (B)']].forEach(([v,l])=>{
         const o = document.createElement('option'); o.value=v; o.textContent=l;
         if(f.layerMode===v) o.selected=true;
         layerSel.appendChild(o);
@@ -945,7 +956,7 @@
       // rotation offset
       const rotOpt = document.createElement('div');
       rotOpt.className = 'opt';
-      rotOpt.innerHTML = '<label>Offset de rotação (°)</label>';
+      rotOpt.innerHTML = '<label>Correção de rotação (°)</label>';
       const rotInput = document.createElement('input');
       rotInput.type='number'; rotInput.value=f.rotOffset; rotInput.step='0.1';
       rotInput.addEventListener('input', ()=>{ f.rotOffset = parseFloat(rotInput.value)||0; renderAll(); });
@@ -958,7 +969,7 @@
       const mirrorCb = document.createElement('input');
       mirrorCb.type='checkbox'; mirrorCb.checked=f.mirrorX;
       mirrorCb.addEventListener('change', ()=>{ f.mirrorX = mirrorCb.checked; renderAll(); });
-      const mirrorLabel = document.createElement('label'); mirrorLabel.textContent='Espelhar eixo X (peças de baixo)';
+      const mirrorLabel = document.createElement('label'); mirrorLabel.textContent='Espelhar no eixo X (lado inferior)';
       mirrorOpt.appendChild(mirrorCb); mirrorOpt.appendChild(mirrorLabel);
       opts.appendChild(mirrorOpt);
 
@@ -982,7 +993,7 @@
       const mirrorYCb = document.createElement('input');
       mirrorYCb.type='checkbox'; mirrorYCb.checked=f.mirrorY;
       mirrorYCb.addEventListener('change', ()=>{ f.mirrorY = mirrorYCb.checked; renderAll(); });
-      const mirrorYLabel = document.createElement('label'); mirrorYLabel.textContent='Espelhar eixo Y';
+      const mirrorYLabel = document.createElement('label'); mirrorYLabel.textContent='Espelhar no eixo Y';
       mirrorYOpt.appendChild(mirrorYCb); mirrorYOpt.appendChild(mirrorYLabel);
       opts.appendChild(mirrorYOpt);
 
@@ -1005,9 +1016,9 @@
       const note = document.createElement('div');
       note.className = 'note';
       const axInfo = mirrorAxes(f);
-      note.textContent = 'Espelhamento reflete em torno do eixo da placa (referência: ' + axInfo.source
-        + '), não em torno de zero, então funciona mesmo com as coordenadas absolutas que o KiCad exporta. '
-        + 'Espelhar X inverte a rotação para (180 − θ); espelhar Y, para (360 − θ). Confira no preview antes de rodar a placa.';
+      note.textContent = 'O espelhamento usa o eixo da própria placa (referência: ' + axInfo.source
+        + '), inclusive quando o KiCad exporta coordenadas absolutas. '
+        + 'No eixo X, a rotação passa a (180 − θ); no eixo Y, a (360 − θ). Confirme o resultado na visualização antes de montar.';
       body.appendChild(note);
 
       card.appendChild(head);
@@ -1158,7 +1169,7 @@
 
   function renderPreview(rows){
     if(rows.length === 0){
-      previewWrapEl.innerHTML = '<div class="empty-state">Nenhum dado carregado ainda.</div>';
+      previewWrapEl.innerHTML = '<div class="empty-state">Adicione um arquivo Pick &amp; Place para visualizar a conversão.</div>';
       return;
     }
     const cols = ['Designator','Footprint','Mid X','Mid Y','Ref X','Ref Y','Pad X','Pad Y','Layer','Rotation','Comment'];
@@ -1169,7 +1180,7 @@
     });
     html += '</tbody></table>';
     if(rows.length > shown.length){
-      html += '<div class="table-footnote">mostrando '+shown.length+' de '+rows.length+' linhas — o export inclui todas</div>';
+      html += '<div class="table-footnote">Exibindo '+shown.length+' de '+rows.length+' linhas. O arquivo final incluirá todas.</div>';
     }
     previewWrapEl.innerHTML = html;
   }
@@ -1285,14 +1296,14 @@
   const feederTableWrapEl = document.getElementById('feederTableWrap');
 
   function renderFeederTable(rows){
-    if(rows.length === 0){ feederTableWrapEl.innerHTML = '<div class="empty-state">Nenhum componente carregado.</div>'; return; }
+    if(rows.length === 0){ feederTableWrapEl.innerHTML = '<div class="empty-state">Confirme a conversão para configurar os componentes.</div>'; return; }
     const groups = computeGroups(rows);
     const keys = Object.keys(groups);
 
     const table = document.createElement('table');
     table.className = 'feeder-table';
     const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Componente</th><th>Qtd</th><th>Remover</th><th>Feeder ID</th><th>Passo (mm)</th><th>Head</th><th>Altura (mm)</th><th>Veloc. (%)</th><th>Comp. ângulo (°)</th><th>Pular</th><th>Vácuo</th><th>Visão</th></tr>';
+    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Correção angular (°)</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
     const tbody = document.createElement('tbody');
 
     keys.forEach(key=>{
@@ -1310,13 +1321,13 @@
       const tdRemove = document.createElement('td');
       const removeCb = document.createElement('input');
       removeCb.type='checkbox'; removeCb.checked=a.remove;
-      removeCb.title='Remove esta peça do arquivo gerado';
+      removeCb.title='Excluir este tipo de componente dos arquivos gerados';
       tdRemove.appendChild(removeCb);
       tr.appendChild(tdRemove);
 
       const tdFeeder = document.createElement('td');
       const feederInput = document.createElement('input');
-      feederInput.type='text'; feederInput.placeholder=autoMstack.checked ? 'auto' : 'ex: 12'; feederInput.value=a.feederID;
+      feederInput.type='text'; feederInput.placeholder=autoMstack.checked ? 'automática' : 'ex.: 12'; feederInput.value=a.feederID;
       feederInput.addEventListener('input', ()=>{ a.feederID = feederInput.value.trim(); onFeederChange(); });
       tdFeeder.appendChild(feederInput);
       tr.appendChild(tdFeeder);
@@ -1336,7 +1347,7 @@
 
       const tdHead = document.createElement('td');
       const headSel = document.createElement('select');
-      [1,2].forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent='Head '+h; if(a.head==h) o.selected=true; headSel.appendChild(o); });
+      [1,2].forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent='Cabeça '+h; if(a.head==h) o.selected=true; headSel.appendChild(o); });
       headSel.addEventListener('change', ()=>{ a.head = parseInt(headSel.value,10); onFeederChange(); });
       tdHead.appendChild(headSel);
       tr.appendChild(tdHead);
@@ -1422,9 +1433,10 @@
         const parsed = JSON.parse(ev.target.result);
         Object.keys(parsed).forEach(k=>{ feederAssignments[k] = Object.assign(defaultAssignment(), parsed[k]); });
         renderFeederTable(lastRows);
-        setStatus('Biblioteca de feeders importada — '+Object.keys(parsed).length+' componentes.', false);
+        const count = Object.keys(parsed).length;
+        setStatus('Configuração carregada: '+count+' '+(count === 1 ? 'tipo de componente encontrado.' : 'tipos de componente encontrados.'), false);
       }catch(err){
-        setStatus('Arquivo de biblioteca inválido: '+err.message, true);
+        setStatus('Não foi possível carregar esta configuração de feeders: '+err.message, true);
       }
     };
     reader.readAsText(file);
@@ -1465,11 +1477,11 @@
 
   function validFeederId(raw, key){
     if(!/^\d+$/.test(raw)){
-      throw new Error('Feeder inválido para "' + dpvSafeText(key) + '": use um ID inteiro entre 0 e 99.');
+      throw new Error('Posição inválida para "' + dpvSafeText(key) + '": informe um ID inteiro entre 0 e 99.');
     }
     const id = Number(raw);
     if(!Number.isInteger(id) || id < 0 || id > 99){
-      throw new Error('Feeder fora da faixa para "' + dpvSafeText(key) + '": a CHMT36VB aceita IDs de 0 a 99.');
+      throw new Error('Posição fora da faixa para "' + dpvSafeText(key) + '": a CHMT36VB aceita IDs de 0 a 99.');
     }
     return id;
   }
@@ -1991,7 +2003,7 @@
     const cxMid = (vMinX + vMaxX)/2, cyMid = (vMinY + vMaxY)/2;
     const vb = [cxMid - side/2, cyMid - side/2, side, side];
 
-    let svg = '<svg viewBox="'+vb.join(' ')+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Preview de montagem da placa">';
+    let svg = '<svg viewBox="'+vb.join(' ')+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visualização da montagem da placa">';
 
     // machine origin marker at bottom-left
     svg += '<g stroke="#3a4a46" stroke-width="'+(unit*0.004)+'" stroke-linecap="round">'
@@ -2067,27 +2079,27 @@
     boardCanvasEl.innerHTML = svg;
 
     boardMetaEl.textContent = size.w.toFixed(2) + ' × ' + size.h.toFixed(2) + ' mm · '
-      + lastRows.length + ' componentes · '
-      + (outline ? outline.name : 'sem Gerber de contorno')
-      + (boardOrientation ? ' · girado ' + boardOrientation + '°' : '');
+      + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente' : 'componentes') + ' · '
+      + (outline ? 'contorno: ' + outline.name : 'contorno não carregado')
+      + (boardOrientation ? ' · rotação ' + boardOrientation + '°' : ' · sem rotação');
 
     const ignoredMsg = ignoredLayers.length
-      ? ' ' + ignoredLayers.length + ' outro(s) Gerber ignorado(s) ('
+      ? ' ' + ignoredLayers.length + (ignoredLayers.length === 1 ? ' outra camada não foi usada' : ' outras camadas não foram usadas') + ' para definir o contorno ('
         + ignoredLayers.slice(0,3).map(l=>l.name).join(', ')
-        + (ignoredLayers.length > 3 ? ', …' : '') + '): só o contorno define as bordas da placa.'
+        + (ignoredLayers.length > 3 ? ', …' : '') + '), pois somente o perfil representa as bordas da placa.'
       : '';
 
     if(outline){
       boardNoteEl.textContent = (outsideCount
-        ? outsideCount + ' de ' + lastRows.length + ' componentes (em vermelho) caem fora do contorno (leitura de origem: ' + al.mode
-          + '). Em geral isso significa que o Gerber e o .pos foram exportados com origens diferentes. Desmarque o alinhamento automático para forçar a origem auxiliar, ou reexporte os dois com a origem auxiliar no canto inferior esquerdo da placa.'
-        : 'Todos os componentes caem dentro do contorno. Leitura de origem: ' + al.mode + '.') + ignoredMsg;
+        ? outsideCount + ' de ' + lastRows.length + ' componentes aparecem em vermelho, fora do contorno. Origem interpretada como: ' + al.mode
+          + '. Isso geralmente indica que o Gerber e o arquivo de posição usam origens diferentes. Tente desativar o alinhamento automático ou reexporte ambos usando a mesma origem auxiliar no canto inferior esquerdo.'
+        : 'Conferência aprovada: todos os componentes estão dentro do contorno. Origem interpretada como: ' + al.mode + '.') + ignoredMsg;
     } else if(ignoredLayers.length){
-      boardNoteEl.textContent = 'Nenhum Gerber de contorno reconhecido entre os ' + ignoredLayers.length
-        + ' arquivos carregados. Envie o Edge.Cuts (no KiCad sai como "*-Edge_Cuts.gbr"; em Altium, o layer Profile/.gm1). Cobre, silk e máscara não definem as bordas da placa.'
-        + ' O preview abaixo usa apenas a extensão dos componentes.';
+      boardNoteEl.textContent = 'Nenhum Gerber de contorno foi reconhecido entre os ' + ignoredLayers.length
+        + ' arquivos carregados. Adicione o Edge.Cuts ("*-Edge_Cuts.gbr" no KiCad) ou o perfil .gm1 do Altium. Cobre, silk e máscara não representam as bordas.'
+        + ' Por enquanto, a visualização usa apenas a extensão dos componentes.';
     } else {
-      boardNoteEl.textContent = 'Sem o Gerber de contorno (Edge.Cuts) o preview mostra apenas a extensão dos componentes: as bordas reais e as margens da placa não aparecem, e a checagem de encaixe na área útil fica aproximada.';
+      boardNoteEl.textContent = 'Adicione o Gerber de contorno (Edge.Cuts) para ver as bordas e margens reais. Sem ele, a visualização usa apenas a extensão dos componentes e a checagem da área útil é aproximada.';
     }
   }
   function renderOrientationCards(){
@@ -2103,8 +2115,8 @@
         + (o.deg === best.deg && o.fits ? ' best' : '')
         + (o.fits ? '' : ' unfit');
       btn.innerHTML =
-        '<div class="orient-head"><span class="orient-title">' + (o.deg ? 'Girar ' + o.deg + '°' : 'Sem rotação') + '</span>'
-        + '<span class="orient-tag">' + (!o.fits ? 'não cabe' : (o.deg === best.deg ? 'sugerido' : 'ok')) + '</span></div>'
+        '<div class="orient-head"><span class="orient-title">' + (o.deg ? 'Rotação de ' + o.deg + '°' : 'Sem rotação') + '</span>'
+        + '<span class="orient-tag">' + (!o.fits ? 'fora da área' : (o.deg === best.deg ? 'recomendado' : 'compatível')) + '</span></div>'
         + '<div class="orient-dims">' + o.size.w.toFixed(1) + ' × ' + o.size.h.toFixed(1) + ' mm</div>'
         + '<div class="orient-reason">' + o.reasons.join(' · ') + '</div>';
       btn.addEventListener('click', ()=>{
@@ -2149,8 +2161,8 @@
     const hasRows = lastRows.length > 0;
     approveCsvBtn.disabled = !hasRows;
     step1Info.textContent = hasRows
-      ? lastRows.length + ' componentes convertidos a partir de ' + files.length + ' arquivo(s). Confira o preview acima antes de aprovar.'
-      : 'Carregue ao menos um arquivo para continuar.';
+      ? lastRows.length + ' ' + (lastRows.length === 1 ? 'componente pronto' : 'componentes prontos') + ' a partir de ' + files.length + ' ' + (files.length === 1 ? 'arquivo' : 'arquivos') + '. Confira orientação, origem e colunas antes de confirmar.'
+      : 'Comece adicionando um arquivo Pick & Place.';
 
     if(csvApproved){
       const groups = computeGroups(lastRows);
@@ -2161,12 +2173,12 @@
         return !a.remove && (a.feederID||'').trim() !== '';
       }).length;
       const pending = keys.length - assigned - removed;
-      step2Info.textContent = assigned + ' de ' + keys.length + ' grupos com feeder atribuído'
-        + (removed ? ', ' + removed + ' removidos do arquivo' : '')
+      step2Info.textContent = assigned + ' de ' + keys.length + ' tipos já têm uma posição definida'
+        + (removed ? '; ' + removed + ' serão removidos da receita' : '')
         + (pending
           ? (autoMstack.checked
-            ? '. Os ' + pending + ' pendentes receberão posições MStack automáticas e exclusivas, com skip ligado.'
-            : '. Os ' + pending + ' pendentes vão para o feeder 99 com skip ligado.')
+            ? '. Os ' + pending + ' restantes receberão posições MStack automáticas e exclusivas, com Skip ativado.'
+            : '. Os ' + pending + ' restantes usarão a posição 99, com Skip ativado.')
           : '.');
     }
 
@@ -2212,7 +2224,7 @@
 
   function renderDpvPreview(){
     if(lastRows.length === 0){
-      dpvPreviewWrap.innerHTML = '<div class="empty-state">Aprove o CSV para gerar o DPV.</div>';
+      dpvPreviewWrap.innerHTML = '<div class="empty-state">Confirme a conversão para montar a receita DPV.</div>';
       return;
     }
     try{
@@ -2228,7 +2240,7 @@
     }catch(err){
       dpvValidationError = err.message;
       dpvApproved = false;
-      dpvPreviewWrap.innerHTML = '<div class="empty-state">DPV bloqueado: ' + esc(err.message) + '</div>';
+      dpvPreviewWrap.innerHTML = '<div class="empty-state">A receita DPV precisa de atenção: ' + esc(err.message) + '</div>';
     }
     updatePipelineUI();
   }
@@ -2337,15 +2349,15 @@
 
   pickFolderBtn.addEventListener('click', async ()=>{
     if(!('showDirectoryPicker' in window)){
-      setStatus('Este navegador não suporta escolher pasta diretamente (funciona no Chrome/Edge desktop). O export vai usar o download padrão.', true);
+      setStatus('Este navegador não permite escolher uma pasta. Os arquivos serão salvos na pasta de downloads padrão.', true);
       return;
     }
     try{
       dirHandle = await window.showDirectoryPicker();
-      folderNameEl.textContent = dirHandle.name + ' (mantida enquanto esta aba estiver aberta)';
-      setStatus('Pasta selecionada. Os próximos exports vão salvar direto ali até você trocar.', false);
+      folderNameEl.textContent = dirHandle.name + ' (válida enquanto esta aba estiver aberta)';
+      setStatus('Pasta selecionada. Os próximos arquivos serão salvos diretamente nela.', false);
     }catch(err){
-      if(err.name !== 'AbortError') setStatus('Não foi possível acessar a pasta: '+err.message, true);
+      if(err.name !== 'AbortError') setStatus('Não foi possível acessar a pasta escolhida: '+err.message, true);
     }
   });
 
@@ -2388,15 +2400,15 @@
         written.push(base + '.dpv');
       }
     }catch(err){
-      setStatus('Falha ao salvar: ' + err.message, true);
+      setStatus('Não foi possível gerar os arquivos: ' + err.message, true);
       return;
     }
 
-    if(written.length === 0){ setStatus('Selecione ao menos um formato para exportar.', true); return; }
+    if(written.length === 0){ setStatus('Escolha pelo menos um formato para continuar.', true); return; }
     const renamed = base !== requestedBase ? ' (nome ajustado para compatibilidade: "' + base + '")' : '';
     setStatus((mode === 'folder'
-      ? 'Salvo em "' + dirHandle.name + '/": ' + written.join(', ')
-      : 'Baixado pela pasta de downloads padrão: ' + written.join(', ')) + renamed, false);
+      ? 'Arquivos salvos em "' + dirHandle.name + '/": ' + written.join(', ')
+      : 'Download concluído: ' + written.join(', ')) + renamed, false);
   });
 
   // ============================================================
@@ -2639,10 +2651,10 @@
     if(mode === 'outline'){
       const ol = packageOutline();
       if(!ol){
-        originNoteEl.textContent = 'Nenhum Gerber de contorno reconhecido no pacote. Troque para "offset livre" e informe o deslocamento à mão.';
+        originNoteEl.textContent = 'Não encontrei um Gerber de contorno neste pacote. Selecione “Informar deslocamento manual” e preencha os valores de X e Y.';
         originDxEl.value = 0; originDyEl.value = 0;
         originDxEl.disabled = originDyEl.disabled = true;
-        originTableWrapEl.innerHTML = '<div class="empty-state">Sem contorno para calcular o deslocamento.</div>';
+        originTableWrapEl.innerHTML = '<div class="empty-state">Adicione um contorno válido ou informe o deslocamento manualmente.</div>';
         document.getElementById('originPreviewSection').style.display = 'none';
         originExportBtn.disabled = true;
         return;
@@ -2650,14 +2662,14 @@
       dx = -ol.bbox.minX; dy = -ol.bbox.minY;
       originDxEl.value = dx.toFixed(3); originDyEl.value = dy.toFixed(3);
       originDxEl.disabled = originDyEl.disabled = true;
-      originNoteEl.textContent = 'Contorno em ' + ol.name + ': canto inferior esquerdo em ('
+      originNoteEl.textContent = 'Contorno encontrado em ' + ol.name + '. O canto inferior esquerdo está em ('
         + ol.bbox.minX.toFixed(3) + ', ' + ol.bbox.minY.toFixed(3) + ') mm, placa de '
-        + ol.bbox.w.toFixed(2) + ' × ' + ol.bbox.h.toFixed(2) + ' mm. Esse é o deslocamento aplicado a todos os arquivos.';
+        + ol.bbox.w.toFixed(2) + ' × ' + ol.bbox.h.toFixed(2) + ' mm. Todas as camadas serão deslocadas juntas para levar esse canto a X0 / Y0.';
     } else {
       originDxEl.disabled = originDyEl.disabled = false;
       dx = parseFloat(originDxEl.value)||0;
       dy = parseFloat(originDyEl.value)||0;
-      originNoteEl.textContent = 'Deslocamento manual aplicado aos Gerbers e arquivos de posição. A furação continua omitida neste pacote de montagem.';
+      originNoteEl.textContent = 'O deslocamento informado será aplicado igualmente aos Gerbers e aos arquivos de posição. A furação não será incluída neste pacote de conferência da montagem.';
     }
 
     originResults = zipEntries.map(e=>{
@@ -2825,10 +2837,10 @@
       const status = r.error
         ? '<span style="color:var(--error);">' + esc(r.error) + '</span>'
         : (r.omit
-            ? '<span style="color:var(--copper);">omitido (pacote de montagem)</span>'
+            ? '<span style="color:var(--copper);">não incluído (arquivo de furação)</span>'
             : (r.untouched
-                ? '<span style="color:var(--muted-2);">copiado sem alteração</span>'
-                : '<span style="color:var(--solder);">deslocado</span>'));
+                ? '<span style="color:var(--muted-2);">mantido sem alteração</span>'
+                : '<span style="color:var(--solder);">origem corrigida</span>'));
       html += '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.kind) + '</td><td>' + status + '</td></tr>';
     });
     html += '</tbody></table>';
@@ -2837,14 +2849,14 @@
     originExportBtn.disabled = errors.length > 0;
     if(errors.length){
       originStatusEl.classList.add('error');
-      originStatusEl.textContent = 'Exportação bloqueada: ' + errors.length
-        + ' Gerber(s) não puderam ser deslocados. Um pacote com camadas em referenciais diferentes não serve para conferir a montagem.';
+      originStatusEl.textContent = 'O pacote ainda não pode ser gerado: ' + errors.length + ' '
+        + (errors.length === 1 ? 'Gerber apresentou erro.' : 'Gerbers apresentaram erro.') + ' Todas as camadas precisam permanecer no mesmo referencial.';
     } else {
       originStatusEl.classList.remove('error');
       const omitted = originResults.filter(r=>r.omit).length;
       originStatusEl.textContent = omitted
-        ? omitted + ' arquivo(s) de furação omitido(s): este pacote é para montagem, não para fabricação.'
-        : '';
+        ? 'Pronto para gerar. ' + omitted + ' ' + (omitted === 1 ? 'arquivo de furação não será incluído' : 'arquivos de furação não serão incluídos') + ', pois este pacote é destinado à conferência da montagem.'
+        : 'Pronto para gerar. Confira a comparação visual antes de baixar o pacote.';
     }
   }
 
@@ -2866,7 +2878,7 @@
     document.getElementById('originPreviewSection').style.display = 'none';
     document.getElementById('originFilesSection').style.display = 'none';
     document.getElementById('originExportBar').style.display = 'none';
-    zipInfoEl.textContent = 'Lendo "' + file.name + '"…';
+    zipInfoEl.textContent = 'Analisando "' + file.name + '"…';
     const reader = new FileReader();
     reader.onload = async e=>{
       try{
@@ -2876,10 +2888,10 @@
       }catch(err){
         if(token !== zipLoadToken) return;
         zipEntries = null;
-        zipInfoEl.textContent = 'Não consegui abrir "' + file.name + '": ' + err.message;
+        zipInfoEl.textContent = 'Não foi possível abrir "' + file.name + '": ' + err.message;
         return;
       }
-      zipInfoEl.textContent = file.name + ' · ' + zipEntries.length + ' arquivos';
+      zipInfoEl.textContent = file.name + ' · ' + zipEntries.length + ' ' + (zipEntries.length === 1 ? 'arquivo encontrado' : 'arquivos encontrados');
       document.getElementById('posSection').style.display = 'block';
       document.getElementById('originConfig').style.display = 'block';
       document.getElementById('originFilesSection').style.display = 'block';
@@ -2889,7 +2901,7 @@
     };
     reader.onerror = ()=>{
       if(token !== zipLoadToken) return;
-      zipInfoEl.textContent = 'Não consegui ler "' + file.name + '".';
+      zipInfoEl.textContent = 'Não foi possível ler "' + file.name + '".';
     };
     reader.readAsArrayBuffer(file);
   }
@@ -2902,7 +2914,7 @@
 
   document.getElementById('originPickFolderBtn').addEventListener('click', async ()=>{
     if(!('showDirectoryPicker' in window)){
-      originStatusEl.textContent = 'Este navegador não permite escolher pasta; o export usará o download padrão.';
+      originStatusEl.textContent = 'Este navegador não permite escolher uma pasta. O pacote será salvo nos downloads padrão.';
       originStatusEl.classList.add('error');
       return;
     }
@@ -2928,7 +2940,7 @@
         const w = await fh.createWritable();
         await w.write(blob); await w.close();
         originStatusEl.classList.remove('error');
-        originStatusEl.textContent = 'Salvo em "' + dirHandle.name + '/' + name + '".';
+        originStatusEl.textContent = 'Pacote salvo em "' + dirHandle.name + '/' + name + '".';
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -2937,10 +2949,10 @@
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       originStatusEl.classList.remove('error');
-      originStatusEl.textContent = 'Baixado como "' + name + '".';
+      originStatusEl.textContent = 'Pacote corrigido baixado como "' + name + '".';
     }catch(err){
       originStatusEl.classList.add('error');
-      originStatusEl.textContent = 'Falha ao gerar o .zip: ' + err.message;
+      originStatusEl.textContent = 'Não foi possível gerar o pacote: ' + err.message;
     }
   });
 

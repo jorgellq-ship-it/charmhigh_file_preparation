@@ -1,17 +1,17 @@
 # CharmHigh File Preparation
 
-Conversor executado inteiramente no navegador para preparar arquivos Pick and Place e receitas DPV para a CharmHigh CHMT36VB.
+Aplicação web para transformar arquivos Pick & Place em CSV e receitas DPV para a CharmHigh CHMT36VB, além de conferir a placa e corrigir a origem de pacotes Gerber.
 
 ## Recursos
 
-- conversão de Pick and Place para CSV e DPV;
+- conversão de Pick & Place para CSV e DPV;
 - atribuição manual de feeders;
 - geração automática do MStack para cada grupo de componente sem feeder;
 - associações automáticas com `Skip` ativado por segurança;
 - correção de origem e visualização de contornos Gerber;
 - importação e exportação da biblioteca de feeders.
 
-Os arquivos selecionados são processados localmente no navegador e não são enviados para um servidor.
+Todo o processamento acontece localmente no navegador: os arquivos selecionados não são enviados para um servidor.
 
 ## Executar localmente
 
