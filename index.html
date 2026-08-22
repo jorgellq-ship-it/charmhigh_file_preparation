@@ -185,6 +185,22 @@
 
   .file-card-body{padding:18px;}
   .row-count{color:var(--muted);font-size:12.5px;margin-bottom:14px;font-family:var(--mono);}
+  .bom-summary{
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+    margin-bottom:12px;
+  }
+  .bom-metric{
+    display:flex;flex-direction:column;gap:4px;padding:11px 12px;
+    border:1px solid var(--border-soft);border-radius:10px;background:rgba(255,255,255,.012);
+  }
+  .bom-metric strong{font-family:var(--mono);font-size:14px;color:var(--text);font-weight:650;}
+  .bom-metric span{font-size:10.5px;line-height:1.35;color:var(--muted);}
+  .bom-message{
+    padding:10px 12px;border-radius:10px;border:1px solid rgba(63,168,114,.28);
+    background:rgba(63,168,114,.06);color:var(--solder);font-size:11.5px;line-height:1.5;
+  }
+  .bom-message.warn{border-color:rgba(201,138,62,.32);background:rgba(201,138,62,.06);color:var(--copper);}
+  .bom-message.error{border-color:rgba(229,99,106,.34);background:rgba(229,99,106,.07);color:var(--error);}
 
   .map-grid{
     display:grid;
@@ -485,7 +501,7 @@
   .feeder-table{table-layout:fixed;font-size:10.5px;}
   .feeder-table th{white-space:normal;line-height:1.15;padding:6px 3px;text-align:center;overflow-wrap:anywhere;}
   .feeder-table th:first-child{text-align:left;padding-left:8px;}
-  .feeder-table td{white-space:nowrap;padding:5px 3px;height:43px;overflow:hidden;}
+  .feeder-table td{white-space:nowrap;padding:5px 3px;height:56px;overflow:hidden;}
   .feeder-table input[type=text],
   .feeder-table input[type=number]{
     width:100%;height:30px;padding:0 5px;font-size:10.5px;min-width:0;
@@ -536,6 +552,13 @@
   .grp-fp{color:var(--text);}
   .grp-sep{color:var(--muted-2);margin:0 7px;}
   .grp-val{color:var(--muted);}
+  .grp-primary{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;}
+  .grp-part{
+    display:block;margin-top:4px;color:var(--copper);font-family:var(--mono);
+    font-size:9.5px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .grp-part .manufacturer{color:var(--muted-2);}
+  .grp-part.missing{color:var(--error);}
 
   /* board preview + orientation */
   .orient-grid{
@@ -649,6 +672,7 @@
     .feeder-lib-row .btn{flex:1 1 100%;min-width:0;width:100%;}
     .bulk-editor{grid-template-columns:repeat(2,minmax(0,1fr));}
     .bulk-editor-copy{grid-column:1/-1;}
+    .bom-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
   }
 
   @media (max-width: 520px){
@@ -658,6 +682,7 @@
     .step{width:100%;justify-content:flex-start;}
     .bulk-editor{grid-template-columns:1fr;}
     .bulk-editor-copy,.bulk-status{grid-column:1;}
+    .bom-summary{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -690,10 +715,10 @@
   <!-- ETAPA 1 -->
   <div class="pane" id="pane1">
     <section>
-      <p class="section-title">Pick &amp; Place e contorno da placa</p>
+      <p class="section-title">Pick &amp; Place, BOM e contorno da placa</p>
       <div class="dropzone" id="dropzone">
         <strong>Solte os arquivos aqui ou escolha no computador</strong>
-        <span>Adicione um ou mais arquivos de posição (.csv/.pos). Inclua o Gerber de contorno Edge.Cuts (.gbr/.gm1/.gko) para visualizar as bordas reais da placa. O processamento acontece somente no seu navegador.</span>
+        <span>Adicione o arquivo de posição (.csv/.pos) e, opcionalmente, a BOM (.csv) para separar componentes pelo Part Number. Inclua o Gerber Edge.Cuts (.gbr/.gm1/.gko) para visualizar o contorno. Tudo é processado somente no navegador.</span>
         <input type="file" id="fileInput" accept=".csv,.txt,.pos,.gbr,.gm1,.gko,.gbo,.gko" multiple>
       </div>
       <div class="dpv-import-card">
@@ -708,7 +733,7 @@
     </section>
 
     <section id="filesSection" style="display:none;">
-      <p class="section-title">Confira o mapeamento das colunas</p>
+      <p class="section-title">Confira os arquivos e o mapeamento</p>
       <div id="fileCards"></div>
     </section>
 
@@ -743,7 +768,7 @@
   <div class="pane" id="pane2" style="display:none;">
     <section>
       <p class="section-title">Componentes, feeders e MStack</p>
-      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. A coluna <strong>Ângulo</strong> mostra o valor final que será enviado à máquina; quando as referências do grupo tiverem rotações diferentes, todos os ângulos utilizados serão exibidos. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
+      <p class="note" id="groupingNote">Cada linha representa um tipo de componente. Adicione a BOM para agrupar por Part Number e evitar que componentes de mesmo valor, mas especificações diferentes, compartilhem a mesma posição.</p>
       <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
         <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
         <span><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
@@ -906,7 +931,8 @@
   "use strict";
 
   // ---------- state ----------
-  let files = []; // { id, name, rawHeaders, rows(array of arrays), mapping{}, layerMode, mirrorX, boardWidth, rotOffset, detected }
+  let files = []; // placement files: { id, name, rawHeaders, rows, mapping, layerMode, mirrors, dimensions, rotation }
+  let bomFile = null; // optional BOM indexed by reference: {name, rows, mapping, byRef, conflicts}
   let dirHandle = null; // File System Access API handle, kept in memory for this session only
   let uid = 0;
 
@@ -1019,6 +1045,145 @@
     return {label:'Não identificado — confira o mapeamento', ok:false};
   }
 
+  // ---------- optional BOM parsing / reference matching ----------
+  const BOM_SYNONYMS = {
+    reference: ['reference','references','ref','refs','designator','designators','reference designator','reference designators'],
+    partNumber: ['part number','part no','partnumber','manufacturer part number','manufacturer pn','mfr part number','mfr pn','mpn'],
+    vendorPartNumber: ['evendor part number','vendor part number','supplier part number','distributor part number','digikey part number','mouser part number'],
+    manufacturer: ['manufacturer','mfr','maker','fabricante'],
+    value: ['value','val','comment','description','part value','valor'],
+    footprint: ['footprint','package','pattern','encapsulamento'],
+  };
+
+  function normBomHeader(value){
+    return normHeader(value)
+      .replace(/#/g,' number ')
+      .replace(/[^a-z0-9\s]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function autoMapBom(headers){
+    const normalized = headers.map(normBomHeader);
+    const mapping = {};
+    Object.keys(BOM_SYNONYMS).forEach(key=>{
+      mapping[key] = normalized.findIndex(header => BOM_SYNONYMS[key].includes(header));
+    });
+    return mapping;
+  }
+
+  function looksLikeBom(headers){
+    const mapping = autoMapBom(headers);
+    const placement = autoMap(headers);
+    const hasIdentity = mapping.partNumber >= 0 || mapping.vendorPartNumber >= 0 || mapping.manufacturer >= 0;
+    const hasCoordinates = placement.midx >= 0 && placement.midy >= 0;
+    return mapping.reference >= 0 && hasIdentity && !hasCoordinates;
+  }
+
+  function normalizeReference(value){
+    return String(value||'').trim().replace(/\s+/g,'').toUpperCase();
+  }
+
+  function expandBomReferenceToken(token){
+    token = String(token||'').trim();
+    if(!token) return [];
+    const range = token.match(/^([A-Za-z]+)(\d+)\s*-\s*(?:([A-Za-z]+))?(\d+)$/);
+    if(!range) return [token];
+    const startPrefix = range[1].toUpperCase();
+    const endPrefix = (range[3] || range[1]).toUpperCase();
+    const start = Number(range[2]), end = Number(range[4]);
+    if(startPrefix !== endPrefix || !Number.isInteger(start) || !Number.isInteger(end) || end < start || end-start > 500){
+      return [token];
+    }
+    const refs = [];
+    for(let number=start; number<=end; number++) refs.push(startPrefix + number);
+    return refs;
+  }
+
+  function splitBomReferences(value){
+    return String(value||'').replace(/\u00a0/g,' ').split(/[,;\s]+/)
+      .flatMap(expandBomReferenceToken)
+      .map(normalizeReference)
+      .filter(Boolean);
+  }
+
+  function normalizePartNumber(value){
+    return String(value||'').trim().replace(/\s+/g,' ').toUpperCase();
+  }
+
+  function parseBomFile(name, headers, rows){
+    const mapping = autoMapBom(headers);
+    const byRef = new Map();
+    const conflicts = [];
+    const get = (row, key) => mapping[key] >= 0 && mapping[key] < row.length ? String(row[mapping[key]]||'').trim() : '';
+
+    rows.forEach((row, rowIndex)=>{
+      const references = splitBomReferences(get(row, 'reference'));
+      if(!references.length) return;
+      const entry = {
+        partNumber:get(row,'partNumber'),
+        vendorPartNumber:get(row,'vendorPartNumber'),
+        manufacturer:get(row,'manufacturer'),
+        value:get(row,'value'),
+        footprint:get(row,'footprint'),
+        rowNumber:rowIndex + 2,
+      };
+      references.forEach(reference=>{
+        const existing = byRef.get(reference);
+        if(existing){
+          const before = normalizePartNumber(existing.partNumber);
+          const after = normalizePartNumber(entry.partNumber);
+          if(before && after && before !== after){
+            conflicts.push({reference, first:existing.partNumber, second:entry.partNumber});
+            return;
+          }
+          if(!before && after) byRef.set(reference, entry);
+        } else {
+          byRef.set(reference, entry);
+        }
+      });
+    });
+
+    const partNumbers = new Set();
+    byRef.forEach(entry=>{
+      const partNumber = normalizePartNumber(entry.partNumber);
+      if(partNumber) partNumbers.add(partNumber);
+    });
+    return {name, headers, rows, mapping, byRef, conflicts, partNumberCount:partNumbers.size};
+  }
+
+  function placementReferences(){
+    const references = [];
+    files.forEach(file=>{
+      const index = file.mapping.designator;
+      if(index === undefined || index < 0) return;
+      file.rows.forEach(row=>{
+        const reference = normalizeReference(row[index]);
+        if(reference) references.push(reference);
+      });
+    });
+    return references;
+  }
+
+  function bomCoverage(){
+    const references = placementReferences();
+    if(!bomFile) return {total:references.length, matched:0, withPartNumber:0, matchedPartNumberCount:0, unmatched:[], missingPartNumber:[]};
+    const unmatched = [], missingPartNumber = [];
+    const matchedPartNumbers = new Set();
+    let matched = 0, withPartNumber = 0;
+    references.forEach(reference=>{
+      const entry = bomFile.byRef.get(reference);
+      if(!entry){ unmatched.push(reference); return; }
+      matched++;
+      const partNumber = normalizePartNumber(entry.partNumber);
+      if(partNumber){
+        withPartNumber++;
+        matchedPartNumbers.add(partNumber);
+      } else missingPartNumber.push(reference);
+    });
+    return {total:references.length, matched, withPartNumber, matchedPartNumberCount:matchedPartNumbers.size, unmatched, missingPartNumber};
+  }
+
   // ---------- rendering ----------
   const fileCardsEl = document.getElementById('fileCards');
   const filesSectionEl = document.getElementById('filesSection');
@@ -1057,7 +1222,58 @@
 
   function renderFileCards(){
     fileCardsEl.innerHTML = '';
-    filesSectionEl.style.display = files.length ? 'block' : 'none';
+    filesSectionEl.style.display = (files.length || bomFile) ? 'block' : 'none';
+
+    if(bomFile){
+      const coverage = bomCoverage();
+      const card = document.createElement('div');
+      card.className = 'file-card';
+
+      const head = document.createElement('div');
+      head.className = 'file-card-head';
+      const left = document.createElement('div');
+      const hasConflicts = bomFile.conflicts.length > 0;
+      left.innerHTML = '<span class="fname">'+esc(bomFile.name)+'</span><span class="badge '+(hasConflicts?'warn':'ok')+'">'+(hasConflicts?'BOM com conflito':'BOM reconhecida')+'</span>';
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn'; removeBtn.textContent = '✕'; removeBtn.title = 'Remover BOM';
+      removeBtn.addEventListener('click', ()=>{
+        bomFile = null;
+        feederAssignments = {};
+        renderAll();
+      });
+      head.appendChild(left); head.appendChild(removeBtn);
+
+      const body = document.createElement('div');
+      body.className = 'file-card-body';
+      body.innerHTML = '<div class="bom-summary">'
+        + '<div class="bom-metric"><strong>'+bomFile.rows.length+'</strong><span>linhas na BOM</span></div>'
+        + '<div class="bom-metric"><strong>'+bomFile.byRef.size+'</strong><span>referências indexadas</span></div>'
+        + '<div class="bom-metric"><strong>'+bomFile.partNumberCount+'</strong><span>Part Numbers diferentes</span></div>'
+        + '<div class="bom-metric"><strong>'+coverage.matched+'/'+coverage.total+'</strong><span>componentes relacionados</span></div>'
+        + '</div>';
+
+      const message = document.createElement('div');
+      if(hasConflicts){
+        const examples = bomFile.conflicts.slice(0,4).map(item=>item.reference+': '+item.first+' / '+item.second).join('; ');
+        message.className = 'bom-message error';
+        message.textContent = bomFile.conflicts.length + ' conflito(s) de Part Number na BOM. Corrija as referências duplicadas antes de confirmar. ' + examples;
+      } else if(!coverage.total){
+        message.className = 'bom-message';
+        message.textContent = 'BOM pronta. Adicione o arquivo Pick & Place para relacionar as referências.';
+      } else if(coverage.unmatched.length || coverage.missingPartNumber.length){
+        const parts = [];
+        if(coverage.unmatched.length) parts.push(coverage.unmatched.length + ' sem correspondência: ' + coverage.unmatched.slice(0,8).join(', '));
+        if(coverage.missingPartNumber.length) parts.push(coverage.missingPartNumber.length + ' sem Part Number: ' + coverage.missingPartNumber.slice(0,8).join(', '));
+        message.className = 'bom-message warn';
+        message.textContent = 'BOM aplicada com ressalvas. ' + parts.join('. ') + '. Esses componentes usarão o agrupamento de compatibilidade por valor + footprint.';
+      } else {
+        message.className = 'bom-message';
+        message.textContent = 'Todas as referências foram relacionadas. O agrupamento será feito por Part Number + footprint.';
+      }
+      body.appendChild(message);
+      card.appendChild(head); card.appendChild(body);
+      fileCardsEl.appendChild(card);
+    }
 
     files.forEach(f=>{
       const card = document.createElement('div');
@@ -1280,9 +1496,15 @@
           rotation = ((rotation + f.rotOffset) % 360 + 360) % 360;
         }
 
+        const designator = get('designator');
+        const reference = normalizeReference(designator);
+        const bomEntry = bomFile ? bomFile.byRef.get(reference) : null;
+        const footprint = get('footprint') || (bomEntry ? bomEntry.footprint : '');
+        const comment = get('comment') || (bomEntry ? bomEntry.value : '');
+
         out.push({
-          Designator: get('designator'),
-          Footprint:  get('footprint'),
+          Designator: designator,
+          Footprint:  footprint,
           'Mid X': typeof midx==='number' ? midx.toFixed(6) : midx,
           'Mid Y': typeof midy==='number' ? midy.toFixed(6) : midy,
           'Ref X': get('refx'),
@@ -1291,7 +1513,12 @@
           'Pad Y': get('pady'),
           Layer: normalizeLayerValue(get('layer'), f.layerMode),
           Rotation: rotation.toFixed(4).replace(/\.?0+$/,'') || '0',
-          Comment: get('comment'),
+          Comment: comment,
+          'Part Number': bomEntry ? bomEntry.partNumber : '',
+          _partNumber: bomEntry ? bomEntry.partNumber : '',
+          _vendorPartNumber: bomEntry ? bomEntry.vendorPartNumber : '',
+          _manufacturer: bomEntry ? bomEntry.manufacturer : '',
+          _bomMatched: !!bomEntry,
         });
       });
     });
@@ -1334,6 +1561,7 @@
       return;
     }
     const cols = ['Designator','Footprint','Mid X','Mid Y','Ref X','Ref Y','Pad X','Pad Y','Layer','Rotation','Comment'];
+    if(bomFile) cols.push('Part Number');
     let html = '<table><thead><tr>' + cols.map(c=>'<th>'+c+'</th>').join('') + '</tr></thead><tbody>';
     const shown = rows.slice(0, 300);
     shown.forEach(r=>{
@@ -1365,8 +1593,16 @@
   let feederAssignments = {}; // groupKey -> {feederID, deviceName, head, height, speed, skip, vacuum, vision}
   let importedDpv = null; // original DPV template, preserved while its editable fields are changed
 
+  function legacyGroupKey(row){
+    return (row.Footprint||'').trim() + '::' + (row.Comment||'').trim();
+  }
+
   function groupKey(row){
-    return row._groupKey || ((row.Footprint||'').trim() + '::' + (row.Comment||'').trim());
+    if(row._groupKey) return row._groupKey;
+    const partNumber = normalizePartNumber(row._partNumber || row['Part Number']);
+    const footprint = String(row.Footprint||'').trim().replace(/\s+/g,' ').toUpperCase();
+    if(partNumber) return 'PN::' + partNumber + '::' + footprint;
+    return legacyGroupKey(row);
   }
 
   function isFiducialRow(row){
@@ -1383,10 +1619,21 @@
   }
 
   function computeGroups(rows){
-    const groups = {}; // key -> {footprint, comment, qty, fiducial, dpvAngles}
+    const groups = {}; // key -> component identity, quantity and DPV angles
     rows.forEach(r=>{
       const key = groupKey(r);
-      if(!groups[key]) groups[key] = {footprint:r.Footprint, comment:r.Comment, qty:0, fiducial:false, dpvAngles:new Set()};
+      if(!groups[key]) groups[key] = {
+        footprint:r.Footprint,
+        comment:r.Comment,
+        partNumber:r._partNumber || r['Part Number'] || '',
+        vendorPartNumber:r._vendorPartNumber || '',
+        manufacturer:r._manufacturer || '',
+        bomMatched:!!r._bomMatched,
+        missingPartNumber:!!bomFile && !normalizePartNumber(r._partNumber || r['Part Number']),
+        qty:0,
+        fiducial:false,
+        dpvAngles:new Set(),
+      };
       groups[key].qty++;
       if(isFiducialRow(r)) groups[key].fiducial = true;
       const rawAngle = Number(r.Rotation);
@@ -1445,10 +1692,11 @@
       input.addEventListener('input', ()=>{
         PITCH_DEFAULTS[key] = parseFloat(input.value)||0;
         // re-apply to every group still on automatic
+        const currentGroups = computeGroups(lastRows);
         Object.keys(feederAssignments).forEach(k=>{
           const a = feederAssignments[k];
           if(a.pitchAuto){
-            const fp = (k.split('::')[0]) || '';
+            const fp = currentGroups[k] ? currentGroups[k].footprint : '';
             a.pitch = inferPitch(fp);
           }
         });
@@ -1461,8 +1709,12 @@
   }
 
   const feederTableWrapEl = document.getElementById('feederTableWrap');
+  const groupingNoteEl = document.getElementById('groupingNote');
 
   function renderFeederTable(rows){
+    groupingNoteEl.innerHTML = bomFile
+      ? 'Cada linha representa um componente agrupado por <strong>Part Number + footprint</strong>. Assim, peças de mesmo valor com tolerância, fabricante ou especificação diferentes recebem Stations/MStack separados. A coluna <strong>Ângulo</strong> mostra o valor final enviado à máquina. Informe a posição física ou marque <strong>Remover</strong>.'
+      : 'Nenhuma BOM foi adicionada. Os componentes estão agrupados por <strong>footprint + valor</strong>, modo de compatibilidade que pode unir peças com tolerâncias ou especificações diferentes. Para separá-las com segurança, volte e adicione a BOM.';
     if(rows.length === 0){ feederTableWrapEl.innerHTML = '<div class="empty-state">Confirme a conversão para configurar os componentes.</div>'; return; }
     const groups = computeGroups(rows);
     const keys = Object.keys(groups);
@@ -1470,7 +1722,7 @@
     const table = document.createElement('table');
     table.className = 'feeder-table';
     const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ângulo</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
+    thead.innerHTML = '<tr><th>Componente / Part Number</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ângulo</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
     const tbody = document.createElement('tbody');
 
     keys.forEach(key=>{
@@ -1479,7 +1731,10 @@
       const tr = document.createElement('tr');
 
       const tdName = document.createElement('td');
-      tdName.innerHTML = '<span class="grp-fp">' + esc(g.footprint||'—') + '</span><span class="grp-sep">/</span><span class="grp-val">' + esc(g.comment||'—') + '</span>' + (g.fiducial ? ' <span class="fid-badge">FID</span>' : '');
+      const identityLine = g.partNumber
+        ? '<span class="grp-part">PN: ' + esc(g.partNumber) + (g.manufacturer ? ' <span class="manufacturer">· '+esc(g.manufacturer)+'</span>' : '') + '</span>'
+        : (bomFile ? '<span class="grp-part missing">Sem Part Number · agrupamento por valor + footprint</span>' : '');
+      tdName.innerHTML = '<span class="grp-primary"><span class="grp-fp">' + esc(g.footprint||'—') + '</span><span class="grp-sep">/</span><span class="grp-val">' + esc(g.comment||'—') + '</span>' + (g.fiducial ? ' <span class="fid-badge">FID</span>' : '') + '</span>' + identityLine;
       tr.appendChild(tdName);
 
       const tdQty = document.createElement('td'); tdQty.className='qty'; tdQty.textContent = g.qty;
@@ -1571,7 +1826,7 @@
       });
       applyRemovedState();
 
-      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo','Skip','Verificar vácuo','Usar visão'];
+      const responsiveLabels = ['Componente / Part Number','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo','Skip','Verificar vácuo','Usar visão'];
       Array.from(tr.children).forEach((td, index)=>{ td.dataset.label = responsiveLabels[index]; });
 
       tbody.appendChild(tr);
@@ -1898,6 +2153,13 @@
     return {autoByKey, explicitById};
   }
 
+  function componentDpvNote(row, automatic){
+    const partNumber = String(row._partNumber || row['Part Number'] || '').trim();
+    const fallback = [row.Comment, row.Footprint].filter(Boolean).join(' ');
+    const identified = partNumber ? [partNumber, row.Comment].filter(Boolean).join(' ') : fallback;
+    return (automatic ? 'AUTO ' : '') + identified;
+  }
+
   function buildDpvString(rows, outBasename){
     if(importedDpv) return buildImportedDpvString(outBasename);
     const L = [];
@@ -1929,13 +2191,13 @@
         feederIdOut = mstack.autoByKey.get(key);
         place = false;
         automatic = true;
-        note = 'AUTO ' + (r.Comment||'') + ' ' + (r.Footprint||'');
+        note = componentDpvNote(r, true);
       } else if(idRaw === ''){
         feederIdOut = 99; place = false;
-        note = (r.Comment||'') + ' ' + (r.Footprint||'');
+        note = componentDpvNote(r, false);
       } else {
         feederIdOut = validFeederId(idRaw, key); place = !a.skip;
-        note = a.deviceName || ((r.Comment||'') + ' ' + (r.Footprint||''));
+        note = a.deviceName || componentDpvNote(r, false);
       }
       if(idRaw !== '' || automatic){
         if(!usedFeeders[feederIdOut]) usedFeeders[feederIdOut] = {a, note, forceSkip:automatic};
@@ -2537,12 +2799,31 @@
     });
 
     const hasRows = lastRows.length > 0;
-    approveCsvBtn.disabled = !hasRows;
-    step1Info.textContent = importedDpv
-      ? 'DPV importado: ' + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente disponível' : 'componentes disponíveis') + ' para edição.'
-      : (hasRows
-        ? lastRows.length + ' ' + (lastRows.length === 1 ? 'componente pronto' : 'componentes prontos') + ' a partir de ' + files.length + ' ' + (files.length === 1 ? 'arquivo' : 'arquivos') + '. Confira orientação, origem e colunas antes de confirmar.'
-        : 'Comece adicionando um arquivo Pick & Place.');
+    const bomConflictCount = bomFile ? bomFile.conflicts.length : 0;
+    approveCsvBtn.disabled = !hasRows || bomConflictCount > 0;
+    if(importedDpv){
+      step1Info.textContent = 'DPV importado: ' + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente disponível' : 'componentes disponíveis') + ' para edição.';
+    } else if(hasRows){
+      const groups = computeGroups(lastRows);
+      let bomInfo;
+      if(bomFile){
+        const coverage = bomCoverage();
+        if(bomConflictCount){
+          bomInfo = ' A BOM possui ' + bomConflictCount + ' conflito(s) e precisa ser corrigida antes da confirmação.';
+        } else if(coverage.unmatched.length || coverage.missingPartNumber.length){
+          bomInfo = ' BOM relacionada parcialmente: ' + coverage.withPartNumber + ' de ' + coverage.total + ' componentes têm Part Number; os demais usam o modo de compatibilidade.';
+        } else {
+          bomInfo = ' BOM relacionada: ' + coverage.matchedPartNumberCount + ' Part Numbers usados formaram ' + Object.keys(groups).length + ' grupos de montagem.';
+        }
+      } else {
+        bomInfo = ' Sem BOM: agrupamento de compatibilidade por footprint + valor.';
+      }
+      step1Info.textContent = lastRows.length + ' ' + (lastRows.length === 1 ? 'componente pronto' : 'componentes prontos')
+        + ' a partir de ' + files.length + ' ' + (files.length === 1 ? 'arquivo de posição' : 'arquivos de posição') + '.' + bomInfo
+        + ' Confira orientação, origem e colunas antes de confirmar.';
+    } else {
+      step1Info.textContent = bomFile ? 'BOM reconhecida. Agora adicione um arquivo Pick & Place.' : 'Comece adicionando um arquivo Pick & Place.';
+    }
 
     if(csvApproved){
       const groups = computeGroups(lastRows);
@@ -2640,6 +2921,7 @@
         const parsed = parseEditableDpv(e.target.result, file.name);
         importedDpv = parsed;
         files = [];
+        bomFile = null;
         outline = null;
         ignoredLayers = [];
         boardOrientation = 0;
@@ -2685,6 +2967,7 @@
     if(importedDpv){
       importedDpv = null;
       feederAssignments = {};
+      bomFile = null;
       dpvImportStatus.textContent = '';
       bulkStatusEl.textContent = '';
     }
@@ -2714,6 +2997,13 @@
         }
 
         const {headers, rows} = parseText(text);
+        if(looksLikeBom(headers)){
+          bomFile = parseBomFile(file.name, headers, rows);
+          feederAssignments = {};
+          pending--;
+          if(pending===0) renderAll();
+          return;
+        }
         const mapping = autoMap(headers);
         const detected = detectFormatLabel(headers);
         let layerMode = 'auto';
@@ -2774,7 +3064,7 @@
     btn.addEventListener('click', ()=> goToStep(parseInt(btn.dataset.step,10)));
   });
   approveCsvBtn.addEventListener('click', ()=>{
-    if(lastRows.length === 0) return;
+    if(lastRows.length === 0 || (bomFile && bomFile.conflicts.length)) return;
     csvApproved = true;
     goToStep(2);
   });
