@@ -35,7 +35,7 @@
     padding:48px 22px 60px;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:1200px;margin:0 auto;}
+  .wrap{max-width:1520px;margin:0 auto;}
 
   /* header */
   header{margin-bottom:32px;}
@@ -105,6 +105,17 @@
   .dropzone strong{color:var(--text);font-size:15.5px;font-weight:600;}
   .dropzone span{display:block;color:var(--muted);font-size:13px;margin-top:8px;}
   input[type=file]{display:none;}
+  .dpv-import-card{
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    margin-top:14px;padding:16px 18px;border:1px solid var(--border);
+    border-radius:14px;background:var(--surface);
+  }
+  .dpv-import-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .dpv-import-copy strong{font-size:13px;color:var(--text);font-weight:650;}
+  .dpv-import-copy span{font-size:11.5px;line-height:1.45;color:var(--muted);}
+  .dpv-import-card .btn{flex:0 0 auto;}
+  .dpv-import-status{font-size:12px;color:var(--solder);margin:9px 2px 0;min-height:16px;}
+  .dpv-import-status.error{color:var(--error);}
 
   /* file cards */
   .file-card{
@@ -427,13 +438,42 @@
   .pitch-field input{height:32px;font-size:11.5px;}
 
   .feeder-lib-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
-  .feeder-table th, .feeder-table td{white-space:nowrap;}
-  .feeder-table td{padding:6px 12px;height:46px;}
+  .bulk-editor{
+    display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:13px 14px;margin-bottom:14px;
+  }
+  .bulk-editor-copy{flex:1 1 220px;align-self:center;min-width:200px;}
+  .bulk-editor-copy strong{display:block;font-size:12.5px;color:var(--text);margin-bottom:3px;}
+  .bulk-editor-copy span{display:block;font-size:11px;color:var(--muted);line-height:1.4;}
+  .bulk-field{display:flex;flex-direction:column;gap:5px;flex:0 1 160px;min-width:138px;}
+  .bulk-field label{font-size:10.5px;color:var(--muted);font-family:var(--mono);}
+  .bulk-field-row{display:flex;gap:6px;}
+  .bulk-field-row input,.bulk-field-row select{height:32px;min-width:0;}
+  .bulk-field-row .btn{height:32px;padding:0 10px;flex:0 0 auto;}
+  .bulk-status{flex-basis:100%;font-size:11.5px;color:var(--solder);min-height:14px;}
+  #feederTableWrap{overflow-x:hidden;max-height:520px;border-radius:16px;}
+  .feeder-table{table-layout:fixed;font-size:10.5px;}
+  .feeder-table th{white-space:normal;line-height:1.15;padding:6px 3px;text-align:center;overflow-wrap:anywhere;}
+  .feeder-table th:first-child{text-align:left;padding-left:8px;}
+  .feeder-table td{white-space:nowrap;padding:5px 3px;height:43px;overflow:hidden;}
   .feeder-table input[type=text],
   .feeder-table input[type=number]{
-    width:78px;height:32px;padding:0 8px;font-size:11.5px;
+    width:100%;height:30px;padding:0 5px;font-size:10.5px;min-width:0;
   }
-  .feeder-table select{width:auto;min-width:88px;height:32px;font-size:11.5px;}
+  .feeder-table select{width:100%;min-width:0;height:30px;padding:0 2px;font-size:10px;}
+  .feeder-table th:nth-child(1){width:27%;}
+  .feeder-table th:nth-child(2){width:3%;}
+  .feeder-table th:nth-child(3){width:6%;}
+  .feeder-table th:nth-child(4){width:8%;}
+  .feeder-table th:nth-child(5){width:7%;}
+  .feeder-table th:nth-child(6){width:7%;}
+  .feeder-table th:nth-child(7){width:7%;}
+  .feeder-table th:nth-child(8){width:7%;}
+  .feeder-table th:nth-child(9){width:8%;}
+  .feeder-table th:nth-child(10){width:5%;}
+  .feeder-table th:nth-child(11){width:7%;}
+  .feeder-table th:nth-child(12){width:6%;}
   /* checkbox columns: Qtd(2), Remover(3), Pular(10), Vácuo(11), Visão(12) */
   .feeder-table th:nth-child(2),  .feeder-table td:nth-child(2),
   .feeder-table th:nth-child(3),  .feeder-table td:nth-child(3),
@@ -443,7 +483,7 @@
     text-align:center;
   }
   .feeder-table td:nth-child(1){
-    max-width:340px;overflow:hidden;text-overflow:ellipsis;
+    overflow:hidden;text-overflow:ellipsis;padding-left:8px;
   }
   .feeder-table td.qty{color:var(--muted);}
   .fid-badge{
@@ -523,6 +563,26 @@
     font-size:12px;color:var(--muted-2);line-height:1.55;margin:10px 0 0;
   }
 
+  @media (max-width: 900px){
+    #feederTableWrap{overflow:visible;max-height:none;border:0;background:transparent;box-shadow:none;}
+    .feeder-table,.feeder-table tbody,.feeder-table tr,.feeder-table td{display:block;width:100%;}
+    .feeder-table thead{display:none;}
+    .feeder-table tr{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;
+      padding:14px;margin-bottom:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface);
+    }
+    .feeder-table td{height:auto;min-height:48px;padding:0;border:0!important;overflow:visible;text-align:left!important;}
+    .feeder-table td::before{
+      content:attr(data-label);display:block;margin-bottom:5px;color:var(--muted);
+      font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;
+    }
+    .feeder-table td:first-child{grid-column:1/-1;min-height:auto;padding:0;white-space:normal;}
+    .feeder-table td:nth-child(2),.feeder-table td:nth-child(3),
+    .feeder-table td:nth-child(10),.feeder-table td:nth-child(11),.feeder-table td:nth-child(12){
+      display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+    }
+  }
+
   /* narrow screens */
   @media (max-width: 720px){
     body{padding:32px 16px 48px;}
@@ -535,6 +595,9 @@
     .pipeline-info{order:-1;}
     .stepper{gap:6px;}
     .step{flex:1 1 auto;padding:0 12px;font-size:12px;}
+    .dpv-import-card{align-items:stretch;flex-direction:column;}
+    .dpv-import-card .btn{width:100%;}
+    .bulk-field{flex:1 1 calc(50% - 8px);min-width:128px;}
   }
 </style>
 </head>
@@ -569,6 +632,15 @@
         <span>Adicione um ou mais arquivos de posição (.csv/.pos). Inclua o Gerber de contorno Edge.Cuts (.gbr/.gm1/.gko) para visualizar as bordas reais da placa. O processamento acontece somente no seu navegador.</span>
         <input type="file" id="fileInput" accept=".csv,.txt,.pos,.gbr,.gm1,.gko,.gbo,.gko" multiple>
       </div>
+      <div class="dpv-import-card">
+        <div class="dpv-import-copy">
+          <strong>Já possui uma receita DPV?</strong>
+          <span>Abra o arquivo existente para revisar componentes e alterar configurações sem perder calibração, trays ou outras tabelas da receita original.</span>
+        </div>
+        <button class="btn btn-ghost" id="importDpvEditBtn">Abrir DPV para editar</button>
+        <input type="file" id="dpvEditInput" accept=".dpv,.txt">
+      </div>
+      <p class="dpv-import-status" id="dpvImportStatus"></p>
     </section>
 
     <section id="filesSection" style="display:none;">
@@ -624,6 +696,29 @@
         <button class="btn btn-ghost" id="importFeederLibBtn">Carregar configuração de feeders</button>
         <button class="btn btn-ghost" id="exportFeederLibBtn">Salvar configuração de feeders</button>
         <input type="file" id="feederLibInput" accept=".json" style="display:none;">
+      </div>
+      <div class="bulk-editor">
+        <div class="bulk-editor-copy">
+          <strong>Ajustes em massa</strong>
+          <span>Aplique o mesmo valor a todos os componentes ativos da tabela.</span>
+        </div>
+        <div class="bulk-field">
+          <label for="bulkSpeed">Velocidade (%)</label>
+          <div class="bulk-field-row"><input type="number" id="bulkSpeed" min="1" max="100" step="1" value="100"><button class="btn btn-ghost" data-bulk="speed">Aplicar</button></div>
+        </div>
+        <div class="bulk-field">
+          <label for="bulkSkip">Skip</label>
+          <div class="bulk-field-row"><select id="bulkSkip"><option value="true">Ativar</option><option value="false">Desativar</option></select><button class="btn btn-ghost" data-bulk="skip">Aplicar</button></div>
+        </div>
+        <div class="bulk-field">
+          <label for="bulkVacuum">Verificar vácuo</label>
+          <div class="bulk-field-row"><select id="bulkVacuum"><option value="true">Ativar</option><option value="false">Desativar</option></select><button class="btn btn-ghost" data-bulk="vacuum">Aplicar</button></div>
+        </div>
+        <div class="bulk-field">
+          <label for="bulkVision">Usar visão</label>
+          <div class="bulk-field-row"><select id="bulkVision"><option value="true">Ativar</option><option value="false">Desativar</option></select><button class="btn btn-ghost" data-bulk="vision">Aplicar</button></div>
+        </div>
+        <div class="bulk-status" id="bulkStatus"></div>
       </div>
       <div class="preview-wrap" id="feederTableWrap"></div>
     </section>
@@ -1202,9 +1297,10 @@
 
   // ---------- feeder assignment (for .dpv generation) ----------
   let feederAssignments = {}; // groupKey -> {feederID, deviceName, head, height, speed, angleComp, skip, vacuum, vision}
+  let importedDpv = null; // original DPV template, preserved while its editable fields are changed
 
   function groupKey(row){
-    return (row.Footprint||'').trim() + '::' + (row.Comment||'').trim();
+    return row._groupKey || ((row.Footprint||'').trim() + '::' + (row.Comment||'').trim());
   }
 
   function isFiducialRow(row){
@@ -1361,8 +1457,8 @@
 
       const tdSpeed = document.createElement('td');
       const speedInput = document.createElement('input');
-      speedInput.type='number'; speedInput.step='1'; speedInput.value=a.speed;
-      speedInput.addEventListener('input', ()=>{ a.speed = parseFloat(speedInput.value)||0; onFeederChange(); });
+      speedInput.type='number'; speedInput.step='1'; speedInput.min='1'; speedInput.max='100'; speedInput.value=a.speed;
+      speedInput.addEventListener('input', ()=>{ a.speed = Math.max(1, Math.min(100, parseFloat(speedInput.value)||1)); onFeederChange(); });
       tdSpeed.appendChild(speedInput);
       tr.appendChild(tdSpeed);
 
@@ -1404,6 +1500,9 @@
       });
       applyRemovedState();
 
+      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Correção angular','Skip','Verificar vácuo','Usar visão'];
+      Array.from(tr.children).forEach((td, index)=>{ td.dataset.label = responsiveLabels[index]; });
+
       tbody.appendChild(tr);
     });
 
@@ -1411,6 +1510,35 @@
     feederTableWrapEl.innerHTML = '';
     feederTableWrapEl.appendChild(table);
   }
+
+  const bulkStatusEl = document.getElementById('bulkStatus');
+  document.querySelectorAll('[data-bulk]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const field = btn.dataset.bulk;
+      const groups = computeGroups(lastRows);
+      const keys = Object.keys(groups).filter(key=>!ensureAssignment(key).remove);
+      if(!keys.length){
+        bulkStatusEl.textContent = 'Nenhum componente ativo para alterar.';
+        return;
+      }
+      let value;
+      if(field === 'speed'){
+        value = Number(document.getElementById('bulkSpeed').value);
+        if(!Number.isFinite(value) || value < 1 || value > 100){
+          bulkStatusEl.textContent = 'Informe uma velocidade entre 1% e 100%.';
+          return;
+        }
+      } else {
+        const inputId = field === 'skip' ? 'bulkSkip' : (field === 'vacuum' ? 'bulkVacuum' : 'bulkVision');
+        value = document.getElementById(inputId).value === 'true';
+      }
+      keys.forEach(key=>{ ensureAssignment(key)[field] = value; });
+      const labels = {speed:'Velocidade', skip:'Skip', vacuum:'Verificação de vácuo', vision:'Visão'};
+      bulkStatusEl.textContent = labels[field] + ' atualizado em ' + keys.length + ' ' + (keys.length === 1 ? 'componente.' : 'componentes.');
+      renderFeederTable(lastRows);
+      onFeederChange();
+    });
+  });
 
   // ---------- feeder library import/export (JSON, since browser storage is not persisted) ----------
   document.getElementById('exportFeederLibBtn').addEventListener('click', ()=>{
@@ -1486,6 +1614,183 @@
     return id;
   }
 
+  function dpvNumber(value, fallback){
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function parseEditableDpv(text, fileName){
+    const lines = String(text||'').replace(/^\uFEFF/, '').split(/\r\n|\r|\n/);
+    const stationRows = [];
+    const stationsById = new Map();
+    const componentRows = [];
+    const groupMeta = new Map();
+    const rows = [];
+    const assignments = {};
+    let stationHeaderIndex = -1;
+    let malformed = 0;
+
+    lines.forEach((line, index)=>{
+      const fields = line.split(',');
+      if(fields[0] === 'Table' && fields.includes('FeedRates')) stationHeaderIndex = index;
+      if(fields[0] !== 'Station') return;
+      if(fields.length < 10 || !/^\d+$/.test((fields[2]||'').trim())){ malformed++; return; }
+      const record = {lineIndex:index, fields:fields.slice(), id:(fields[2]||'').trim(), note:(fields[6]||'').trim()};
+      stationRows.push(record);
+      if(!stationsById.has(record.id)) stationsById.set(record.id, record);
+    });
+
+    lines.forEach((line, index)=>{
+      const fields = line.split(',');
+      if(fields[0] !== 'EComponent') return;
+      const x = Number(fields[5]), y = Number(fields[6]), angle = Number(fields[7]);
+      if(fields.length < 13 || !Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(angle)){
+        malformed++;
+        return;
+      }
+      const ref = (fields[11]||'').trim();
+      const note = (fields[12]||'').trim();
+      const stationId = (fields[4]||'').trim();
+      const station = stationsById.get(stationId);
+      const visible = !!(ref || note);
+      const partLabel = note || (station && station.note) || 'Componente sem identificação';
+      const key = visible ? 'DPV::' + stationId + '::' + partLabel : null;
+      const record = {lineIndex:index, fields:fields.slice(), key, originalAngle:angle, originalStationId:stationId};
+      componentRows.push(record);
+      if(!visible) return; // preserve unused machine slots without showing them in the editor
+
+      rows.push({
+        Designator:ref,
+        Footprint:partLabel,
+        'Mid X':String(x), 'Mid Y':String(y),
+        'Ref X':String(x), 'Ref Y':String(y), 'Pad X':String(x), 'Pad Y':String(y),
+        Layer:'T', Rotation:String(angle),
+        Comment:(station && station.note && station.note !== partLabel) ? station.note : ('Posição ' + stationId),
+        _groupKey:key,
+      });
+
+      if(!assignments[key]){
+        const componentStatus = dpvNumber(fields[9], NaN);
+        const stationStatus = station ? dpvNumber(station.fields[9], 0) : 0;
+        const status = Number.isFinite(componentStatus) ? componentStatus : stationStatus;
+        assignments[key] = Object.assign(defaultAssignment(), {
+          feederID:stationId,
+          deviceName:(station && station.note) || partLabel,
+          head:[1,2].includes(Number(fields[3])) ? Number(fields[3]) : 1,
+          height:dpvNumber(fields[8], station ? dpvNumber(station.fields[7], 1) : 1),
+          pitch:station ? dpvNumber(station.fields[5], 4) : 4,
+          pitchAuto:false,
+          speed:dpvNumber(fields[10], station ? dpvNumber(station.fields[8], 100) : 100),
+          angleComp:0,
+          remove:false,
+          skip:(status & 1) !== 0,
+          vacuum:(status & 2) !== 0,
+          vision:(status & 4) !== 0,
+        });
+        groupMeta.set(key, {originalStationId:stationId, station, label:partLabel});
+      }
+    });
+
+    if(!componentRows.length) throw new Error('nenhuma linha EComponent foi encontrada');
+    if(!rows.length) throw new Error('o arquivo não contém componentes identificados para editar');
+    if(malformed) throw new Error(malformed + ' linha(s) Station/EComponent estão incompletas ou inválidas');
+
+    const groupsPerStation = new Map();
+    groupMeta.forEach((meta, key)=>{
+      if(!groupsPerStation.has(meta.originalStationId)) groupsPerStation.set(meta.originalStationId, new Set());
+      groupsPerStation.get(meta.originalStationId).add(key);
+    });
+    const sharedStations = [...groupsPerStation.values()].filter(set=>set.size > 1).length;
+    return {fileName, lines, rows, assignments, stationRows, stationsById, componentRows, groupMeta, stationHeaderIndex, sharedStations};
+  }
+
+  function buildImportedDpvString(outputBase){
+    const source = importedDpv;
+    const lines = source.lines.slice();
+    const safeBase = safeFileBase(outputBase || baseNameNoExt(source.fileName));
+    const now = new Date();
+    const pad = n=>String(n).padStart(2,'0');
+
+    lines.forEach((line, index)=>{
+      if(line.startsWith('FILE,')) lines[index] = 'FILE,' + safeBase + '.dpv';
+      else if(line.startsWith('PCBFILE,')) lines[index] = 'PCBFILE,' + safeBase + '.csv';
+      else if(line.startsWith('DATE,')) lines[index] = 'DATE,' + now.getFullYear() + '/' + pad(now.getMonth()+1) + '/' + pad(now.getDate());
+      else if(line.startsWith('TIME,')) lines[index] = 'TIME,' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    });
+
+    const componentReplacement = new Map();
+    let componentNo = 0;
+    source.componentRows.forEach(record=>{
+      const fields = record.fields.slice();
+      if(record.key){
+        const a = ensureAssignment(record.key);
+        if(a.remove){ componentReplacement.set(record.lineIndex, null); return; }
+        const idRaw = (a.feederID||'').trim();
+        fields[3] = String(a.head || 1);
+        fields[4] = String(idRaw === '' ? 99 : validFeederId(idRaw, record.key));
+        fields[7] = trimNum(normalizeAngle(record.originalAngle + (a.angleComp||0)), 4);
+        fields[8] = trimNum(dpvNumber(a.height, 1), 4);
+        let status = idRaw === '' || a.skip ? 1 : 0;
+        if(a.vacuum) status += 2;
+        if(a.vision) status += 4;
+        fields[9] = String(status);
+        fields[10] = String(Math.max(1, Math.min(100, dpvNumber(a.speed, 100))));
+      }
+      fields[1] = String(componentNo);
+      fields[2] = String(componentNo + 1);
+      componentNo++;
+      componentReplacement.set(record.lineIndex, fields.join(','));
+    });
+
+    const desiredStations = new Map();
+    source.stationRows.forEach(record=> desiredStations.set(record.id, record.fields.slice()));
+    source.groupMeta.forEach((meta, key)=>{
+      const a = ensureAssignment(key);
+      if(a.remove) return;
+      const idRaw = (a.feederID||'').trim();
+      if(idRaw === '') return;
+      const id = String(validFeederId(idRaw, key));
+      if(desiredStations.has(id) && id !== meta.originalStationId) return;
+      const original = meta.station ? meta.station.fields.slice() : [];
+      const fieldCount = Math.max(14, original.length || 0);
+      const fields = original.length ? original : ['Station','0',id,'0','0','4',meta.label,'1','100','0'];
+      while(fields.length < fieldCount) fields.push('0');
+      fields[0] = 'Station';
+      fields[2] = id;
+      fields[5] = trimNum(dpvNumber(a.pitch, 4), 2);
+      fields[6] = dpvSafeText(a.deviceName || meta.label, 31);
+      fields[7] = trimNum(dpvNumber(a.height, 1), 4);
+      fields[8] = String(Math.max(1, Math.min(100, dpvNumber(a.speed, 100))));
+      let status = a.skip ? 1 : 0;
+      if(a.vacuum) status += 2;
+      if(a.vision) status += 4;
+      fields[9] = String(status);
+      desiredStations.set(id, fields);
+    });
+    const stationLines = [...desiredStations.values()].map((fields, index)=>{
+      const copy = fields.slice(); copy[1] = String(index); return copy.join(',');
+    });
+
+    const stationIndices = new Set(source.stationRows.map(record=>record.lineIndex));
+    const stationInsertAt = source.stationRows.length
+      ? Math.min(...stationIndices)
+      : (source.stationHeaderIndex >= 0 ? source.stationHeaderIndex + 1 : -1);
+    const output = [];
+    let stationsInserted = false;
+    lines.forEach((line, index)=>{
+      if(!stationsInserted && index === stationInsertAt){ output.push(...stationLines); stationsInserted = true; }
+      if(stationIndices.has(index)) return;
+      if(componentReplacement.has(index)){
+        const replacement = componentReplacement.get(index);
+        if(replacement !== null) output.push(replacement);
+        return;
+      }
+      output.push(line);
+    });
+    if(!stationsInserted && stationLines.length) output.push(...stationLines);
+    return output.join('\r\n').replace(/(?:\r\n)+$/,'') + '\r\n';
+  }
+
   // The CHMT36 uses the left feeder bank (IDs 0..35). When the user only wants
   // to associate parts with positions, assign each unconfigured component group
   // to a distinct free slot and keep it disabled until the physical setup is confirmed.
@@ -1524,6 +1829,7 @@
   }
 
   function buildDpvString(rows, outBasename){
+    if(importedDpv) return buildImportedDpvString(outBasename);
     const L = [];
     const push = s => L.push(s);
     const pad = n => String(n).padStart(2,'0');
@@ -2160,9 +2466,11 @@
 
     const hasRows = lastRows.length > 0;
     approveCsvBtn.disabled = !hasRows;
-    step1Info.textContent = hasRows
-      ? lastRows.length + ' ' + (lastRows.length === 1 ? 'componente pronto' : 'componentes prontos') + ' a partir de ' + files.length + ' ' + (files.length === 1 ? 'arquivo' : 'arquivos') + '. Confira orientação, origem e colunas antes de confirmar.'
-      : 'Comece adicionando um arquivo Pick & Place.';
+    step1Info.textContent = importedDpv
+      ? 'DPV importado: ' + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente disponível' : 'componentes disponíveis') + ' para edição.'
+      : (hasRows
+        ? lastRows.length + ' ' + (lastRows.length === 1 ? 'componente pronto' : 'componentes prontos') + ' a partir de ' + files.length + ' ' + (files.length === 1 ? 'arquivo' : 'arquivos') + '. Confira orientação, origem e colunas antes de confirmar.'
+        : 'Comece adicionando um arquivo Pick & Place.');
 
     if(csvApproved){
       const groups = computeGroups(lastRows);
@@ -2173,7 +2481,8 @@
         return !a.remove && (a.feederID||'').trim() !== '';
       }).length;
       const pending = keys.length - assigned - removed;
-      step2Info.textContent = assigned + ' de ' + keys.length + ' tipos já têm uma posição definida'
+      step2Info.textContent = (importedDpv ? 'Editando "' + importedDpv.fileName + '". ' : '')
+        + assigned + ' de ' + keys.length + ' tipos já têm uma posição definida'
         + (removed ? '; ' + removed + ' serão removidos da receita' : '')
         + (pending
           ? (autoMstack.checked
@@ -2246,10 +2555,67 @@
   }
 
   // ---------- file loading ----------
+  const importDpvEditBtn = document.getElementById('importDpvEditBtn');
+  const dpvEditInput = document.getElementById('dpvEditInput');
+  const dpvImportStatus = document.getElementById('dpvImportStatus');
+
+  function loadDpvForEditing(file){
+    dpvImportStatus.classList.remove('error');
+    dpvImportStatus.textContent = 'Analisando "' + file.name + '"…';
+    const reader = new FileReader();
+    reader.onload = e=>{
+      try{
+        const parsed = parseEditableDpv(e.target.result, file.name);
+        importedDpv = parsed;
+        files = [];
+        outline = null;
+        ignoredLayers = [];
+        boardOrientation = 0;
+        feederAssignments = parsed.assignments;
+        lastRows = parsed.rows;
+        csvApproved = true;
+        dpvApproved = false;
+        dpvValidationError = '';
+        filenameManuallyEdited = true;
+        fileNameInput.value = safeFileBase(baseNameNoExt(file.name) + '_editado');
+        wantCsv.checked = false;
+        wantDpv.checked = true;
+        renderFileCards();
+        renderPreview(lastRows);
+        document.getElementById('boardSection').style.display = 'none';
+        renderFeederTable(lastRows);
+        dpvImportStatus.textContent = file.name + ' carregado com ' + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente editável.' : 'componentes editáveis.');
+        bulkStatusEl.textContent = 'DPV importado. As demais tabelas do arquivo original serão preservadas na exportação.'
+          + (parsed.sharedStations ? ' Atenção: ' + parsed.sharedStations + ' posição(ões) são compartilhadas por tipos diferentes.' : '');
+        goToStep(2);
+      }catch(err){
+        dpvImportStatus.classList.add('error');
+        dpvImportStatus.textContent = 'Não foi possível editar este DPV: ' + err.message + '.';
+      }
+    };
+    reader.onerror = ()=>{
+      dpvImportStatus.classList.add('error');
+      dpvImportStatus.textContent = 'Não foi possível ler "' + file.name + '".';
+    };
+    reader.readAsText(file);
+  }
+
+  importDpvEditBtn.addEventListener('click', ()=>dpvEditInput.click());
+  dpvEditInput.addEventListener('change', e=>{
+    if(e.target.files[0]) loadDpvForEditing(e.target.files[0]);
+    dpvEditInput.value = '';
+  });
+
   function addFiles(fileList){
     const arr = Array.from(fileList);
     let pending = arr.length;
     if(pending === 0) return;
+    if(importedDpv){
+      importedDpv = null;
+      feederAssignments = {};
+      dpvImportStatus.textContent = '';
+      bulkStatusEl.textContent = '';
+    }
     arr.forEach(file=>{
       const reader = new FileReader();
       reader.onload = e=>{
