@@ -38,6 +38,15 @@
   }
   .wrap{width:100%;max-width:1520px;margin:0 auto;}
 
+  .language-bar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 8px;}
+  .language-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-right:2px;}
+  .language-switcher{display:inline-flex;padding:3px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
+  .language-switcher button{
+    border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;
+    padding:7px 11px;font:600 11px var(--sans);transition:background .15s ease,color .15s ease;
+  }
+  .language-switcher button.active{background:var(--copper);color:#16130d;}
+
   /* header */
   .hero-header{
     display:grid;
@@ -750,10 +759,18 @@
 <body>
 <div class="wrap">
 
+  <div class="language-bar">
+    <span class="language-label" data-i18n="languageLabel">Idioma</span>
+    <div class="language-switcher" role="group" aria-label="Idioma / Language">
+      <button type="button" data-lang="pt" class="active">Português</button>
+      <button type="button" data-lang="en">English</button>
+    </div>
+  </div>
+
   <header class="hero-header">
     <div class="hero-copy">
-      <h1>Preparador de arquivos para CharmHigh CHM-T36/CHM-T48</h1>
-      <p>Transforme arquivos Pick &amp; Place em CSV e DPV prontos para revisão. Confira a orientação da placa, organize feeders e MStack e corrija a origem dos Gerbers — tudo direto no navegador.</p>
+      <h1 data-i18n="heroTitle">Preparador de arquivos para CharmHigh CHM-T36/CHM-T48</h1>
+      <p data-i18n="heroSubtitle">Transforme arquivos Pick &amp; Place em CSV e DPV prontos para revisão. Confira a orientação da placa, organize feeders e MStack e corrija a origem dos Gerbers — tudo direto no navegador.</p>
     </div>
     <div class="hero-art" aria-hidden="true">
       <img src="assets/pick-and-place-chmt.webp?v=2" alt="" width="1100" height="555" decoding="async" fetchpriority="high">
@@ -762,50 +779,50 @@
 
   <nav class="tool-tabs">
     <button class="tool-tab active" data-tool="converter">Pick &amp; Place → CSV/DPV</button>
-    <button class="tool-tab" data-tool="origin">Corrigir origem dos Gerbers</button>
+    <button class="tool-tab" data-tool="origin" data-i18n="originTab">Corrigir origem dos Gerbers</button>
   </nav>
 
   <div id="toolConverter">
 
   <nav class="stepper" id="stepper">
-    <button class="step" data-step="1"><span class="step-num">1</span> Importar e conferir</button>
-    <button class="step" data-step="2"><span class="step-num">2</span> Configurar montagem</button>
-    <button class="step" data-step="3"><span class="step-num">3</span> Gerar arquivos</button>
+    <button class="step" data-step="1"><span class="step-num">1</span> <span data-i18n="stepImport">Importar e conferir</span></button>
+    <button class="step" data-step="2"><span class="step-num">2</span> <span data-i18n="stepSetup">Configurar montagem</span></button>
+    <button class="step" data-step="3"><span class="step-num">3</span> <span data-i18n="stepExport">Gerar arquivos</span></button>
   </nav>
 
   <!-- ETAPA 1 -->
   <div class="pane" id="pane1">
     <section>
-      <p class="section-title">Pick &amp; Place, BOM e contorno da placa</p>
+      <p class="section-title" data-i18n="inputSection">Pick &amp; Place, BOM e contorno da placa</p>
       <div class="dropzone" id="dropzone">
-        <strong>Solte os arquivos aqui ou escolha no computador</strong>
-        <span>Adicione o arquivo de posição (.csv/.pos) e, opcionalmente, a BOM (.csv) para separar componentes pelo Part Number. Inclua o Gerber Edge.Cuts (.gbr/.gm1/.gko) para visualizar o contorno. Tudo é processado somente no navegador.</span>
+        <strong data-i18n="dropTitle">Solte os arquivos aqui ou escolha no computador</strong>
+        <span data-i18n="dropHelp">Adicione o arquivo de posição (.csv/.pos) e, opcionalmente, a BOM (.csv) para separar componentes pelo Part Number. Inclua o Gerber Edge.Cuts (.gbr/.gm1/.gko) para visualizar o contorno. Tudo é processado somente no navegador.</span>
         <input type="file" id="fileInput" accept=".csv,.txt,.pos,.gbr,.gm1,.gko,.gbo,.gko" multiple>
       </div>
       <div class="dpv-import-card">
         <div class="dpv-import-copy">
-          <strong>Já possui uma receita DPV?</strong>
-          <span>Abra o arquivo existente para revisar componentes e alterar configurações sem perder calibração, trays ou outras tabelas da receita original.</span>
+          <strong data-i18n="dpvExistingTitle">Já possui uma receita DPV?</strong>
+          <span data-i18n="dpvExistingHelp">Abra o arquivo existente para revisar componentes e alterar configurações sem perder calibração, trays ou outras tabelas da receita original.</span>
         </div>
-        <button class="btn btn-ghost" id="importDpvEditBtn">Abrir DPV para editar</button>
+        <button class="btn btn-ghost" id="importDpvEditBtn" data-i18n="openDpv">Abrir DPV para editar</button>
         <input type="file" id="dpvEditInput" accept=".dpv,.txt">
       </div>
       <p class="dpv-import-status" id="dpvImportStatus"></p>
     </section>
 
     <section id="filesSection" style="display:none;">
-      <p class="section-title">Confira os arquivos e o mapeamento</p>
+      <p class="section-title" data-i18n="mappingSection">Confira os arquivos e o mapeamento</p>
       <div id="fileCards"></div>
     </section>
 
     <section id="boardSection" style="display:none;">
-      <p class="section-title">Escolha a orientação e confira a placa</p>
+      <p class="section-title" data-i18n="orientationSection">Escolha a orientação e confira a placa</p>
       <div id="orientCards" class="orient-grid"></div>
       <div class="board-view-wrap">
         <div class="board-toolbar">
           <div class="board-meta" id="boardMeta"></div>
-          <label class="mini-toggle"><input type="checkbox" id="showLabels" checked> mostrar referências</label>
-          <label class="mini-toggle"><input type="checkbox" id="autoAlign" checked> alinhar origens automaticamente</label>
+          <label class="mini-toggle"><input type="checkbox" id="showLabels" checked> <span data-i18n="showReferences">mostrar referências</span></label>
+          <label class="mini-toggle"><input type="checkbox" id="autoAlign" checked> <span data-i18n="autoAlign">alinhar origens automaticamente</span></label>
         </div>
         <div class="board-canvas" id="boardCanvas"></div>
       </div>
@@ -813,60 +830,60 @@
     </section>
 
     <section>
-      <p class="section-title">Resultado convertido</p>
+      <p class="section-title" data-i18n="convertedResult">Resultado convertido</p>
       <div class="preview-wrap" id="previewWrap">
-        <div class="empty-state">Adicione um arquivo Pick &amp; Place para visualizar a conversão.</div>
+        <div class="empty-state" data-i18n="emptyConversion">Adicione um arquivo Pick &amp; Place para visualizar a conversão.</div>
       </div>
     </section>
 
     <div class="pipeline-bar">
       <div class="pipeline-info" id="step1Info">Comece adicionando um arquivo Pick &amp; Place.</div>
-      <button class="btn btn-primary" id="approveCsvBtn" disabled>Confirmar conversão →</button>
+      <button class="btn btn-primary" id="approveCsvBtn" disabled data-i18n="confirmConversion">Confirmar conversão →</button>
     </div>
   </div>
 
   <!-- ETAPA 2 -->
   <div class="pane" id="pane2" style="display:none;">
     <section>
-      <p class="section-title">Componentes, feeders e MStack</p>
+      <p class="section-title" data-i18n="componentsSection">Componentes, feeders e MStack</p>
       <p class="note" id="groupingNote">Cada linha representa um tipo de componente. Adicione a BOM para agrupar por Part Number e evitar que componentes de mesmo valor, mas especificações diferentes, compartilhem a mesma posição.</p>
       <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
         <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
-        <span><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
+        <span data-i18n="autoMstackHelp"><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
       </label>
       <div class="pitch-panel">
         <div class="pitch-panel-head">
-          <strong>Passo padrão da fita (mm)</strong>
-          <span>Usado nos grupos que ainda não foram ajustados manualmente. A EIA-481 permite 2 ou 4 mm em fitas de 8 mm e 2, 4 ou 8 mm em fitas de 12 mm.</span>
+          <strong data-i18n="pitchTitle">Passo padrão da fita (mm)</strong>
+          <span data-i18n="pitchHelp">Usado nos grupos que ainda não foram ajustados manualmente. A EIA-481 permite 2 ou 4 mm em fitas de 8 mm e 2, 4 ou 8 mm em fitas de 12 mm.</span>
         </div>
         <div class="pitch-grid" id="pitchGrid"></div>
       </div>
 
       <div class="feeder-lib-row">
-        <button class="btn btn-ghost" id="importFeederLibBtn">Carregar configuração de feeders</button>
-        <button class="btn btn-ghost" id="exportFeederLibBtn">Salvar configuração de feeders</button>
+        <button class="btn btn-ghost" id="importFeederLibBtn" data-i18n="loadFeeders">Carregar configuração de feeders</button>
+        <button class="btn btn-ghost" id="exportFeederLibBtn" data-i18n="saveFeeders">Salvar configuração de feeders</button>
         <input type="file" id="feederLibInput" accept=".json" style="display:none;">
       </div>
       <div class="bulk-editor">
         <div class="bulk-editor-copy">
-          <strong>Ajustes em massa</strong>
-          <span>Aplique o mesmo valor a todos os componentes ativos da tabela.</span>
+          <strong data-i18n="bulkTitle">Ajustes em massa</strong>
+          <span data-i18n="bulkHelp">Aplique o mesmo valor a todos os componentes ativos da tabela.</span>
         </div>
         <div class="bulk-field">
-          <label for="bulkSpeed">Velocidade (%)</label>
-          <div class="bulk-field-row"><input type="number" id="bulkSpeed" min="1" max="100" step="1" value="100"><button class="btn btn-ghost" data-bulk="speed">Aplicar</button></div>
+          <label for="bulkSpeed" data-i18n="speed">Velocidade (%)</label>
+          <div class="bulk-field-row"><input type="number" id="bulkSpeed" min="1" max="100" step="1" value="100"><button class="btn btn-ghost" data-bulk="speed" data-i18n="apply">Aplicar</button></div>
         </div>
         <div class="bulk-field">
           <label for="bulkSkip">Skip</label>
-          <div class="bulk-field-row"><select id="bulkSkip"><option value="true">Ativar</option><option value="false">Desativar</option></select><button class="btn btn-ghost" data-bulk="skip">Aplicar</button></div>
+          <div class="bulk-field-row"><select id="bulkSkip"><option value="true" data-i18n="enable">Ativar</option><option value="false" data-i18n="disable">Desativar</option></select><button class="btn btn-ghost" data-bulk="skip" data-i18n="apply">Aplicar</button></div>
         </div>
         <div class="bulk-field">
-          <label for="bulkVacuum">Verificar vácuo</label>
-          <div class="bulk-field-row"><select id="bulkVacuum"><option value="true">Ativar</option><option value="false">Desativar</option></select><button class="btn btn-ghost" data-bulk="vacuum">Aplicar</button></div>
+          <label for="bulkVacuum" data-i18n="vacuum">Verificar vácuo</label>
+          <div class="bulk-field-row"><select id="bulkVacuum"><option value="true" data-i18n="enable">Ativar</option><option value="false" data-i18n="disable">Desativar</option></select><button class="btn btn-ghost" data-bulk="vacuum" data-i18n="apply">Aplicar</button></div>
         </div>
         <div class="bulk-field">
-          <label for="bulkVision">Usar visão</label>
-          <div class="bulk-field-row"><select id="bulkVision"><option value="true">Ativar</option><option value="false">Desativar</option></select><button class="btn btn-ghost" data-bulk="vision">Aplicar</button></div>
+          <label for="bulkVision" data-i18n="vision">Usar visão</label>
+          <div class="bulk-field-row"><select id="bulkVision"><option value="true" data-i18n="enable">Ativar</option><option value="false" data-i18n="disable">Desativar</option></select><button class="btn btn-ghost" data-bulk="vision" data-i18n="apply">Aplicar</button></div>
         </div>
         <div class="bulk-status" id="bulkStatus"></div>
       </div>
@@ -874,58 +891,58 @@
     </section>
 
     <section id="operatorReportSection">
-      <p class="section-title">Lista do operador</p>
+      <p class="section-title" data-i18n="operatorList">Lista do operador</p>
       <div class="operator-report-toolbar">
         <div class="operator-report-toolbar-copy">
-          <strong>Mapa de rolos e feeders para montagem</strong>
-          <span>Gere uma folha de setup com posições, Part Numbers, parâmetros e campos de conferência. Posições MStack automáticas aparecem destacadas para validação física antes de liberar o Skip.</span>
+          <strong data-i18n="operatorMapTitle">Mapa de rolos e feeders para montagem</strong>
+          <span data-i18n="operatorMapHelp">Gere uma folha de setup com posições, Part Numbers, parâmetros e campos de conferência. Posições MStack automáticas aparecem destacadas para validação física antes de liberar o Skip.</span>
         </div>
-        <button class="btn btn-ghost" id="buildOperatorReportBtn">Preparar lista</button>
-        <button class="btn btn-primary" id="printOperatorReportBtn" disabled>Imprimir lista</button>
+        <button class="btn btn-ghost" id="buildOperatorReportBtn" data-i18n="prepareList">Preparar lista</button>
+        <button class="btn btn-primary" id="printOperatorReportBtn" disabled data-i18n="printList">Imprimir lista</button>
         <div class="operator-report-status" id="operatorReportStatus"></div>
       </div>
       <div class="operator-report-preview" id="operatorReportPreview"></div>
     </section>
 
     <section>
-      <p class="section-title">Prévia da receita DPV</p>
+      <p class="section-title" data-i18n="dpvPreview">Prévia da receita DPV</p>
       <div class="preview-wrap" id="dpvPreviewWrap">
         <div class="empty-state">Confirme a conversão para montar a receita DPV.</div>
       </div>
     </section>
 
     <div class="pipeline-bar">
-      <button class="btn btn-ghost" id="backTo1Btn">← Rever conversão</button>
+      <button class="btn btn-ghost" id="backTo1Btn" data-i18n="reviewConversion">← Rever conversão</button>
       <div class="pipeline-info" id="step2Info"></div>
-      <button class="btn btn-primary" id="approveDpvBtn">Confirmar DPV →</button>
+      <button class="btn btn-primary" id="approveDpvBtn" data-i18n="confirmDpv">Confirmar DPV →</button>
     </div>
   </div>
 
   <!-- ETAPA 3 -->
   <div class="pane" id="pane3" style="display:none;">
     <section>
-      <p class="section-title">Escolha os arquivos que deseja gerar</p>
+      <p class="section-title" data-i18n="chooseFiles">Escolha os arquivos que deseja gerar</p>
       <div class="export-choice">
-        <label class="choice"><input type="checkbox" id="wantCsv" checked> <span><strong>CSV</strong><em>Tabela de montagem convertida para o software CharmHigh</em></span></label>
-        <label class="choice"><input type="checkbox" id="wantDpv" checked> <span><strong>DPV</strong><em>Receita da CHMT36VB com componentes, Stations e MStack</em></span></label>
+        <label class="choice"><input type="checkbox" id="wantCsv" checked> <span><strong>CSV</strong><em data-i18n="csvHelp">Tabela de montagem convertida para o software CharmHigh</em></span></label>
+        <label class="choice"><input type="checkbox" id="wantDpv" checked> <span><strong>DPV</strong><em data-i18n="dpvHelp">Receita da CHMT36VB com componentes, Stations e MStack</em></span></label>
       </div>
     </section>
 
     <div class="export-bar">
       <div class="export-bar-row">
         <div class="folder-pill" id="folderPill">
-          <span>📁</span> <span>Destino: <strong id="folderName">pasta de downloads do navegador</strong></span>
+          <span>📁</span> <span><span data-i18n="destination">Destino:</span> <strong id="folderName" data-i18n="downloadsFolder">pasta de downloads do navegador</strong></span>
         </div>
-        <button class="btn btn-ghost" id="pickFolderBtn">Escolher outra pasta</button>
+        <button class="btn btn-ghost" id="pickFolderBtn" data-i18n="chooseFolder">Escolher outra pasta</button>
         <input type="text" id="fileNameInput" value="pickplace_CHMT">
-        <button class="btn btn-primary" id="exportBtn" disabled>Gerar e baixar</button>
+        <button class="btn btn-primary" id="exportBtn" disabled data-i18n="generateDownload">Gerar e baixar</button>
       </div>
       <div class="status-msg" id="statusMsg"></div>
     </div>
 
     <div class="pipeline-bar">
-      <button class="btn btn-ghost" id="backTo2Btn">← Rever DPV</button>
-      <div class="pipeline-info">O mesmo nome-base será usado nos arquivos selecionados; apenas a extensão será diferente.</div>
+      <button class="btn btn-ghost" id="backTo2Btn" data-i18n="reviewDpv">← Rever DPV</button>
+      <div class="pipeline-info" data-i18n="sameBaseName">O mesmo nome-base será usado nos arquivos selecionados; apenas a extensão será diferente.</div>
     </div>
   </div>
 
@@ -933,32 +950,32 @@
 
   <div id="toolOrigin" style="display:none;">
     <section>
-      <p class="section-title">Pacote Gerber da placa</p>
+      <p class="section-title" data-i18n="gerberPackage">Pacote Gerber da placa</p>
       <div class="dropzone" id="zipDropzone">
-        <strong>Selecione o pacote .zip dos Gerbers</strong>
-        <span>A ferramenta encontra o contorno e desloca cobre, máscara, pasta, silk e perfil juntos, sem alterar a posição relativa entre as camadas. A furação não entra no novo pacote de conferência da montagem.</span>
+        <strong data-i18n="gerberZipTitle">Selecione o pacote .zip dos Gerbers</strong>
+        <span data-i18n="gerberZipHelp">A ferramenta encontra o contorno e desloca cobre, máscara, pasta, silk e perfil juntos, sem alterar a posição relativa entre as camadas. A furação não entra no novo pacote de conferência da montagem.</span>
         <input type="file" id="zipInput" accept=".zip">
       </div>
       <p class="note" id="zipInfo"></p>
     </section>
 
     <section id="posSection" style="display:none;">
-      <p class="section-title">Posições da montagem (opcional)</p>
+      <p class="section-title" data-i18n="placementOptional">Posições da montagem (opcional)</p>
       <div class="dropzone" id="posDropzone">
-        <strong>Adicione os arquivos .csv ou .pos</strong>
-        <span>As coordenadas recebem exatamente o mesmo deslocamento dos Gerbers e seguem no .zip final, mantendo fabricação e montagem no mesmo referencial.</span>
+        <strong data-i18n="placementFilesTitle">Adicione os arquivos .csv ou .pos</strong>
+        <span data-i18n="placementFilesHelp">As coordenadas recebem exatamente o mesmo deslocamento dos Gerbers e seguem no .zip final, mantendo fabricação e montagem no mesmo referencial.</span>
         <input type="file" id="posInput" accept=".csv,.pos,.txt" multiple>
       </div>
     </section>
 
     <section id="originConfig" style="display:none;">
-      <p class="section-title">Como reposicionar a origem</p>
+      <p class="section-title" data-i18n="originModeTitle">Como reposicionar a origem</p>
       <div class="panel-form">
         <div class="opt">
-          <label>Modo</label>
+          <label data-i18n="mode">Modo</label>
           <select id="originMode">
-            <option value="outline" selected>Levar o canto do contorno para X0 / Y0</option>
-            <option value="free">Informar deslocamento manual</option>
+            <option value="outline" selected data-i18n="outlineToZero">Levar o canto do contorno para X0 / Y0</option>
+            <option value="free" data-i18n="manualOffset">Informar deslocamento manual</option>
           </select>
         </div>
         <div class="opt"><label>Offset X (mm)</label><input type="number" id="originDx" step="0.001" value="0"></div>
@@ -968,32 +985,32 @@
     </section>
 
     <section id="originPreviewSection" style="display:none;">
-      <p class="section-title">Comparação visual</p>
+      <p class="section-title" data-i18n="visualComparison">Comparação visual</p>
       <div class="origin-compare">
         <div class="compare-card">
-          <div class="compare-head"><strong>Antes</strong><span id="beforeCoords"></span></div>
+          <div class="compare-head"><strong data-i18n="before">Antes</strong><span id="beforeCoords"></span></div>
           <div class="compare-body" id="beforeCanvas"></div>
         </div>
         <div class="compare-card">
-          <div class="compare-head"><strong>Depois</strong><span id="afterCoords"></span></div>
+          <div class="compare-head"><strong data-i18n="after">Depois</strong><span id="afterCoords"></span></div>
           <div class="compare-body" id="afterCanvas"></div>
         </div>
       </div>
     </section>
 
     <section id="originFilesSection" style="display:none;">
-      <p class="section-title">Conteúdo do novo pacote</p>
+      <p class="section-title" data-i18n="newPackageContent">Conteúdo do novo pacote</p>
       <div class="preview-wrap" id="originTableWrap"></div>
     </section>
 
     <div class="export-bar" id="originExportBar" style="display:none;">
       <div class="export-bar-row">
         <div class="folder-pill">
-          <span>📁</span> <span>Destino: <strong id="originFolderName">pasta de downloads do navegador</strong></span>
+          <span>📁</span> <span><span data-i18n="destination">Destino:</span> <strong id="originFolderName" data-i18n="downloadsFolder">pasta de downloads do navegador</strong></span>
         </div>
-        <button class="btn btn-ghost" id="originPickFolderBtn">Escolher outra pasta</button>
+        <button class="btn btn-ghost" id="originPickFolderBtn" data-i18n="chooseFolder">Escolher outra pasta</button>
         <input type="text" id="originFileName" value="gerbers.zip">
-        <button class="btn btn-primary" id="originExportBtn" disabled>Gerar pacote corrigido</button>
+        <button class="btn btn-primary" id="originExportBtn" disabled data-i18n="generateCorrectedPackage">Gerar pacote corrigido</button>
       </div>
       <div class="status-msg" id="originStatus"></div>
     </div>
@@ -1006,6 +1023,76 @@
 <script>
 (function(){
   "use strict";
+
+  // ---------- interface language (Portuguese is the default) ----------
+  let currentLang = 'pt';
+  const I18N = {
+    languageLabel:['Idioma','Language'],
+    heroTitle:['Preparador de arquivos para CharmHigh CHM-T36/CHM-T48','File preparer for CharmHigh CHM-T36/CHM-T48'],
+    heroSubtitle:['Transforme arquivos Pick & Place em CSV e DPV prontos para revisão. Confira a orientação da placa, organize feeders e MStack e corrija a origem dos Gerbers — tudo direto no navegador.','Convert Pick & Place files into review-ready CSV and DPV files. Check board orientation, organize feeders and MStack, and correct Gerber origins — all directly in your browser.'],
+    originTab:['Corrigir origem dos Gerbers','Correct Gerber origins'],
+    stepImport:['Importar e conferir','Import and review'],
+    stepSetup:['Configurar montagem','Configure assembly'],
+    stepExport:['Gerar arquivos','Generate files'],
+    inputSection:['Pick & Place, BOM e contorno da placa','Pick & Place, BOM and board outline'],
+    dropTitle:['Solte os arquivos aqui ou escolha no computador','Drop files here or choose them from your computer'],
+    dropHelp:['Adicione o arquivo de posição (.csv/.pos) e, opcionalmente, a BOM (.csv) para separar componentes pelo Part Number. Inclua o Gerber Edge.Cuts (.gbr/.gm1/.gko) para visualizar o contorno. Tudo é processado somente no navegador.','Add the placement file (.csv/.pos) and, optionally, the BOM (.csv) to separate components by Part Number. Include the Edge.Cuts Gerber (.gbr/.gm1/.gko) to preview the outline. Everything is processed only in your browser.'],
+    dpvExistingTitle:['Já possui uma receita DPV?','Already have a DPV recipe?'],
+    dpvExistingHelp:['Abra o arquivo existente para revisar componentes e alterar configurações sem perder calibração, trays ou outras tabelas da receita original.','Open an existing file to review components and change settings without losing calibration, trays, or other tables from the original recipe.'],
+    openDpv:['Abrir DPV para editar','Open DPV for editing'],
+    mappingSection:['Confira os arquivos e o mapeamento','Review files and column mapping'],
+    orientationSection:['Escolha a orientação e confira a placa','Choose the orientation and inspect the board'],
+    showReferences:['mostrar referências','show references'],
+    autoAlign:['alinhar origens automaticamente','align origins automatically'],
+    convertedResult:['Resultado convertido','Converted result'],
+    emptyConversion:['Adicione um arquivo Pick & Place para visualizar a conversão.','Add a Pick & Place file to preview the conversion.'],
+    confirmConversion:['Confirmar conversão →','Confirm conversion →'],
+    componentsSection:['Componentes, feeders e MStack','Components, feeders and MStack'],
+    autoMstackHelp:['<strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.','<strong>Create MStack positions automatically.</strong> Every component without a feeder receives a free, unique position from 0 to 35. For safety, these assignments are exported with <strong>Skip</strong> enabled until you confirm the physical position on the machine.'],
+    pitchTitle:['Passo padrão da fita (mm)','Default tape pitch (mm)'],
+    pitchHelp:['Usado nos grupos que ainda não foram ajustados manualmente. A EIA-481 permite 2 ou 4 mm em fitas de 8 mm e 2, 4 ou 8 mm em fitas de 12 mm.','Used for groups that have not been adjusted manually. EIA-481 allows 2 or 4 mm pitch on 8 mm tape, and 2, 4, or 8 mm on 12 mm tape.'],
+    loadFeeders:['Carregar configuração de feeders','Load feeder configuration'],
+    saveFeeders:['Salvar configuração de feeders','Save feeder configuration'],
+    bulkTitle:['Ajustes em massa','Bulk settings'],
+    bulkHelp:['Aplique o mesmo valor a todos os componentes ativos da tabela.','Apply the same value to all active components in the table.'],
+    speed:['Velocidade (%)','Speed (%)'], vacuum:['Verificar vácuo','Check vacuum'], vision:['Usar visão','Use vision'],
+    apply:['Aplicar','Apply'], enable:['Ativar','Enable'], disable:['Desativar','Disable'],
+    operatorList:['Lista do operador','Operator list'],
+    operatorMapTitle:['Mapa de rolos e feeders para montagem','Reel and feeder setup map'],
+    operatorMapHelp:['Gere uma folha de setup com posições, Part Numbers, parâmetros e campos de conferência. Posições MStack automáticas aparecem destacadas para validação física antes de liberar o Skip.','Generate a setup sheet with positions, Part Numbers, parameters, and verification fields. Automatic MStack positions are highlighted for physical validation before Skip is released.'],
+    prepareList:['Preparar lista','Prepare list'], printList:['Imprimir lista','Print list'],
+    dpvPreview:['Prévia da receita DPV','DPV recipe preview'], reviewConversion:['← Rever conversão','← Review conversion'], confirmDpv:['Confirmar DPV →','Confirm DPV →'],
+    chooseFiles:['Escolha os arquivos que deseja gerar','Choose the files to generate'],
+    csvHelp:['Tabela de montagem convertida para o software CharmHigh','Assembly table converted for CharmHigh software'],
+    dpvHelp:['Receita da CHMT36VB com componentes, Stations e MStack','CHMT36VB recipe with components, Stations, and MStack'],
+    destination:['Destino:','Destination:'], downloadsFolder:['pasta de downloads do navegador','browser downloads folder'],
+    chooseFolder:['Escolher outra pasta','Choose another folder'], generateDownload:['Gerar e baixar','Generate and download'],
+    reviewDpv:['← Rever DPV','← Review DPV'], sameBaseName:['O mesmo nome-base será usado nos arquivos selecionados; apenas a extensão será diferente.','The same base name will be used for the selected files; only the extension will differ.'],
+    gerberPackage:['Pacote Gerber da placa','Board Gerber package'], gerberZipTitle:['Selecione o pacote .zip dos Gerbers','Select the Gerber .zip package'],
+    gerberZipHelp:['A ferramenta encontra o contorno e desloca cobre, máscara, pasta, silk e perfil juntos, sem alterar a posição relativa entre as camadas. A furação não entra no novo pacote de conferência da montagem.','The tool finds the outline and shifts copper, mask, paste, silkscreen, and profile together without changing their relative positions. Drill files are not included in the new assembly-review package.'],
+    placementOptional:['Posições da montagem (opcional)','Assembly placements (optional)'], placementFilesTitle:['Adicione os arquivos .csv ou .pos','Add the .csv or .pos files'],
+    placementFilesHelp:['As coordenadas recebem exatamente o mesmo deslocamento dos Gerbers e seguem no .zip final, mantendo fabricação e montagem no mesmo referencial.','The coordinates receive exactly the same shift as the Gerbers and are included in the final .zip, keeping fabrication and assembly in the same reference frame.'],
+    originModeTitle:['Como reposicionar a origem','How to reposition the origin'], mode:['Modo','Mode'],
+    outlineToZero:['Levar o canto do contorno para X0 / Y0','Move the outline corner to X0 / Y0'], manualOffset:['Informar deslocamento manual','Enter a manual offset'],
+    visualComparison:['Comparação visual','Visual comparison'], before:['Antes','Before'], after:['Depois','After'],
+    newPackageContent:['Conteúdo do novo pacote','New package contents'], generateCorrectedPackage:['Gerar pacote corrigido','Generate corrected package'],
+  };
+
+  function l(pt, en){ return currentLang === 'en' ? en : pt; }
+  function t(key){ const value = I18N[key]; return value ? value[currentLang === 'en' ? 1 : 0] : key; }
+  function applyStaticTranslations(){
+    document.documentElement.lang = currentLang === 'en' ? 'en' : 'pt-BR';
+    document.title = l('Preparador de arquivos para CharmHigh CHM-T36/CHM-T48','File preparer for CharmHigh CHM-T36/CHM-T48');
+    document.querySelector('meta[name="description"]').content = l(
+      'Prepare arquivos Pick & Place, CSV, DPV e Gerbers para máquinas CharmHigh CHM-T36 e CHM-T48 diretamente no navegador.',
+      'Prepare Pick & Place, CSV, DPV, and Gerber files for CharmHigh CHM-T36 and CHM-T48 machines directly in your browser.'
+    );
+    document.querySelectorAll('[data-i18n]').forEach(el=>{ el.innerHTML = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-lang]').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.lang === currentLang);
+      btn.setAttribute('aria-pressed', btn.dataset.lang === currentLang ? 'true' : 'false');
+    });
+  }
 
   // ---------- state ----------
   let files = []; // placement files: { id, name, rawHeaders, rows, mapping, layerMode, mirrors, dimensions, rotation }
@@ -1116,10 +1203,10 @@
   function detectFormatLabel(headers){
     const normed = headers.map(normHeader);
     const has = s => normed.includes(s);
-    if(has('side') && has('posx') && has('posy')) return {label:'KiCad', ok:true};
-    if((has('mid x')||has('center x')) && (has('ref x')||has('pad x'))) return {label:'Altium/EasyEDA', ok:true};
-    if(has('layer') && (has('mid x')||has('x'))) return {label:'Genérico (Eagle/outro)', ok:true};
-    return {label:'Não identificado — confira o mapeamento', ok:false};
+    if(has('side') && has('posx') && has('posy')) return {label:'KiCad', kind:'kicad', ok:true};
+    if((has('mid x')||has('center x')) && (has('ref x')||has('pad x'))) return {label:'Altium/EasyEDA', kind:'altium', ok:true};
+    if(has('layer') && (has('mid x')||has('x'))) return {label:'Genérico (Eagle/outro)', kind:'generic', ok:true};
+    return {label:'Não identificado — confira o mapeamento', kind:'unknown', ok:false};
   }
 
   // ---------- optional BOM parsing / reference matching ----------
@@ -1279,11 +1366,11 @@
   function buildMappingSelect(fileObj, fieldKey){
     const sel = document.createElement('select');
     const noneOpt = document.createElement('option');
-    noneOpt.value = -1; noneOpt.textContent = '— ignorar esta coluna —';
+    noneOpt.value = -1; noneOpt.textContent = l('— ignorar esta coluna —','— ignore this column —');
     sel.appendChild(noneOpt);
     fileObj.rawHeaders.forEach((h,idx)=>{
       const opt = document.createElement('option');
-      opt.value = idx; opt.textContent = h || ('coluna '+(idx+1));
+      opt.value = idx; opt.textContent = h || (l('coluna ','column ')+(idx+1));
       if(fileObj.mapping[fieldKey] === idx) opt.selected = true;
       sel.appendChild(opt);
     });
@@ -1310,9 +1397,9 @@
       head.className = 'file-card-head';
       const left = document.createElement('div');
       const hasConflicts = bomFile.conflicts.length > 0;
-      left.innerHTML = '<span class="fname">'+esc(bomFile.name)+'</span><span class="badge '+(hasConflicts?'warn':'ok')+'">'+(hasConflicts?'BOM com conflito':'BOM reconhecida')+'</span>';
+      left.innerHTML = '<span class="fname">'+esc(bomFile.name)+'</span><span class="badge '+(hasConflicts?'warn':'ok')+'">'+(hasConflicts?l('BOM com conflito','BOM conflict'):l('BOM reconhecida','BOM recognized'))+'</span>';
       const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove-btn'; removeBtn.textContent = '✕'; removeBtn.title = 'Remover BOM';
+      removeBtn.className = 'remove-btn'; removeBtn.textContent = '✕'; removeBtn.title = l('Remover BOM','Remove BOM');
       removeBtn.addEventListener('click', ()=>{
         bomFile = null;
         feederAssignments = {};
@@ -1323,29 +1410,29 @@
       const body = document.createElement('div');
       body.className = 'file-card-body';
       body.innerHTML = '<div class="bom-summary">'
-        + '<div class="bom-metric"><strong>'+bomFile.rows.length+'</strong><span>linhas na BOM</span></div>'
-        + '<div class="bom-metric"><strong>'+bomFile.byRef.size+'</strong><span>referências indexadas</span></div>'
-        + '<div class="bom-metric"><strong>'+bomFile.partNumberCount+'</strong><span>Part Numbers diferentes</span></div>'
-        + '<div class="bom-metric"><strong>'+coverage.matched+'/'+coverage.total+'</strong><span>componentes relacionados</span></div>'
+        + '<div class="bom-metric"><strong>'+bomFile.rows.length+'</strong><span>'+l('linhas na BOM','BOM rows')+'</span></div>'
+        + '<div class="bom-metric"><strong>'+bomFile.byRef.size+'</strong><span>'+l('referências indexadas','indexed references')+'</span></div>'
+        + '<div class="bom-metric"><strong>'+bomFile.partNumberCount+'</strong><span>'+l('Part Numbers diferentes','different Part Numbers')+'</span></div>'
+        + '<div class="bom-metric"><strong>'+coverage.matched+'/'+coverage.total+'</strong><span>'+l('componentes relacionados','matched components')+'</span></div>'
         + '</div>';
 
       const message = document.createElement('div');
       if(hasConflicts){
         const examples = bomFile.conflicts.slice(0,4).map(item=>item.reference+': '+item.first+' / '+item.second).join('; ');
         message.className = 'bom-message error';
-        message.textContent = bomFile.conflicts.length + ' conflito(s) de Part Number na BOM. Corrija as referências duplicadas antes de confirmar. ' + examples;
+        message.textContent = bomFile.conflicts.length + l(' conflito(s) de Part Number na BOM. Corrija as referências duplicadas antes de confirmar. ',' Part Number conflict(s) in the BOM. Fix duplicate references before confirming. ') + examples;
       } else if(!coverage.total){
         message.className = 'bom-message';
-        message.textContent = 'BOM pronta. Adicione o arquivo Pick & Place para relacionar as referências.';
+        message.textContent = l('BOM pronta. Adicione o arquivo Pick & Place para relacionar as referências.','BOM ready. Add the Pick & Place file to match the references.');
       } else if(coverage.unmatched.length || coverage.missingPartNumber.length){
         const parts = [];
-        if(coverage.unmatched.length) parts.push(coverage.unmatched.length + ' sem correspondência: ' + coverage.unmatched.slice(0,8).join(', '));
-        if(coverage.missingPartNumber.length) parts.push(coverage.missingPartNumber.length + ' sem Part Number: ' + coverage.missingPartNumber.slice(0,8).join(', '));
+        if(coverage.unmatched.length) parts.push(coverage.unmatched.length + l(' sem correspondência: ',' unmatched: ') + coverage.unmatched.slice(0,8).join(', '));
+        if(coverage.missingPartNumber.length) parts.push(coverage.missingPartNumber.length + l(' sem Part Number: ',' without Part Number: ') + coverage.missingPartNumber.slice(0,8).join(', '));
         message.className = 'bom-message warn';
-        message.textContent = 'BOM aplicada com ressalvas. ' + parts.join('. ') + '. Esses componentes usarão o agrupamento de compatibilidade por valor + footprint.';
+        message.textContent = l('BOM aplicada com ressalvas. ','BOM applied with warnings. ') + parts.join('. ') + l('. Esses componentes usarão o agrupamento de compatibilidade por valor + footprint.','. These components will use compatibility grouping by value + footprint.');
       } else {
         message.className = 'bom-message';
-        message.textContent = 'Todas as referências foram relacionadas. O agrupamento será feito por Part Number + footprint.';
+        message.textContent = l('Todas as referências foram relacionadas. O agrupamento será feito por Part Number + footprint.','All references were matched. Grouping will use Part Number + footprint.');
       }
       body.appendChild(message);
       card.appendChild(head); card.appendChild(body);
@@ -1359,10 +1446,12 @@
       const head = document.createElement('div');
       head.className = 'file-card-head';
       const left = document.createElement('div');
-      left.innerHTML = '<span class="fname">'+esc(f.name)+'</span><span class="badge '+(f.detected.ok?'ok':'warn')+'">'+esc(f.detected.label)+'</span>';
+      const detectedLabel = f.detected.kind === 'generic' ? l('Genérico (Eagle/outro)','Generic (Eagle/other)')
+        : (f.detected.kind === 'unknown' ? l('Não identificado — confira o mapeamento','Not identified — check the mapping') : f.detected.label);
+      left.innerHTML = '<span class="fname">'+esc(f.name)+'</span><span class="badge '+(f.detected.ok?'ok':'warn')+'">'+esc(detectedLabel)+'</span>';
       const removeBtn = document.createElement('button');
       removeBtn.className = 'remove-btn'; removeBtn.textContent = '✕';
-      removeBtn.title = 'Remover arquivo';
+      removeBtn.title = l('Remover arquivo','Remove file');
       removeBtn.addEventListener('click', ()=>{
         files = files.filter(x=>x.id!==f.id);
         renderAll();
@@ -1374,7 +1463,7 @@
 
       const rowCount = document.createElement('div');
       rowCount.className = 'row-count';
-      rowCount.textContent = f.rows.length + ' ' + (f.rows.length === 1 ? 'componente encontrado' : 'componentes encontrados');
+      rowCount.textContent = f.rows.length + ' ' + (f.rows.length === 1 ? l('componente encontrado','component found') : l('componentes encontrados','components found'));
       body.appendChild(rowCount);
 
       const grid = document.createElement('div');
@@ -1383,7 +1472,12 @@
         const wrap = document.createElement('div');
         wrap.className = 'map-field';
         const label = document.createElement('label');
-        label.textContent = field.label;
+        const englishFieldLabels = {
+          designator:'Designator', footprint:'Footprint', midx:'Center X / Mid X', midy:'Center Y / Mid Y',
+          refx:'Reference X / Ref X', refy:'Reference Y / Ref Y', padx:'Pad X', pady:'Pad Y',
+          layer:'Side / Layer', rotation:'Rotation', comment:'Value / Comment'
+        };
+        label.textContent = currentLang === 'en' ? englishFieldLabels[field.key] : field.label;
         wrap.appendChild(label);
         wrap.appendChild(buildMappingSelect(f, field.key));
         grid.appendChild(wrap);
@@ -1396,10 +1490,10 @@
       // layer mode
       const layerOpt = document.createElement('div');
       layerOpt.className = 'opt';
-      layerOpt.innerHTML = '<label>Lado da placa</label>';
+      layerOpt.innerHTML = '<label>'+l('Lado da placa','Board side')+'</label>';
       const layerSel = document.createElement('select');
-      [['auto','Detectar automaticamente'],['T','Superior / Top (T)'],['B','Inferior / Bottom (B)']].forEach(([v,l])=>{
-        const o = document.createElement('option'); o.value=v; o.textContent=l;
+      [['auto',l('Detectar automaticamente','Detect automatically')],['T',l('Superior / Top (T)','Top (T)')],['B',l('Inferior / Bottom (B)','Bottom (B)')]].forEach(([v,label])=>{
+        const o = document.createElement('option'); o.value=v; o.textContent=label;
         if(f.layerMode===v) o.selected=true;
         layerSel.appendChild(o);
       });
@@ -1410,7 +1504,7 @@
       // rotation offset
       const rotOpt = document.createElement('div');
       rotOpt.className = 'opt';
-      rotOpt.innerHTML = '<label>Correção de rotação (°)</label>';
+      rotOpt.innerHTML = '<label>'+l('Correção de rotação (°)','Rotation correction (°)')+'</label>';
       const rotInput = document.createElement('input');
       rotInput.type='number'; rotInput.value=f.rotOffset; rotInput.step='0.1';
       rotInput.addEventListener('input', ()=>{ f.rotOffset = parseFloat(rotInput.value)||0; renderAll(); });
@@ -1423,20 +1517,20 @@
       const mirrorCb = document.createElement('input');
       mirrorCb.type='checkbox'; mirrorCb.checked=f.mirrorX;
       mirrorCb.addEventListener('change', ()=>{ f.mirrorX = mirrorCb.checked; renderAll(); });
-      const mirrorLabel = document.createElement('label'); mirrorLabel.textContent='Espelhar no eixo X (lado inferior)';
+      const mirrorLabel = document.createElement('label'); mirrorLabel.textContent=l('Espelhar no eixo X (lado inferior)','Mirror on X axis (bottom side)');
       mirrorOpt.appendChild(mirrorCb); mirrorOpt.appendChild(mirrorLabel);
       opts.appendChild(mirrorOpt);
 
       // board width (only relevant if mirror X on)
       const bwOpt = document.createElement('div');
       bwOpt.className = 'opt';
-      bwOpt.innerHTML = '<label>Largura da placa (mm)</label>';
+      bwOpt.innerHTML = '<label>'+l('Largura da placa (mm)','Board width (mm)')+'</label>';
       const bwInput = document.createElement('input');
       bwInput.type='number'; bwInput.step='0.1';
       if(outline) f.boardWidth = +outline.bbox.w.toFixed(3);
       bwInput.value=f.boardWidth;
       bwInput.disabled = !!outline;
-      bwInput.title = outline ? 'Definido pelo contorno Gerber' : '';
+      bwInput.title = outline ? l('Definido pelo contorno Gerber','Defined by the Gerber outline') : '';
       bwInput.addEventListener('input', ()=>{ f.boardWidth = parseFloat(bwInput.value)||0; renderAll(); });
       bwOpt.appendChild(bwInput);
       opts.appendChild(bwOpt);
@@ -1447,20 +1541,20 @@
       const mirrorYCb = document.createElement('input');
       mirrorYCb.type='checkbox'; mirrorYCb.checked=f.mirrorY;
       mirrorYCb.addEventListener('change', ()=>{ f.mirrorY = mirrorYCb.checked; renderAll(); });
-      const mirrorYLabel = document.createElement('label'); mirrorYLabel.textContent='Espelhar no eixo Y';
+      const mirrorYLabel = document.createElement('label'); mirrorYLabel.textContent=l('Espelhar no eixo Y','Mirror on Y axis');
       mirrorYOpt.appendChild(mirrorYCb); mirrorYOpt.appendChild(mirrorYLabel);
       opts.appendChild(mirrorYOpt);
 
       // board height (only relevant if mirror Y on)
       const bhOpt = document.createElement('div');
       bhOpt.className = 'opt';
-      bhOpt.innerHTML = '<label>Altura da placa (mm)</label>';
+      bhOpt.innerHTML = '<label>'+l('Altura da placa (mm)','Board height (mm)')+'</label>';
       const bhInput = document.createElement('input');
       bhInput.type='number'; bhInput.step='0.1';
       if(outline) f.boardHeight = +outline.bbox.h.toFixed(3);
       bhInput.value=f.boardHeight;
       bhInput.disabled = !!outline;
-      bhInput.title = outline ? 'Definido pelo contorno Gerber' : '';
+      bhInput.title = outline ? l('Definido pelo contorno Gerber','Defined by the Gerber outline') : '';
       bhInput.addEventListener('input', ()=>{ f.boardHeight = parseFloat(bhInput.value)||0; renderAll(); });
       bhOpt.appendChild(bhInput);
       opts.appendChild(bhOpt);
@@ -1470,9 +1564,8 @@
       const note = document.createElement('div');
       note.className = 'note';
       const axInfo = mirrorAxes(f);
-      note.textContent = 'O espelhamento usa o eixo da própria placa (referência: ' + axInfo.source
-        + '), inclusive quando o KiCad exporta coordenadas absolutas. '
-        + 'No eixo X, a rotação passa a (180 − θ); no eixo Y, a (360 − θ). Confirme o resultado na visualização antes de montar.';
+      note.textContent = l('O espelhamento usa o eixo da própria placa (referência: ','Mirroring uses the board\'s own axis (reference: ') + axInfo.source
+        + l('), inclusive quando o KiCad exporta coordenadas absolutas. No eixo X, a rotação passa a (180 − θ); no eixo Y, a (360 − θ). Confirme o resultado na visualização antes de montar.', '), including when KiCad exports absolute coordinates. On the X axis, rotation becomes (180 − θ); on the Y axis, (360 − θ). Confirm the result in the preview before assembly.');
       body.appendChild(note);
 
       card.appendChild(head);
@@ -1513,8 +1606,8 @@
 
     if(outline){
       const b = outline.bbox, W = b.w, H = b.h, tol = 1.0;
-      const ABS = {sumX: b.minX + b.maxX, sumY: b.minY + b.maxY, source:'contorno, coordenadas absolutas'};
-      const REL = {sumX: W, sumY: H, source:'contorno, origem no canto da placa'};
+      const ABS = {sumX: b.minX + b.maxX, sumY: b.minY + b.maxY, source:l('contorno, coordenadas absolutas','outline, absolute coordinates')};
+      const REL = {sumX: W, sumY: H, source:l('contorno, origem no canto da placa','outline, origin at the board corner')};
 
       if(cb){
         const insideAbs = cb.minX >= b.minX - tol && cb.maxX <= b.maxX + tol &&
@@ -1539,7 +1632,7 @@
     return {
       sumX: (f.boardWidth  && zeroBasedX) ? f.boardWidth  : (cb ? cb.minX + cb.maxX : 0),
       sumY: (f.boardHeight && zeroBasedY) ? f.boardHeight : (cb ? cb.minY + cb.maxY : 0),
-      source: (f.boardWidth || f.boardHeight) && zeroBasedX ? 'dimensão informada' : 'extensão dos componentes',
+      source: (f.boardWidth || f.boardHeight) && zeroBasedX ? l('dimensão informada','entered dimensions') : l('extensão dos componentes','component extents'),
     };
   }
 
@@ -1634,7 +1727,7 @@
 
   function renderPreview(rows){
     if(rows.length === 0){
-      previewWrapEl.innerHTML = '<div class="empty-state">Adicione um arquivo Pick &amp; Place para visualizar a conversão.</div>';
+      previewWrapEl.innerHTML = '<div class="empty-state">'+l('Adicione um arquivo Pick &amp; Place para visualizar a conversão.','Add a Pick &amp; Place file to preview the conversion.')+'</div>';
       return;
     }
     const cols = ['Designator','Footprint','Mid X','Mid Y','Ref X','Ref Y','Pad X','Pad Y','Layer','Rotation','Comment'];
@@ -1646,7 +1739,7 @@
     });
     html += '</tbody></table>';
     if(rows.length > shown.length){
-      html += '<div class="table-footnote">Exibindo '+shown.length+' de '+rows.length+' linhas. O arquivo final incluirá todas.</div>';
+      html += '<div class="table-footnote">'+l('Exibindo ','Showing ')+shown.length+l(' de ',' of ')+rows.length+l(' linhas. O arquivo final incluirá todas.',' rows. The final file will include all of them.')+'</div>';
     }
     previewWrapEl.innerHTML = html;
   }
@@ -1760,12 +1853,12 @@
   const pitchGridEl = document.getElementById('pitchGrid');
 
   function renderPitchPanel(){
-    if(pitchGridEl.childElementCount) return; // built once; values persist in PITCH_DEFAULTS
+    pitchGridEl.innerHTML = '';
     Object.keys(PITCH_DEFAULTS).forEach(key=>{
       const wrap = document.createElement('div');
       wrap.className = 'pitch-field';
       const label = document.createElement('label');
-      label.textContent = key;
+      label.textContent = key === 'outros' ? l('outros','other') : key;
       const input = document.createElement('input');
       input.type='number'; input.step='2'; input.min='0'; input.value = PITCH_DEFAULTS[key];
       input.addEventListener('input', ()=>{
@@ -1792,16 +1885,16 @@
 
   function renderFeederTable(rows){
     groupingNoteEl.innerHTML = bomFile
-      ? 'Cada linha representa um componente agrupado por <strong>Part Number + footprint</strong>. Assim, peças de mesmo valor com tolerância, fabricante ou especificação diferentes recebem Stations/MStack separados. A coluna <strong>Ângulo</strong> mostra o valor final enviado à máquina. Informe a posição física ou marque <strong>Remover</strong>.'
-      : 'Nenhuma BOM foi adicionada. Os componentes estão agrupados por <strong>footprint + valor</strong>, modo de compatibilidade que pode unir peças com tolerâncias ou especificações diferentes. Para separá-las com segurança, volte e adicione a BOM.';
-    if(rows.length === 0){ feederTableWrapEl.innerHTML = '<div class="empty-state">Confirme a conversão para configurar os componentes.</div>'; return; }
+      ? l('Cada linha representa um componente agrupado por <strong>Part Number + footprint</strong>. Assim, peças de mesmo valor com tolerância, fabricante ou especificação diferentes recebem Stations/MStack separados. A coluna <strong>Ângulo</strong> mostra o valor final enviado à máquina. Informe a posição física ou marque <strong>Remover</strong>.','Each row represents a component grouped by <strong>Part Number + footprint</strong>. Parts with the same value but different tolerance, manufacturer, or specifications therefore receive separate Stations/MStack entries. The <strong>Angle</strong> column shows the final value sent to the machine. Enter the physical position or select <strong>Remove</strong>.')
+      : l('Nenhuma BOM foi adicionada. Os componentes estão agrupados por <strong>footprint + valor</strong>, modo de compatibilidade que pode unir peças com tolerâncias ou especificações diferentes. Para separá-las com segurança, volte e adicione a BOM.','No BOM was added. Components are grouped by <strong>footprint + value</strong>, a compatibility mode that may combine parts with different tolerances or specifications. To separate them safely, go back and add the BOM.');
+    if(rows.length === 0){ feederTableWrapEl.innerHTML = '<div class="empty-state">'+l('Confirme a conversão para configurar os componentes.','Confirm the conversion to configure components.')+'</div>'; return; }
     const groups = computeGroups(rows);
     const keys = Object.keys(groups);
 
     const table = document.createElement('table');
     table.className = 'feeder-table';
     const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Componente / Part Number</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ângulo</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
+    thead.innerHTML = '<tr><th>'+l('Componente / Part Number','Component / Part Number')+'</th><th>'+l('Qtd.','Qty.')+'</th><th>'+l('Remover','Remove')+'</th><th>'+l('Posição / ID','Position / ID')+'</th><th>'+l('Avanço (mm)','Pitch (mm)')+'</th><th>'+l('Cabeça','Head')+'</th><th>'+l('Altura (mm)','Height (mm)')+'</th><th>'+l('Velocidade (%)','Speed (%)')+'</th><th>'+l('Ângulo','Angle')+'</th><th>Skip</th><th>'+l('Verificar vácuo','Check vacuum')+'</th><th>'+l('Usar visão','Use vision')+'</th></tr>';
     const tbody = document.createElement('tbody');
 
     keys.forEach(key=>{
@@ -1812,7 +1905,7 @@
       const tdName = document.createElement('td');
       const identityLine = g.partNumber
         ? '<span class="grp-part">PN: ' + esc(g.partNumber) + (g.manufacturer ? ' <span class="manufacturer">· '+esc(g.manufacturer)+'</span>' : '') + '</span>'
-        : (bomFile ? '<span class="grp-part missing">Sem Part Number · agrupamento por valor + footprint</span>' : '');
+        : (bomFile ? '<span class="grp-part missing">'+l('Sem Part Number · agrupamento por valor + footprint','No Part Number · grouped by value + footprint')+'</span>' : '');
       tdName.innerHTML = '<span class="grp-primary"><span class="grp-fp">' + esc(g.footprint||'—') + '</span><span class="grp-sep">/</span><span class="grp-val">' + esc(g.comment||'—') + '</span>' + (g.fiducial ? ' <span class="fid-badge">FID</span>' : '') + '</span>' + identityLine;
       tr.appendChild(tdName);
 
@@ -1822,13 +1915,13 @@
       const tdRemove = document.createElement('td');
       const removeCb = document.createElement('input');
       removeCb.type='checkbox'; removeCb.checked=a.remove;
-      removeCb.title='Excluir este tipo de componente dos arquivos gerados';
+      removeCb.title=l('Excluir este tipo de componente dos arquivos gerados','Exclude this component type from generated files');
       tdRemove.appendChild(removeCb);
       tr.appendChild(tdRemove);
 
       const tdFeeder = document.createElement('td');
       const feederInput = document.createElement('input');
-      feederInput.type='text'; feederInput.placeholder=autoMstack.checked ? 'automática' : 'ex.: 12'; feederInput.value=a.feederID;
+      feederInput.type='text'; feederInput.placeholder=autoMstack.checked ? l('automática','automatic') : l('ex.: 12','e.g. 12'); feederInput.value=a.feederID;
       feederInput.addEventListener('input', ()=>{ a.feederID = feederInput.value.trim(); onFeederChange(); });
       tdFeeder.appendChild(feederInput);
       tr.appendChild(tdFeeder);
@@ -1836,11 +1929,11 @@
       const tdPitch = document.createElement('td');
       const pitchInput = document.createElement('input');
       pitchInput.type='number'; pitchInput.step='2'; pitchInput.min='0'; pitchInput.value=a.pitch;
-      pitchInput.title = a.pitchAuto ? 'Padrão pelo tamanho do encapsulamento' : 'Definido manualmente';
+      pitchInput.title = a.pitchAuto ? l('Padrão pelo tamanho do encapsulamento','Default based on package size') : l('Definido manualmente','Set manually');
       pitchInput.addEventListener('input', ()=>{
         a.pitch = parseFloat(pitchInput.value)||0;
         a.pitchAuto = false;
-        pitchInput.title = 'Definido manualmente';
+        pitchInput.title = l('Definido manualmente','Set manually');
         onFeederChange();
       });
       tdPitch.appendChild(pitchInput);
@@ -1848,7 +1941,7 @@
 
       const tdHead = document.createElement('td');
       const headSel = document.createElement('select');
-      [1,2].forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent='Cabeça '+h; if(a.head==h) o.selected=true; headSel.appendChild(o); });
+      [1,2].forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent=l('Cabeça ','Head ')+h; if(a.head==h) o.selected=true; headSel.appendChild(o); });
       headSel.addEventListener('change', ()=>{ a.head = parseInt(headSel.value,10); onFeederChange(); });
       tdHead.appendChild(headSel);
       tr.appendChild(tdHead);
@@ -1871,7 +1964,7 @@
       tdAngle.className = 'dpv-angle-list';
       const angles = Array.from(g.dpvAngles).map(Number).sort((x,y)=>x-y);
       tdAngle.textContent = angles.length ? angles.map(angle=>trimNum(angle,4) + '°').join(', ') : '—';
-      tdAngle.title = 'Ângulo final gravado nas linhas EComponent deste grupo';
+      tdAngle.title = l('Ângulo final gravado nas linhas EComponent deste grupo','Final angle written to this group\'s EComponent rows');
       tr.appendChild(tdAngle);
 
       const tdSkip = document.createElement('td');
@@ -1905,7 +1998,9 @@
       });
       applyRemovedState();
 
-      const responsiveLabels = ['Componente / Part Number','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo','Skip','Verificar vácuo','Usar visão'];
+      const responsiveLabels = currentLang === 'en'
+        ? ['Component / Part Number','Quantity','Remove','Position / ID','Pitch','Head','Height','Speed','Angle','Skip','Check vacuum','Use vision']
+        : ['Componente / Part Number','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo','Skip','Verificar vácuo','Usar visão'];
       Array.from(tr.children).forEach((td, index)=>{ td.dataset.label = responsiveLabels[index]; });
 
       tbody.appendChild(tr);
@@ -1923,14 +2018,14 @@
       const groups = computeGroups(lastRows);
       const keys = Object.keys(groups).filter(key=>!ensureAssignment(key).remove);
       if(!keys.length){
-        bulkStatusEl.textContent = 'Nenhum componente ativo para alterar.';
+        bulkStatusEl.textContent = l('Nenhum componente ativo para alterar.','No active components to change.');
         return;
       }
       let value;
       if(field === 'speed'){
         value = Number(document.getElementById('bulkSpeed').value);
         if(!Number.isFinite(value) || value < 1 || value > 100){
-          bulkStatusEl.textContent = 'Informe uma velocidade entre 1% e 100%.';
+          bulkStatusEl.textContent = l('Informe uma velocidade entre 1% e 100%.','Enter a speed between 1% and 100%.');
           return;
         }
       } else {
@@ -1938,8 +2033,8 @@
         value = document.getElementById(inputId).value === 'true';
       }
       keys.forEach(key=>{ ensureAssignment(key)[field] = value; });
-      const labels = {speed:'Velocidade', skip:'Skip', vacuum:'Verificação de vácuo', vision:'Visão'};
-      bulkStatusEl.textContent = labels[field] + ' atualizado em ' + keys.length + ' ' + (keys.length === 1 ? 'componente.' : 'componentes.');
+      const labels = currentLang === 'en' ? {speed:'Speed', skip:'Skip', vacuum:'Vacuum check', vision:'Vision'} : {speed:'Velocidade', skip:'Skip', vacuum:'Verificação de vácuo', vision:'Visão'};
+      bulkStatusEl.textContent = labels[field] + l(' atualizado em ',' updated for ') + keys.length + ' ' + (keys.length === 1 ? l('componente.','component.') : l('componentes.','components.'));
       renderFeederTable(lastRows);
       onFeederChange();
     });
@@ -1968,9 +2063,9 @@
         renderFeederTable(lastRows);
         onFeederChange();
         const count = Object.keys(parsed).length;
-        setStatus('Configuração carregada: '+count+' '+(count === 1 ? 'tipo de componente encontrado.' : 'tipos de componente encontrados.'), false);
+        setStatus(l('Configuração carregada: ','Configuration loaded: ')+count+' '+(count === 1 ? l('tipo de componente encontrado.','component type found.') : l('tipos de componente encontrados.','component types found.')), false);
       }catch(err){
-        setStatus('Não foi possível carregar esta configuração de feeders: '+err.message, true);
+        setStatus(l('Não foi possível carregar esta configuração de feeders: ','Could not load this feeder configuration: ')+err.message, true);
       }
     };
     reader.readAsText(file);
@@ -2011,11 +2106,11 @@
 
   function validFeederId(raw, key){
     if(!/^\d+$/.test(raw)){
-      throw new Error('Posição inválida para "' + dpvSafeText(key) + '": informe um ID inteiro entre 0 e 99.');
+      throw new Error(l('Posição inválida para "','Invalid position for "') + dpvSafeText(key) + l('": informe um ID inteiro entre 0 e 99.','": enter an integer ID from 0 to 99.'));
     }
     const id = Number(raw);
     if(!Number.isInteger(id) || id < 0 || id > 99){
-      throw new Error('Posição fora da faixa para "' + dpvSafeText(key) + '": a CHMT36VB aceita IDs de 0 a 99.');
+      throw new Error(l('Posição fora da faixa para "','Position out of range for "') + dpvSafeText(key) + l('": a CHMT36VB aceita IDs de 0 a 99.','": the CHMT36VB accepts IDs from 0 to 99.'));
     }
     return id;
   }
@@ -2059,7 +2154,7 @@
       const stationId = (fields[4]||'').trim();
       const station = stationsById.get(stationId);
       const visible = !!(ref || note);
-      const partLabel = note || (station && station.note) || 'Componente sem identificação';
+      const partLabel = note || (station && station.note) || l('Componente sem identificação','Unidentified component');
       const key = visible ? 'DPV::' + stationId + '::' + partLabel : null;
       const record = {lineIndex:index, fields:fields.slice(), key, originalAngle:angle, originalStationId:stationId};
       componentRows.push(record);
@@ -2071,7 +2166,7 @@
         'Mid X':String(x), 'Mid Y':String(y),
         'Ref X':String(x), 'Ref Y':String(y), 'Pad X':String(x), 'Pad Y':String(y),
         Layer:'T', Rotation:String(angle),
-        Comment:(station && station.note && station.note !== partLabel) ? station.note : ('Posição ' + stationId),
+        Comment:(station && station.note && station.note !== partLabel) ? station.note : (l('Posição ','Position ') + stationId),
         _groupKey:key,
       });
 
@@ -2096,9 +2191,9 @@
       }
     });
 
-    if(!componentRows.length) throw new Error('nenhuma linha EComponent foi encontrada');
-    if(!rows.length) throw new Error('o arquivo não contém componentes identificados para editar');
-    if(malformed) throw new Error(malformed + ' linha(s) Station/EComponent estão incompletas ou inválidas');
+    if(!componentRows.length) throw new Error(l('nenhuma linha EComponent foi encontrada','no EComponent rows were found'));
+    if(!rows.length) throw new Error(l('o arquivo não contém componentes identificados para editar','the file contains no identified components to edit'));
+    if(malformed) throw new Error(malformed + l(' linha(s) Station/EComponent estão incompletas ou inválidas',' Station/EComponent row(s) are incomplete or invalid'));
 
     const groupsPerStation = new Map();
     groupMeta.forEach((meta, key)=>{
@@ -2211,8 +2306,8 @@
       if(raw === '') return;
       const id = validFeederId(raw, key);
       if(explicitById.has(id) && explicitById.get(id) !== key){
-        throw new Error('A posição MStack ' + id + ' foi atribuída a dois componentes diferentes: "' +
-          dpvSafeText(explicitById.get(id)) + '" e "' + dpvSafeText(key) + '". Use uma posição exclusiva para cada componente.');
+        throw new Error(l('A posição MStack ','MStack position ') + id + l(' foi atribuída a dois componentes diferentes: "',' was assigned to two different components: "') +
+          dpvSafeText(explicitById.get(id)) + l('" e "','" and "') + dpvSafeText(key) + l('". Use uma posição exclusiva para cada componente.','". Use a unique position for each component.'));
       }
       explicitById.set(id, key);
     });
@@ -2224,8 +2319,8 @@
       }
       const pendingKeys = activeKeys.filter(key => (ensureAssignment(key).feederID||'').trim() === '');
       if(pendingKeys.length > freeIds.length){
-        throw new Error('Não há posições livres suficientes no MStack esquerdo (0–35): ' + pendingKeys.length +
-          ' componentes estão sem feeder, mas só existem ' + freeIds.length + ' posições livres. Atribua feeders/trays manualmente ou remova grupos não montados.');
+        throw new Error(l('Não há posições livres suficientes no MStack esquerdo (0–35): ','There are not enough free positions in the left MStack (0–35): ') + pendingKeys.length +
+          l(' componentes estão sem feeder, mas só existem ',' components have no feeder, but only ') + freeIds.length + l(' posições livres. Atribua feeders/trays manualmente ou remova grupos não montados.',' positions are free. Assign feeders/trays manually or remove non-fitted groups.'));
       }
       pendingKeys.forEach((key, i)=> autoByKey.set(key, freeIds[i]));
     }
@@ -2248,7 +2343,7 @@
   const operatorPrintSheet = document.getElementById('operatorPrintSheet');
 
   function operatorReportData(rows){
-    if(!rows.length) throw new Error('Carregue e confirme um arquivo Pick & Place ou DPV antes de preparar a lista.');
+    if(!rows.length) throw new Error(l('Carregue e confirme um arquivo Pick & Place ou DPV antes de preparar a lista.','Load and confirm a Pick & Place or DPV file before preparing the list.'));
     const groups = computeGroups(rows);
     const mstack = resolveMstackAssignments(rows);
     const entries = [];
@@ -2271,24 +2366,24 @@
       }
 
       const pending = automatic || noPosition || assignment.skip;
-      let status = 'LIBERADO';
-      if(automatic) status = 'CONFIRMAR / SKIP';
-      else if(noPosition) status = 'SEM POSIÇÃO / SKIP';
+      let status = l('LIBERADO','RELEASED');
+      if(automatic) status = l('CONFIRMAR / SKIP','CONFIRM / SKIP');
+      else if(noPosition) status = l('SEM POSIÇÃO / SKIP','NO POSITION / SKIP');
       else if(assignment.skip) status = 'SKIP';
 
       const references = [...new Set(group.references.filter(Boolean))]
         .sort((a,b)=>a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
       const angles = Array.from(group.dpvAngles).map(Number).sort((a,b)=>a-b);
       const controls = [];
-      if(assignment.vacuum) controls.push('Vácuo');
-      if(assignment.vision) controls.push('Visão');
+      if(assignment.vacuum) controls.push(l('Vácuo','Vacuum'));
+      if(assignment.vision) controls.push(l('Visão','Vision'));
 
       entries.push({
         position,
         automatic,
         pending,
         status,
-        partNumber:normalizePartNumber(group.partNumber) || 'Sem Part Number',
+        partNumber:normalizePartNumber(group.partNumber) || l('Sem Part Number','No Part Number'),
         manufacturer:String(group.manufacturer||'').trim() || '—',
         value:String(group.comment||'').trim() || '—',
         footprint:String(group.footprint||'').trim() || '—',
@@ -2303,15 +2398,15 @@
       });
     });
 
-    if(!entries.length) throw new Error('Nenhum componente ativo está disponível para a lista do operador.');
+    if(!entries.length) throw new Error(l('Nenhum componente ativo está disponível para a lista do operador.','No active components are available for the operator list.'));
 
     entries.sort((a,b)=>a.position-b.position || a.partNumber.localeCompare(b.partNumber, undefined, {numeric:true, sensitivity:'base'}));
-    const partNumberMissing = entries.filter(entry=>entry.partNumber === 'Sem Part Number').length;
+    const partNumberMissing = entries.filter(entry=>entry.partNumber === l('Sem Part Number','No Part Number')).length;
     return {
       entries,
       project:safeFileBase(fileNameInput.value || (importedDpv && importedDpv.fileName) || (files[0] && files[0].name) || 'pickplace_CHMT'),
-      bom:bomFile ? bomFile.name : 'Sem BOM associada',
-      generatedAt:new Date().toLocaleString('pt-BR'),
+      bom:bomFile ? bomFile.name : l('Sem BOM associada','No BOM linked'),
+      generatedAt:new Date().toLocaleString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
       placementQty:entries.reduce((total, entry)=>total + entry.qty, 0),
       automaticCount:entries.filter(entry=>entry.automatic).length,
       pendingCount:entries.filter(entry=>entry.pending).length,
@@ -2327,36 +2422,36 @@
         '<td class="op-status ' + (entry.pending ? 'warn' : 'ready') + '">' + esc(entry.status) + '</td>' +
         '<td><div class="op-pn">' + esc(entry.partNumber) + '</div><div>' + esc(entry.value) + '</div></td>' +
         '<td><strong>' + esc(entry.manufacturer) + '</strong><br>' + esc(entry.footprint) + '</td>' +
-        '<td><strong>' + esc(entry.qty) + ' un.</strong><br>' + esc(entry.references) + '<br>Ângulo: ' + esc(entry.angles) + '</td>' +
-        '<td>Avanço: <strong>' + esc(entry.pitch) + '</strong><br>Cabeça: <strong>' + esc(entry.head) + '</strong></td>' +
-        '<td>Altura: <strong>' + esc(entry.height) + '</strong><br>Velocidade: <strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
-        '<td class="op-check">□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade</td>' +
+        '<td><strong>' + esc(entry.qty) + l(' un.',' pcs.') + '</strong><br>' + esc(entry.references) + '<br>'+l('Ângulo: ','Angle: ') + esc(entry.angles) + '</td>' +
+        '<td>'+l('Avanço: ','Pitch: ')+'<strong>' + esc(entry.pitch) + '</strong><br>'+l('Cabeça: ','Head: ')+'<strong>' + esc(entry.head) + '</strong></td>' +
+        '<td>'+l('Altura: ','Height: ')+'<strong>' + esc(entry.height) + '</strong><br>'+l('Velocidade: ','Speed: ')+'<strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
+        '<td class="op-check">'+l('□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade','□ PN / reel<br>□ Feeder / position<br>□ Polarity')+'</td>' +
       '</tr>';
     }).join('');
 
     return '<div class="operator-sheet">' +
       '<div class="operator-sheet-header">' +
-        '<div><h2>Lista de setup — CharmHigh CHM-T36/CHM-T48</h2>' +
-          '<div class="operator-sheet-subtitle">Mapa de rolos, feeders e parâmetros para preparação da máquina.<br>* Posição MStack atribuída automaticamente: confirme fisicamente antes de liberar o Skip.</div></div>' +
-        '<div class="operator-sheet-id"><strong>' + esc(data.project) + '</strong>BOM: ' + esc(data.bom) + '<br>Gerado em: ' + esc(data.generatedAt) + '</div>' +
+        '<div><h2>'+l('Lista de setup','Setup list')+' — CharmHigh CHM-T36/CHM-T48</h2>' +
+          '<div class="operator-sheet-subtitle">'+l('Mapa de rolos, feeders e parâmetros para preparação da máquina.<br>* Posição MStack atribuída automaticamente: confirme fisicamente antes de liberar o Skip.','Reel, feeder, and parameter map for machine setup.<br>* Automatically assigned MStack position: physically confirm it before releasing Skip.')+'</div></div>' +
+        '<div class="operator-sheet-id"><strong>' + esc(data.project) + '</strong>BOM: ' + esc(data.bom) + '<br>'+l('Gerado em: ','Generated: ') + esc(data.generatedAt) + '</div>' +
       '</div>' +
       '<div class="operator-summary">' +
-        '<div class="operator-summary-item"><strong>' + esc(data.entries.length) + '</strong><span>rolos / tipos ativos</span></div>' +
-        '<div class="operator-summary-item"><strong>' + esc(data.placementQty) + '</strong><span>componentes a montar</span></div>' +
-        '<div class="operator-summary-item"><strong>' + esc(data.automaticCount) + '</strong><span>posições automáticas</span></div>' +
-        '<div class="operator-summary-item"><strong>' + esc(data.pendingCount) + '</strong><span>linhas em Skip / pendentes</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.entries.length) + '</strong><span>'+l('rolos / tipos ativos','active reels / types')+'</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.placementQty) + '</strong><span>'+l('componentes a montar','components to place')+'</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.automaticCount) + '</strong><span>'+l('posições automáticas','automatic positions')+'</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.pendingCount) + '</strong><span>'+l('linhas em Skip / pendentes','Skip / pending rows')+'</span></div>' +
       '</div>' +
-      '<div class="operator-instructions"><strong>Instruções para o operador</strong><ol>' +
-        '<li>Compare a etiqueta do rolo com o Part Number, fabricante e valor. Nunca selecione o componente somente pelo valor.</li>' +
-        '<li>Instale cada rolo na posição indicada. Posições com asterisco foram atribuídas automaticamente e precisam ser confirmadas na máquina.</li>' +
-        '<li>Configure avanço da fita, cabeça, altura e velocidade conforme esta lista.</li>' +
-        '<li>Confirme polaridade, pino 1/cátodo e sentido da fita pela embalagem ou datasheet; a ferramenta não deduz o sentido de alimentação.</li>' +
-        '<li>Mantenha o Skip ativo até concluir a conferência física do feeder. Libere-o somente de forma intencional.</li>' +
-        '<li>Faça teste a seco ou monte a primeira placa em baixa velocidade e inspecione-a antes de iniciar a produção.</li>' +
+      '<div class="operator-instructions"><strong>'+l('Instruções para o operador','Operator instructions')+'</strong><ol>' +
+        '<li>'+l('Compare a etiqueta do rolo com o Part Number, fabricante e valor. Nunca selecione o componente somente pelo valor.','Compare the reel label with the Part Number, manufacturer, and value. Never select a component by value alone.')+'</li>' +
+        '<li>'+l('Instale cada rolo na posição indicada. Posições com asterisco foram atribuídas automaticamente e precisam ser confirmadas na máquina.','Install each reel in the indicated position. Positions marked with an asterisk were assigned automatically and must be confirmed on the machine.')+'</li>' +
+        '<li>'+l('Configure avanço da fita, cabeça, altura e velocidade conforme esta lista.','Configure tape pitch, head, height, and speed according to this list.')+'</li>' +
+        '<li>'+l('Confirme polaridade, pino 1/cátodo e sentido da fita pela embalagem ou datasheet; a ferramenta não deduz o sentido de alimentação.','Confirm polarity, pin 1/cathode, and tape direction from the packaging or datasheet; the tool does not infer feed direction.')+'</li>' +
+        '<li>'+l('Mantenha o Skip ativo até concluir a conferência física do feeder. Libere-o somente de forma intencional.','Keep Skip enabled until the physical feeder check is complete. Release it only intentionally.')+'</li>' +
+        '<li>'+l('Faça teste a seco ou monte a primeira placa em baixa velocidade e inspecione-a antes de iniciar a produção.','Run a dry test or assemble the first board at low speed and inspect it before starting production.')+'</li>' +
       '</ol></div>' +
-      '<table><thead><tr><th>Pos.</th><th>Situação</th><th>Part Number / valor</th><th>Fabricante / footprint</th><th>Qtd. / referências / ângulo</th><th>Alimentação</th><th>Processo</th><th>Conferência</th></tr></thead>' +
+      '<table><thead><tr><th>'+l('Pos.','Pos.')+'</th><th>'+l('Situação','Status')+'</th><th>'+l('Part Number / valor','Part Number / value')+'</th><th>'+l('Fabricante / footprint','Manufacturer / footprint')+'</th><th>'+l('Qtd. / referências / ângulo','Qty. / references / angle')+'</th><th>'+l('Alimentação','Feeding')+'</th><th>'+l('Processo','Process')+'</th><th>'+l('Conferência','Verification')+'</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table>' +
-      '<div class="operator-sheet-footer"><span>Operador: ____________________________________ &nbsp; Data: ____/____/______</span><span>Conferido por: _______________________________ &nbsp; Data: ____/____/______</span></div>' +
+      '<div class="operator-sheet-footer"><span>'+l('Operador: ','Operator: ')+'____________________________________ &nbsp; '+l('Data: ','Date: ')+'____/____/______</span><span>'+l('Conferido por: ','Checked by: ')+'_______________________________ &nbsp; '+l('Data: ','Date: ')+'____/____/______</span></div>' +
     '</div>';
   }
 
@@ -2378,14 +2473,14 @@
       operatorReportPreview.classList.add('visible');
       printOperatorReportBtn.disabled = false;
       operatorReportStatus.classList.remove('error');
-      const notes = ['Lista preparada com ' + data.entries.length + ' ' + (data.entries.length === 1 ? 'rolo' : 'rolos') + ' e ' + data.placementQty + ' componentes.'];
-      if(data.automaticCount) notes.push(data.automaticCount + ' posições automáticas permanecem em Skip até a conferência.');
-      if(data.partNumberMissing) notes.push(data.partNumberMissing + ' linhas estão sem Part Number; associe a BOM antes da liberação.');
+      const notes = [l('Lista preparada com ','List prepared with ') + data.entries.length + ' ' + (data.entries.length === 1 ? l('rolo','reel') : l('rolos','reels')) + l(' e ',' and ') + data.placementQty + l(' componentes.',' components.')];
+      if(data.automaticCount) notes.push(data.automaticCount + l(' posições automáticas permanecem em Skip até a conferência.',' automatic positions remain in Skip until verification.'));
+      if(data.partNumberMissing) notes.push(data.partNumberMissing + l(' linhas estão sem Part Number; associe a BOM antes da liberação.',' rows have no Part Number; link the BOM before release.'));
       operatorReportStatus.textContent = notes.join(' ');
       return true;
     }catch(err){
       operatorReportStatus.classList.add('error');
-      operatorReportStatus.textContent = 'Não foi possível preparar a lista: ' + err.message;
+      operatorReportStatus.textContent = l('Não foi possível preparar a lista: ','Could not prepare the list: ') + err.message;
       printOperatorReportBtn.disabled = true;
       return false;
     }
@@ -2448,11 +2543,11 @@
 
       const x = Number(r['Mid X']), y = Number(r['Mid Y']);
       if(!Number.isFinite(x) || !Number.isFinite(y)){
-        throw new Error('Coordenada inválida em ' + dpvSafeText(r.Designator||'componente') + '. Confira o mapeamento Mid X / Mid Y.');
+        throw new Error(l('Coordenada inválida em ','Invalid coordinate in ') + dpvSafeText(r.Designator||l('componente','component')) + l('. Confira o mapeamento Mid X / Mid Y.','. Check the Mid X / Mid Y mapping.'));
       }
       if(x < 0 || y < 0 || x > MACHINE.maxX || y > MACHINE.maxY){
-        throw new Error('Coordenada fora da área útil em ' + dpvSafeText(r.Designator||'componente') +
-          ' (' + trimNum(x,3) + ', ' + trimNum(y,3) + ' mm). Limite: ' + MACHINE.maxX + ' x ' + MACHINE.maxY + ' mm.');
+        throw new Error(l('Coordenada fora da área útil em ','Coordinate outside the work area in ') + dpvSafeText(r.Designator||l('componente','component')) +
+          ' (' + trimNum(x,3) + ', ' + trimNum(y,3) + l(' mm). Limite: ',' mm). Limit: ') + MACHINE.maxX + ' x ' + MACHINE.maxY + ' mm.');
       }
 
       let rot = parseFloat(r.Rotation); if(isNaN(rot)) rot = 0;
@@ -2736,12 +2831,12 @@
       let score = 0;
 
       if(!fits){
-        reasons.push('não cabe na área útil de ' + MACHINE.maxX + '×' + MACHINE.maxY + 'mm');
+        reasons.push(l('não cabe na área útil de ','does not fit the work area of ') + MACHINE.maxX + '×' + MACHINE.maxY + 'mm');
         score -= 1000;
       } else {
         // The long axis along X keeps the head's Y travel (the slower axis) shorter
-        if(s.w >= s.h){ score += 20; reasons.push('lado maior no eixo X, reduz curso em Y'); }
-        else { reasons.push('lado maior no eixo Y'); }
+        if(s.w >= s.h){ score += 20; reasons.push(l('lado maior no eixo X, reduz curso em Y','long side on X axis, reducing Y travel')); }
+        else { reasons.push(l('lado maior no eixo Y','long side on Y axis')); }
         // Folgas
         const slackX = MACHINE.maxX - s.w, slackY = MACHINE.maxY - s.h;
         score += Math.min(slackX, slackY) * 0.05;
@@ -2762,12 +2857,12 @@
         }
         if(pair){
           const dx = Math.abs(pair[0].x - pair[1].x), dy = Math.abs(pair[0].y - pair[1].y);
-          if(dx > s.w*0.5 && dy > s.h*0.3){ score += 8; reasons.push('fiduciais bem espalhados na diagonal'); }
+          if(dx > s.w*0.5 && dy > s.h*0.3){ score += 8; reasons.push(l('fiduciais bem espalhados na diagonal','fiducials spread well across the diagonal')); }
         }
       }
 
       // Bottom-side jobs are clamped mirrored; 0° keeps operator mental model simplest
-      if(deg === 0){ score += 3; reasons.push('sem rotação, coordenadas iguais ao CAD'); }
+      if(deg === 0){ score += 3; reasons.push(l('sem rotação, coordenadas iguais ao CAD','no rotation, coordinates match CAD')); }
 
       return {deg, size:s, fits, score, reasons};
     }).sort((a,b)=> b.score - a.score);
@@ -2791,25 +2886,25 @@
   function computeAlignment(rows){
     if(!outline){
       const cb = componentBBox(rows);
-      if(!cb) return {oOff:{x:0,y:0}, cOff:{x:0,y:0}, mode:'sem contorno', W:0, H:0};
+      if(!cb) return {oOff:{x:0,y:0}, cOff:{x:0,y:0}, mode:l('sem contorno','no outline'), W:0, H:0};
       // Preserve a plausible auxiliary-origin export (including its board margin).
       // Absolute page coordinates and negative coordinates are translated to 0-based;
       // leaving them untouched is a common cause of CHMT "file error".
       const alreadyBoardLocal = cb.minX >= -0.001 && cb.minY >= -0.001 &&
         cb.maxX <= MACHINE.maxX && cb.maxY <= MACHINE.maxY;
       return alreadyBoardLocal
-        ? {oOff:{x:0,y:0}, cOff:{x:0,y:0}, mode:'origem auxiliar preservada', W:cb.maxX, H:cb.maxY}
-        : {oOff:{x:0,y:0}, cOff:{x:cb.minX,y:cb.minY}, mode:'coordenadas absolutas recentralizadas', W:cb.w, H:cb.h};
+        ? {oOff:{x:0,y:0}, cOff:{x:0,y:0}, mode:l('origem auxiliar preservada','auxiliary origin preserved'), W:cb.maxX, H:cb.maxY}
+        : {oOff:{x:0,y:0}, cOff:{x:cb.minX,y:cb.minY}, mode:l('coordenadas absolutas recentralizadas','absolute coordinates recentered'), W:cb.w, H:cb.h};
     }
     const ob = outline.bbox;
     const W = ob.w, H = ob.h;
 
     if(!autoAlignCb.checked){
-      return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:'manual (origem auxiliar)', W, H};
+      return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:l('manual (origem auxiliar)','manual (auxiliary origin)'), W, H};
     }
 
     const cb = componentBBox(rows);
-    if(!cb) return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:'origem auxiliar', W, H};
+    if(!cb) return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:l('origem auxiliar','auxiliary origin'), W, H};
 
     const tol = 1.0; // mm
     // A: both datasets share the Gerber's absolute space
@@ -2819,8 +2914,8 @@
     const insideAux = (cb.minX >= -tol && cb.minY >= -tol &&
                        cb.maxX <= W + tol && cb.maxY <= H + tol);
 
-    const ABS = {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:ob.minX, y:ob.minY}, mode:'coordenadas absolutas', W, H};
-    const AUX = {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:'origem auxiliar no canto da placa', W, H};
+    const ABS = {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:ob.minX, y:ob.minY}, mode:l('coordenadas absolutas','absolute coordinates'), W, H};
+    const AUX = {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:0, y:0}, mode:l('origem auxiliar no canto da placa','auxiliary origin at board corner'), W, H};
 
     if(insideAbs && insideAux){
       // Both readings fit; the right one leaves the parts better centred on the board
@@ -2832,7 +2927,7 @@
     if(insideAbs) return ABS;
     if(insideAux) return AUX;
     // Neither fits: fall back to absolute and let the warning explain
-    return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:ob.minX, y:ob.minY}, mode:'não identificado', W, H};
+    return {oOff:{x:ob.minX, y:ob.minY}, cOff:{x:ob.minX, y:ob.minY}, mode:l('não identificado','not identified'), W, H};
   }
   const boardSectionEl = document.getElementById('boardSection');
   const boardCanvasEl = document.getElementById('boardCanvas');
@@ -2886,7 +2981,7 @@
     const cxMid = (vMinX + vMaxX)/2, cyMid = (vMinY + vMaxY)/2;
     const vb = [cxMid - side/2, cyMid - side/2, side, side];
 
-    let svg = '<svg viewBox="'+vb.join(' ')+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visualização da montagem da placa">';
+    let svg = '<svg viewBox="'+vb.join(' ')+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+l('Visualização da montagem da placa','Board assembly preview')+'">';
 
     // machine origin marker at bottom-left
     svg += '<g stroke="#3a4a46" stroke-width="'+(unit*0.004)+'" stroke-linecap="round">'
@@ -2940,7 +3035,7 @@
       svg += '<g class="cmp-dot"><title>'+esc(row.Designator)+' · '+esc(row.Footprint)
           +  (row.Comment ? ' · '+esc(row.Comment) : '')
           +  ' · '+(isBottom?'bottom':'top')+' · '+esc(row.Rotation)+'°'
-          +  (p.outside ? ' · FORA DO CONTORNO' : '')+'</title>';
+          +  (p.outside ? l(' · FORA DO CONTORNO',' · OUTSIDE OUTLINE') : '')+'</title>';
       if(isFid){
         svg += '<circle class="cmp-body" cx="'+cx.toFixed(3)+'" cy="'+cy.toFixed(3)+'" r="'+(r*1.6).toFixed(3)
             +  '" fill="none" stroke="'+(p.outside?'#e5636a':'#3fa872')+'" stroke-width="'+(r*0.5).toFixed(3)+'"/>'
@@ -2962,27 +3057,26 @@
     boardCanvasEl.innerHTML = svg;
 
     boardMetaEl.textContent = size.w.toFixed(2) + ' × ' + size.h.toFixed(2) + ' mm · '
-      + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente' : 'componentes') + ' · '
-      + (outline ? 'contorno: ' + outline.name : 'contorno não carregado')
-      + (boardOrientation ? ' · rotação ' + boardOrientation + '°' : ' · sem rotação');
+      + lastRows.length + ' ' + (lastRows.length === 1 ? l('componente','component') : l('componentes','components')) + ' · '
+      + (outline ? l('contorno: ','outline: ') + outline.name : l('contorno não carregado','outline not loaded'))
+      + (boardOrientation ? l(' · rotação ',' · rotation ') + boardOrientation + '°' : l(' · sem rotação',' · no rotation'));
 
     const ignoredMsg = ignoredLayers.length
-      ? ' ' + ignoredLayers.length + (ignoredLayers.length === 1 ? ' outra camada não foi usada' : ' outras camadas não foram usadas') + ' para definir o contorno ('
-        + ignoredLayers.slice(0,3).map(l=>l.name).join(', ')
-        + (ignoredLayers.length > 3 ? ', …' : '') + '), pois somente o perfil representa as bordas da placa.'
+      ? ' ' + ignoredLayers.length + (ignoredLayers.length === 1 ? l(' outra camada não foi usada',' other layer was not used') : l(' outras camadas não foram usadas',' other layers were not used')) + l(' para definir o contorno (',' to define the outline (')
+        + ignoredLayers.slice(0,3).map(layer=>layer.name).join(', ')
+        + (ignoredLayers.length > 3 ? ', …' : '') + l('), pois somente o perfil representa as bordas da placa.', '), because only the profile represents the board edges.')
       : '';
 
     if(outline){
       boardNoteEl.textContent = (outsideCount
-        ? outsideCount + ' de ' + lastRows.length + ' componentes aparecem em vermelho, fora do contorno. Origem interpretada como: ' + al.mode
-          + '. Isso geralmente indica que o Gerber e o arquivo de posição usam origens diferentes. Tente desativar o alinhamento automático ou reexporte ambos usando a mesma origem auxiliar no canto inferior esquerdo.'
-        : 'Conferência aprovada: todos os componentes estão dentro do contorno. Origem interpretada como: ' + al.mode + '.') + ignoredMsg;
+        ? outsideCount + l(' de ',' of ') + lastRows.length + l(' componentes aparecem em vermelho, fora do contorno. Origem interpretada como: ',' components are shown in red outside the outline. Origin interpreted as: ') + al.mode
+          + l('. Isso geralmente indica que o Gerber e o arquivo de posição usam origens diferentes. Tente desativar o alinhamento automático ou reexporte ambos usando a mesma origem auxiliar no canto inferior esquerdo.','. This usually means the Gerber and placement file use different origins. Try disabling automatic alignment or re-export both using the same auxiliary origin at the lower-left corner.')
+        : l('Conferência aprovada: todos os componentes estão dentro do contorno. Origem interpretada como: ','Check passed: all components are inside the outline. Origin interpreted as: ') + al.mode + '.') + ignoredMsg;
     } else if(ignoredLayers.length){
-      boardNoteEl.textContent = 'Nenhum Gerber de contorno foi reconhecido entre os ' + ignoredLayers.length
-        + ' arquivos carregados. Adicione o Edge.Cuts ("*-Edge_Cuts.gbr" no KiCad) ou o perfil .gm1 do Altium. Cobre, silk e máscara não representam as bordas.'
-        + ' Por enquanto, a visualização usa apenas a extensão dos componentes.';
+      boardNoteEl.textContent = l('Nenhum Gerber de contorno foi reconhecido entre os ','No outline Gerber was recognized among the ') + ignoredLayers.length
+        + l(' arquivos carregados. Adicione o Edge.Cuts ("*-Edge_Cuts.gbr" no KiCad) ou o perfil .gm1 do Altium. Cobre, silk e máscara não representam as bordas. Por enquanto, a visualização usa apenas a extensão dos componentes.',' loaded files. Add Edge.Cuts ("*-Edge_Cuts.gbr" in KiCad) or the Altium .gm1 profile. Copper, silkscreen, and mask do not represent the edges. For now, the preview uses only the component extents.');
     } else {
-      boardNoteEl.textContent = 'Adicione o Gerber de contorno (Edge.Cuts) para ver as bordas e margens reais. Sem ele, a visualização usa apenas a extensão dos componentes e a checagem da área útil é aproximada.';
+      boardNoteEl.textContent = l('Adicione o Gerber de contorno (Edge.Cuts) para ver as bordas e margens reais. Sem ele, a visualização usa apenas a extensão dos componentes e a checagem da área útil é aproximada.','Add the outline Gerber (Edge.Cuts) to see the actual edges and margins. Without it, the preview uses only component extents and the work-area check is approximate.');
     }
   }
   function renderOrientationCards(){
@@ -2998,8 +3092,8 @@
         + (o.deg === best.deg && o.fits ? ' best' : '')
         + (o.fits ? '' : ' unfit');
       btn.innerHTML =
-        '<div class="orient-head"><span class="orient-title">' + (o.deg ? 'Rotação de ' + o.deg + '°' : 'Sem rotação') + '</span>'
-        + '<span class="orient-tag">' + (!o.fits ? 'fora da área' : (o.deg === best.deg ? 'recomendado' : 'compatível')) + '</span></div>'
+        '<div class="orient-head"><span class="orient-title">' + (o.deg ? l('Rotação de ','Rotation ')+o.deg+'°' : l('Sem rotação','No rotation')) + '</span>'
+        + '<span class="orient-tag">' + (!o.fits ? l('fora da área','out of bounds') : (o.deg === best.deg ? l('recomendado','recommended') : l('compatível','compatible'))) + '</span></div>'
         + '<div class="orient-dims">' + o.size.w.toFixed(1) + ' × ' + o.size.h.toFixed(1) + ' mm</div>'
         + '<div class="orient-reason">' + o.reasons.join(' · ') + '</div>';
       btn.addEventListener('click', ()=>{
@@ -3045,27 +3139,27 @@
     const bomConflictCount = bomFile ? bomFile.conflicts.length : 0;
     approveCsvBtn.disabled = !hasRows || bomConflictCount > 0;
     if(importedDpv){
-      step1Info.textContent = 'DPV importado: ' + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente disponível' : 'componentes disponíveis') + ' para edição.';
+      step1Info.textContent = l('DPV importado: ','DPV imported: ') + lastRows.length + ' ' + (lastRows.length === 1 ? l('componente disponível','component available') : l('componentes disponíveis','components available')) + l(' para edição.',' for editing.');
     } else if(hasRows){
       const groups = computeGroups(lastRows);
       let bomInfo;
       if(bomFile){
         const coverage = bomCoverage();
         if(bomConflictCount){
-          bomInfo = ' A BOM possui ' + bomConflictCount + ' conflito(s) e precisa ser corrigida antes da confirmação.';
+          bomInfo = l(' A BOM possui ',' The BOM has ') + bomConflictCount + l(' conflito(s) e precisa ser corrigida antes da confirmação.',' conflict(s) and must be fixed before confirmation.');
         } else if(coverage.unmatched.length || coverage.missingPartNumber.length){
-          bomInfo = ' BOM relacionada parcialmente: ' + coverage.withPartNumber + ' de ' + coverage.total + ' componentes têm Part Number; os demais usam o modo de compatibilidade.';
+          bomInfo = l(' BOM relacionada parcialmente: ',' BOM partially matched: ') + coverage.withPartNumber + l(' de ',' of ') + coverage.total + l(' componentes têm Part Number; os demais usam o modo de compatibilidade.',' components have a Part Number; the rest use compatibility mode.');
         } else {
-          bomInfo = ' BOM relacionada: ' + coverage.matchedPartNumberCount + ' Part Numbers usados formaram ' + Object.keys(groups).length + ' grupos de montagem.';
+          bomInfo = l(' BOM relacionada: ',' BOM matched: ') + coverage.matchedPartNumberCount + l(' Part Numbers usados formaram ',' Part Numbers formed ') + Object.keys(groups).length + l(' grupos de montagem.',' assembly groups.');
         }
       } else {
-        bomInfo = ' Sem BOM: agrupamento de compatibilidade por footprint + valor.';
+        bomInfo = l(' Sem BOM: agrupamento de compatibilidade por footprint + valor.',' No BOM: compatibility grouping by footprint + value.');
       }
-      step1Info.textContent = lastRows.length + ' ' + (lastRows.length === 1 ? 'componente pronto' : 'componentes prontos')
-        + ' a partir de ' + files.length + ' ' + (files.length === 1 ? 'arquivo de posição' : 'arquivos de posição') + '.' + bomInfo
-        + ' Confira orientação, origem e colunas antes de confirmar.';
+      step1Info.textContent = lastRows.length + ' ' + (lastRows.length === 1 ? l('componente pronto','component ready') : l('componentes prontos','components ready'))
+        + l(' a partir de ',' from ') + files.length + ' ' + (files.length === 1 ? l('arquivo de posição','placement file') : l('arquivos de posição','placement files')) + '.' + bomInfo
+        + l(' Confira orientação, origem e colunas antes de confirmar.',' Check orientation, origin, and columns before confirming.');
     } else {
-      step1Info.textContent = bomFile ? 'BOM reconhecida. Agora adicione um arquivo Pick & Place.' : 'Comece adicionando um arquivo Pick & Place.';
+      step1Info.textContent = bomFile ? l('BOM reconhecida. Agora adicione um arquivo Pick & Place.','BOM recognized. Now add a Pick & Place file.') : l('Comece adicionando um arquivo Pick & Place.','Start by adding a Pick & Place file.');
     }
 
     if(csvApproved){
@@ -3077,13 +3171,13 @@
         return !a.remove && (a.feederID||'').trim() !== '';
       }).length;
       const pending = keys.length - assigned - removed;
-      step2Info.textContent = (importedDpv ? 'Editando "' + importedDpv.fileName + '". ' : '')
-        + assigned + ' de ' + keys.length + ' tipos já têm uma posição definida'
-        + (removed ? '; ' + removed + ' serão removidos da receita' : '')
+      step2Info.textContent = (importedDpv ? l('Editando "','Editing "') + importedDpv.fileName + '". ' : '')
+        + assigned + l(' de ',' of ') + keys.length + l(' tipos já têm uma posição definida',' types already have a defined position')
+        + (removed ? '; ' + removed + l(' serão removidos da receita',' will be removed from the recipe') : '')
         + (pending
           ? (autoMstack.checked
-            ? '. Os ' + pending + ' restantes receberão posições MStack automáticas e exclusivas, com Skip ativado.'
-            : '. Os ' + pending + ' restantes usarão a posição 99, com Skip ativado.')
+            ? l('. Os ','. The remaining ') + pending + l(' restantes receberão posições MStack automáticas e exclusivas, com Skip ativado.',' will receive unique automatic MStack positions with Skip enabled.')
+            : l('. Os ','. The remaining ') + pending + l(' restantes usarão a posição 99, com Skip ativado.',' will use position 99 with Skip enabled.'))
           : '.');
     }
 
@@ -3131,7 +3225,7 @@
 
   function renderDpvPreview(){
     if(lastRows.length === 0){
-      dpvPreviewWrap.innerHTML = '<div class="empty-state">Confirme a conversão para montar a receita DPV.</div>';
+      dpvPreviewWrap.innerHTML = '<div class="empty-state">'+l('Confirme a conversão para montar a receita DPV.','Confirm the conversion to build the DPV recipe.')+'</div>';
       return;
     }
     try{
@@ -3140,14 +3234,14 @@
       const shown = lines.slice(0, 120).join('\n');
       const pre = document.createElement('pre');
       pre.className = 'raw-preview';
-      pre.textContent = shown + (lines.length > 120 ? '\n\n… ' + (lines.length - 120) + ' linhas restantes (o arquivo exportado inclui tudo)' : '');
+      pre.textContent = shown + (lines.length > 120 ? '\n\n… ' + (lines.length - 120) + l(' linhas restantes (o arquivo exportado inclui tudo)',' remaining lines (the exported file includes everything)') : '');
       dpvValidationError = '';
       dpvPreviewWrap.innerHTML = '';
       dpvPreviewWrap.appendChild(pre);
     }catch(err){
       dpvValidationError = err.message;
       dpvApproved = false;
-      dpvPreviewWrap.innerHTML = '<div class="empty-state">A receita DPV precisa de atenção: ' + esc(err.message) + '</div>';
+      dpvPreviewWrap.innerHTML = '<div class="empty-state">'+l('A receita DPV precisa de atenção: ','The DPV recipe needs attention: ') + esc(err.message) + '</div>';
     }
     updatePipelineUI();
   }
@@ -3159,7 +3253,7 @@
 
   function loadDpvForEditing(file){
     dpvImportStatus.classList.remove('error');
-    dpvImportStatus.textContent = 'Analisando "' + file.name + '"…';
+    dpvImportStatus.textContent = l('Analisando "','Analyzing "') + file.name + '"…';
     const reader = new FileReader();
     reader.onload = e=>{
       try{
@@ -3176,25 +3270,25 @@
         dpvApproved = false;
         dpvValidationError = '';
         filenameManuallyEdited = true;
-        fileNameInput.value = safeFileBase(baseNameNoExt(file.name) + '_editado');
+        fileNameInput.value = safeFileBase(baseNameNoExt(file.name) + l('_editado','_edited'));
         wantCsv.checked = false;
         wantDpv.checked = true;
         renderFileCards();
         renderPreview(lastRows);
         document.getElementById('boardSection').style.display = 'none';
         renderFeederTable(lastRows);
-        dpvImportStatus.textContent = file.name + ' carregado com ' + lastRows.length + ' ' + (lastRows.length === 1 ? 'componente editável.' : 'componentes editáveis.');
-        bulkStatusEl.textContent = 'DPV importado. As demais tabelas do arquivo original serão preservadas na exportação.'
-          + (parsed.sharedStations ? ' Atenção: ' + parsed.sharedStations + ' posição(ões) são compartilhadas por tipos diferentes.' : '');
+        dpvImportStatus.textContent = file.name + l(' carregado com ',' loaded with ') + lastRows.length + ' ' + (lastRows.length === 1 ? l('componente editável.','editable component.') : l('componentes editáveis.','editable components.'));
+        bulkStatusEl.textContent = l('DPV importado. As demais tabelas do arquivo original serão preservadas na exportação.','DPV imported. The other tables from the original file will be preserved on export.')
+          + (parsed.sharedStations ? l(' Atenção: ',' Warning: ') + parsed.sharedStations + l(' posição(ões) são compartilhadas por tipos diferentes.',' position(s) are shared by different types.') : '');
         goToStep(2);
       }catch(err){
         dpvImportStatus.classList.add('error');
-        dpvImportStatus.textContent = 'Não foi possível editar este DPV: ' + err.message + '.';
+        dpvImportStatus.textContent = l('Não foi possível editar este DPV: ','Could not edit this DPV: ') + err.message + '.';
       }
     };
     reader.onerror = ()=>{
       dpvImportStatus.classList.add('error');
-      dpvImportStatus.textContent = 'Não foi possível ler "' + file.name + '".';
+      dpvImportStatus.textContent = l('Não foi possível ler "','Could not read "') + file.name + '".';
     };
     reader.readAsText(file);
   }
@@ -3229,7 +3323,7 @@
           if(kind === 'profile'){
             const parsed = parseGerberOutline(text, file.name);
             if(parsed) outline = parsed;
-            else setStatus('Não consegui interpretar o contorno em "' + file.name + '".', true);
+            else setStatus(l('Não consegui interpretar o contorno em "','Could not parse the outline in "') + file.name + '".', true);
           } else {
             // copper/silk/mask layers carry no board boundary, so they must not become the outline
             if(!ignoredLayers.some(l => l.name === file.name)){
@@ -3322,15 +3416,15 @@
 
   pickFolderBtn.addEventListener('click', async ()=>{
     if(!('showDirectoryPicker' in window)){
-      setStatus('Este navegador não permite escolher uma pasta. Os arquivos serão salvos na pasta de downloads padrão.', true);
+      setStatus(l('Este navegador não permite escolher uma pasta. Os arquivos serão salvos na pasta de downloads padrão.','This browser cannot choose a folder. Files will be saved to the default downloads folder.'), true);
       return;
     }
     try{
       dirHandle = await window.showDirectoryPicker();
-      folderNameEl.textContent = dirHandle.name + ' (válida enquanto esta aba estiver aberta)';
-      setStatus('Pasta selecionada. Os próximos arquivos serão salvos diretamente nela.', false);
+      folderNameEl.textContent = dirHandle.name + l(' (válida enquanto esta aba estiver aberta)',' (available while this tab remains open)');
+      setStatus(l('Pasta selecionada. Os próximos arquivos serão salvos diretamente nela.','Folder selected. The next files will be saved directly to it.'), false);
     }catch(err){
-      if(err.name !== 'AbortError') setStatus('Não foi possível acessar a pasta escolhida: '+err.message, true);
+      if(err.name !== 'AbortError') setStatus(l('Não foi possível acessar a pasta escolhida: ','Could not access the selected folder: ')+err.message, true);
     }
   });
 
@@ -3339,7 +3433,7 @@
       const perm = await dirHandle.queryPermission({mode:'readwrite'});
       if(perm !== 'granted'){
         const req = await dirHandle.requestPermission({mode:'readwrite'});
-        if(req !== 'granted') throw new Error('permissão negada para a pasta');
+        if(req !== 'granted') throw new Error(l('permissão negada para a pasta','folder permission denied'));
       }
       const fileHandle = await dirHandle.getFileHandle(name, {create:true});
       const writable = await fileHandle.createWritable();
@@ -3373,15 +3467,15 @@
         written.push(base + '.dpv');
       }
     }catch(err){
-      setStatus('Não foi possível gerar os arquivos: ' + err.message, true);
+      setStatus(l('Não foi possível gerar os arquivos: ','Could not generate the files: ') + err.message, true);
       return;
     }
 
-    if(written.length === 0){ setStatus('Escolha pelo menos um formato para continuar.', true); return; }
-    const renamed = base !== requestedBase ? ' (nome ajustado para compatibilidade: "' + base + '")' : '';
+    if(written.length === 0){ setStatus(l('Escolha pelo menos um formato para continuar.','Choose at least one format to continue.'), true); return; }
+    const renamed = base !== requestedBase ? l(' (nome ajustado para compatibilidade: "',' (name adjusted for compatibility: "') + base + '")' : '';
     setStatus((mode === 'folder'
-      ? 'Arquivos salvos em "' + dirHandle.name + '/": ' + written.join(', ')
-      : 'Download concluído: ' + written.join(', ')) + renamed, false);
+      ? l('Arquivos salvos em "','Files saved to "') + dirHandle.name + '/": ' + written.join(', ')
+      : l('Download concluído: ','Download complete: ') + written.join(', ')) + renamed, false);
   });
 
   // ============================================================
@@ -3418,22 +3512,22 @@
   async function readZip(buffer){
     const dv = new DataView(buffer);
     const u8 = new Uint8Array(buffer);
-    if(u8.length < 22) throw new Error('arquivo .zip truncado');
+    if(u8.length < 22) throw new Error(l('arquivo .zip truncado','truncated .zip file'));
     // locate End Of Central Directory
     let eocd = -1;
     for(let i = u8.length - 22; i >= 0 && i > u8.length - 65558; i--){
       if(dv.getUint32(i, true) === 0x06054b50){ eocd = i; break; }
     }
-    if(eocd < 0) throw new Error('não é um arquivo .zip válido');
+    if(eocd < 0) throw new Error(l('não é um arquivo .zip válido','not a valid .zip file'));
     const count = dv.getUint16(eocd + 10, true);
     let ptr = dv.getUint32(eocd + 16, true);
-    if(count === 0xFFFF || ptr === 0xFFFFFFFF) throw new Error('ZIP64 não é suportado');
+    if(count === 0xFFFF || ptr === 0xFFFFFFFF) throw new Error(l('ZIP64 não é suportado','ZIP64 is not supported'));
 
     const entries = [];
     let totalSize = 0;
     for(let n = 0; n < count; n++){
-      if(ptr < 0 || ptr + 46 > u8.length) throw new Error('diretório central truncado');
-      if(dv.getUint32(ptr, true) !== 0x02014b50) throw new Error('diretório central corrompido');
+      if(ptr < 0 || ptr + 46 > u8.length) throw new Error(l('diretório central truncado','truncated central directory'));
+      if(dv.getUint32(ptr, true) !== 0x02014b50) throw new Error(l('diretório central corrompido','corrupted central directory'));
       const flags = dv.getUint16(ptr + 8, true);
       const method = dv.getUint16(ptr + 10, true);
       const expectedCrc = dv.getUint32(ptr + 16, true);
@@ -3443,25 +3537,25 @@
       const extraLen = dv.getUint16(ptr + 30, true);
       const cmtLen = dv.getUint16(ptr + 32, true);
       const localOff = dv.getUint32(ptr + 42, true);
-      if(flags & 1) throw new Error('arquivo criptografado dentro do ZIP não é suportado');
-      if(method !== 0 && method !== 8) throw new Error('método de compressão ZIP ' + method + ' não suportado');
-      if(ptr + 46 + nameLen + extraLen + cmtLen > u8.length) throw new Error('entrada truncada no diretório central');
-      if(localOff + 30 > u8.length || dv.getUint32(localOff, true) !== 0x04034b50) throw new Error('cabeçalho local inválido');
+      if(flags & 1) throw new Error(l('arquivo criptografado dentro do ZIP não é suportado','encrypted files inside the ZIP are not supported'));
+      if(method !== 0 && method !== 8) throw new Error(l('método de compressão ZIP ','ZIP compression method ') + method + l(' não suportado',' is not supported'));
+      if(ptr + 46 + nameLen + extraLen + cmtLen > u8.length) throw new Error(l('entrada truncada no diretório central','truncated central-directory entry'));
+      if(localOff + 30 > u8.length || dv.getUint32(localOff, true) !== 0x04034b50) throw new Error(l('cabeçalho local inválido','invalid local header'));
       const name = new TextDecoder().decode(u8.subarray(ptr + 46, ptr + 46 + nameLen));
 
       const lNameLen = dv.getUint16(localOff + 26, true);
       const lExtraLen = dv.getUint16(localOff + 28, true);
       const dataStart = localOff + 30 + lNameLen + lExtraLen;
-      if(dataStart + compSize > u8.length) throw new Error('dados comprimidos truncados em "' + name + '"');
+      if(dataStart + compSize > u8.length) throw new Error(l('dados comprimidos truncados em "','truncated compressed data in "') + name + '"');
       totalSize += fullSize;
-      if(totalSize > 256 * 1024 * 1024) throw new Error('conteúdo descompactado excede o limite seguro de 256 MB');
+      if(totalSize > 256 * 1024 * 1024) throw new Error(l('conteúdo descompactado excede o limite seguro de 256 MB','uncompressed content exceeds the safe 256 MB limit'));
       entries.push({name, method, expectedCrc, fullSize, raw: u8.subarray(dataStart, dataStart + compSize)});
       ptr += 46 + nameLen + extraLen + cmtLen;
     }
 
     for(const e of entries){
       const bytes = e.method === 0 ? e.raw : await inflateRaw(e.raw);
-      if(bytes.length !== e.fullSize || crc32(bytes) !== e.expectedCrc) throw new Error('CRC ou tamanho inválido em "' + e.name + '"');
+      if(bytes.length !== e.fullSize || crc32(bytes) !== e.expectedCrc) throw new Error(l('CRC ou tamanho inválido em "','invalid CRC or size in "') + e.name + '"');
       e.bytes = bytes;
       e.text = new TextDecoder().decode(bytes);
     }
@@ -3528,16 +3622,16 @@
   // left alone, or every rounded corner turns into garbage.
   function shiftGerber(text, dxMM, dyMM){
     const fs = text.match(/%FS([LT])([AI])X(\d)(\d)Y(\d)(\d)\*%/);
-    if(!fs) return {error:'sem especificação de formato (%FS)'};
-    if(fs[1] === 'T') return {error:'supressão de zeros à direita (T) não suportada com segurança'};
-    if(fs[2] === 'I') return {error:'coordenadas incrementais não suportadas'};
+    if(!fs) return {error:l('sem especificação de formato (%FS)','missing format specification (%FS)')};
+    if(fs[1] === 'T') return {error:l('supressão de zeros à direita (T) não suportada com segurança','trailing-zero suppression (T) is not safely supported')};
+    if(fs[2] === 'I') return {error:l('coordenadas incrementais não suportadas','incremental coordinates are not supported')};
     const internalOffset = text.match(/%OFA([+-]?(?:\d+(?:\.\d*)?|\.\d+))B([+-]?(?:\d+(?:\.\d*)?|\.\d+))\*%/i);
-    if(/%OF/i.test(text) && !internalOffset) return {error:'comando de offset interno %OF não reconhecido'};
+    if(/%OF/i.test(text) && !internalOffset) return {error:l('comando de offset interno %OF não reconhecido','unrecognized internal %OF offset command')};
     if(internalOffset && (Number(internalOffset[1]) !== 0 || Number(internalOffset[2]) !== 0)){
-      return {error:'Gerber já contém offset interno %OF; normalize-o no CAD antes de deslocar'};
+      return {error:l('Gerber já contém offset interno %OF; normalize-o no CAD antes de deslocar','Gerber already contains an internal %OF offset; normalize it in CAD before shifting')};
     }
     const bodyOnly = text.replace(/%[^%]*%/g, '');
-    if(/[XY][+-]?(?:\d+\.\d*|\.\d+)/.test(bodyOnly)) return {error:'coordenadas Gerber com ponto decimal não são suportadas com segurança'};
+    if(/[XY][+-]?(?:\d+\.\d*|\.\d+)/.test(bodyOnly)) return {error:l('coordenadas Gerber com ponto decimal não são suportadas com segurança','Gerber coordinates with decimal points are not safely supported')};
     const decX = parseInt(fs[4], 10), decY = parseInt(fs[6], 10);
     const mo = text.match(/%MO(MM|IN)\*%/);
     const toFile = (mo && mo[1] === 'IN') ? (1/25.4) : 1;
@@ -3566,7 +3660,7 @@
   function shiftExcellon(text, dxMM, dyMM){
     const isMetric = /METRIC|M71/.test(text);
     const isInch = /INCH|M72/.test(text);
-    if(!isMetric && !isInch) return {error:'unidades não declaradas (sem METRIC/INCH)'};
+    if(!isMetric && !isInch) return {error:l('unidades não declaradas (sem METRIC/INCH)','units not declared (missing METRIC/INCH)')};
     const toFile = isInch ? (1/25.4) : 1;
 
     const lines = text.split(/\r\n|\r|\n/);
@@ -3582,7 +3676,7 @@
     });
 
     if(!sawCoord) return {text: text, untouched:true};
-    if(sawInteger) return {error:'coordenadas inteiras com supressão de zeros ambígua; reexporte a furação em formato decimal'};
+    if(sawInteger) return {error:l('coordenadas inteiras com supressão de zeros ambígua; reexporte a furação em formato decimal','integer coordinates use ambiguous zero suppression; re-export the drill file in decimal format')};
     return {text: body.join('\n')};
   }
 
@@ -3595,7 +3689,7 @@
   }
 
   // --- state + UI ---
-  let zipEntries = null, originResults = null, zipLoadToken = 0;
+  let zipEntries = null, originResults = null, zipLoadToken = 0, zipSourceName = '';
   const zipInfoEl = document.getElementById('zipInfo');
   const originNoteEl = document.getElementById('originNote');
   const originTableWrapEl = document.getElementById('originTableWrap');
@@ -3624,10 +3718,10 @@
     if(mode === 'outline'){
       const ol = packageOutline();
       if(!ol){
-        originNoteEl.textContent = 'Não encontrei um Gerber de contorno neste pacote. Selecione “Informar deslocamento manual” e preencha os valores de X e Y.';
+        originNoteEl.textContent = l('Não encontrei um Gerber de contorno neste pacote. Selecione “Informar deslocamento manual” e preencha os valores de X e Y.','No outline Gerber was found in this package. Select “Enter a manual offset” and fill in the X and Y values.');
         originDxEl.value = 0; originDyEl.value = 0;
         originDxEl.disabled = originDyEl.disabled = true;
-        originTableWrapEl.innerHTML = '<div class="empty-state">Adicione um contorno válido ou informe o deslocamento manualmente.</div>';
+        originTableWrapEl.innerHTML = '<div class="empty-state">'+l('Adicione um contorno válido ou informe o deslocamento manualmente.','Add a valid outline or enter the offset manually.')+'</div>';
         document.getElementById('originPreviewSection').style.display = 'none';
         originExportBtn.disabled = true;
         return;
@@ -3635,14 +3729,14 @@
       dx = -ol.bbox.minX; dy = -ol.bbox.minY;
       originDxEl.value = dx.toFixed(3); originDyEl.value = dy.toFixed(3);
       originDxEl.disabled = originDyEl.disabled = true;
-      originNoteEl.textContent = 'Contorno encontrado em ' + ol.name + '. O canto inferior esquerdo está em ('
-        + ol.bbox.minX.toFixed(3) + ', ' + ol.bbox.minY.toFixed(3) + ') mm, placa de '
-        + ol.bbox.w.toFixed(2) + ' × ' + ol.bbox.h.toFixed(2) + ' mm. Todas as camadas serão deslocadas juntas para levar esse canto a X0 / Y0.';
+      originNoteEl.textContent = l('Contorno encontrado em ','Outline found in ') + ol.name + l('. O canto inferior esquerdo está em (','. The lower-left corner is at (')
+        + ol.bbox.minX.toFixed(3) + ', ' + ol.bbox.minY.toFixed(3) + l(') mm, placa de ',') mm, board size ')
+        + ol.bbox.w.toFixed(2) + ' × ' + ol.bbox.h.toFixed(2) + l(' mm. Todas as camadas serão deslocadas juntas para levar esse canto a X0 / Y0.',' mm. All layers will be shifted together to move this corner to X0 / Y0.');
     } else {
       originDxEl.disabled = originDyEl.disabled = false;
       dx = parseFloat(originDxEl.value)||0;
       dy = parseFloat(originDyEl.value)||0;
-      originNoteEl.textContent = 'O deslocamento informado será aplicado igualmente aos Gerbers e aos arquivos de posição. A furação não será incluída neste pacote de conferência da montagem.';
+      originNoteEl.textContent = l('O deslocamento informado será aplicado igualmente aos Gerbers e aos arquivos de posição. A furação não será incluída neste pacote de conferência da montagem.','The entered offset will be applied equally to the Gerbers and placement files. Drill files will not be included in this assembly-review package.');
     }
 
     originResults = zipEntries.map(e=>{
@@ -3708,9 +3802,9 @@
     document.getElementById('beforeCanvas').innerHTML = frame(0, 0, false);
     document.getElementById('afterCanvas').innerHTML = frame(dx, dy, true);
     document.getElementById('beforeCoords').textContent =
-      'canto em ' + b.minX.toFixed(2) + ', ' + b.minY.toFixed(2) + ' mm';
+      l('canto em ','corner at ') + b.minX.toFixed(2) + ', ' + b.minY.toFixed(2) + ' mm';
     document.getElementById('afterCoords').textContent =
-      'canto em ' + (b.minX + dx).toFixed(2) + ', ' + (b.minY + dy).toFixed(2) + ' mm';
+      l('canto em ','corner at ') + (b.minX + dx).toFixed(2) + ', ' + (b.minY + dy).toFixed(2) + ' mm';
   }
 
   // --- position file shifting ---
@@ -3744,7 +3838,7 @@
         firstIdx = i; delim = candidateDelim; mapping = candidateMapping; break;
       }
     }
-    if(firstIdx < 0) return {error:'cabeçalho com colunas X/Y não reconhecido (CSV por vírgula, ponto e vírgula ou tabulação)'};
+    if(firstIdx < 0) return {error:l('cabeçalho com colunas X/Y não reconhecido (CSV por vírgula, ponto e vírgula ou tabulação)','header with X/Y columns not recognized (comma-, semicolon-, or tab-separated CSV)')};
 
     const eol = text.includes('\r\n') ? '\r\n' : '\n';
     let changed = 0;
@@ -3774,7 +3868,7 @@
       return cells.join(delim);
     });
 
-    if(!changed) return {error:'nenhuma coordenada numérica encontrada'};
+    if(!changed) return {error:l('nenhuma coordenada numérica encontrada','no numeric coordinates found')};
     return {text: out.join(eol)};
   }
 
@@ -3805,16 +3899,17 @@
   function renderOriginTable(){
     if(!originResults) return;
     const errors = originResults.filter(r=>r.error);
-    let html = '<table><thead><tr><th>Arquivo</th><th>Tipo</th><th>Situação</th></tr></thead><tbody>';
+    let html = '<table><thead><tr><th>'+l('Arquivo','File')+'</th><th>'+l('Tipo','Type')+'</th><th>'+l('Situação','Status')+'</th></tr></thead><tbody>';
     originResults.forEach(r=>{
       const status = r.error
         ? '<span style="color:var(--error);">' + esc(r.error) + '</span>'
         : (r.omit
-            ? '<span style="color:var(--copper);">não incluído (arquivo de furação)</span>'
+            ? '<span style="color:var(--copper);">'+l('não incluído (arquivo de furação)','not included (drill file)')+'</span>'
             : (r.untouched
-                ? '<span style="color:var(--muted-2);">mantido sem alteração</span>'
-                : '<span style="color:var(--solder);">origem corrigida</span>'));
-      html += '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.kind) + '</td><td>' + status + '</td></tr>';
+                ? '<span style="color:var(--muted-2);">'+l('mantido sem alteração','kept unchanged')+'</span>'
+                : '<span style="color:var(--solder);">'+l('origem corrigida','origin corrected')+'</span>'));
+      const kindLabel = currentLang === 'en' ? ({'furação':'drill','posição':'placement','outro':'other','profile':'profile','copper':'copper','legend':'silkscreen','soldermask':'solder mask','paste':'paste'}[r.kind] || r.kind) : r.kind;
+      html += '<tr><td>' + esc(r.name) + '</td><td>' + esc(kindLabel) + '</td><td>' + status + '</td></tr>';
     });
     html += '</tbody></table>';
     originTableWrapEl.innerHTML = html;
@@ -3822,14 +3917,14 @@
     originExportBtn.disabled = errors.length > 0;
     if(errors.length){
       originStatusEl.classList.add('error');
-      originStatusEl.textContent = 'O pacote ainda não pode ser gerado: ' + errors.length + ' '
-        + (errors.length === 1 ? 'Gerber apresentou erro.' : 'Gerbers apresentaram erro.') + ' Todas as camadas precisam permanecer no mesmo referencial.';
+      originStatusEl.textContent = l('O pacote ainda não pode ser gerado: ','The package cannot be generated yet: ') + errors.length + ' '
+        + (errors.length === 1 ? l('Gerber apresentou erro.','Gerber has an error.') : l('Gerbers apresentaram erro.','Gerbers have errors.')) + l(' Todas as camadas precisam permanecer no mesmo referencial.',' All layers must remain in the same reference frame.');
     } else {
       originStatusEl.classList.remove('error');
       const omitted = originResults.filter(r=>r.omit).length;
       originStatusEl.textContent = omitted
-        ? 'Pronto para gerar. ' + omitted + ' ' + (omitted === 1 ? 'arquivo de furação não será incluído' : 'arquivos de furação não serão incluídos') + ', pois este pacote é destinado à conferência da montagem.'
-        : 'Pronto para gerar. Confira a comparação visual antes de baixar o pacote.';
+        ? l('Pronto para gerar. ','Ready to generate. ') + omitted + ' ' + (omitted === 1 ? l('arquivo de furação não será incluído','drill file will not be included') : l('arquivos de furação não serão incluídos','drill files will not be included')) + l(', pois este pacote é destinado à conferência da montagem.',', because this package is intended for assembly review.')
+        : l('Pronto para gerar. Confira a comparação visual antes de baixar o pacote.','Ready to generate. Check the visual comparison before downloading the package.');
     }
   }
 
@@ -3842,6 +3937,7 @@
 
   function loadZip(file){
     const token = ++zipLoadToken;
+    zipSourceName = file.name;
     zipEntries = null;
     originResults = null;
     posFiles = [];
@@ -3851,7 +3947,7 @@
     document.getElementById('originPreviewSection').style.display = 'none';
     document.getElementById('originFilesSection').style.display = 'none';
     document.getElementById('originExportBar').style.display = 'none';
-    zipInfoEl.textContent = 'Analisando "' + file.name + '"…';
+    zipInfoEl.textContent = l('Analisando "','Analyzing "') + file.name + '"…';
     const reader = new FileReader();
     reader.onload = async e=>{
       try{
@@ -3861,20 +3957,20 @@
       }catch(err){
         if(token !== zipLoadToken) return;
         zipEntries = null;
-        zipInfoEl.textContent = 'Não foi possível abrir "' + file.name + '": ' + err.message;
+        zipInfoEl.textContent = l('Não foi possível abrir "','Could not open "') + file.name + '": ' + err.message;
         return;
       }
-      zipInfoEl.textContent = file.name + ' · ' + zipEntries.length + ' ' + (zipEntries.length === 1 ? 'arquivo encontrado' : 'arquivos encontrados');
+      zipInfoEl.textContent = file.name + ' · ' + zipEntries.length + ' ' + (zipEntries.length === 1 ? l('arquivo encontrado','file found') : l('arquivos encontrados','files found'));
       document.getElementById('posSection').style.display = 'block';
       document.getElementById('originConfig').style.display = 'block';
       document.getElementById('originFilesSection').style.display = 'block';
       document.getElementById('originExportBar').style.display = 'block';
-      document.getElementById('originFileName').value = baseNameNoExt(file.name) + '_origem_' + toDateStamp() + '.zip';
+      document.getElementById('originFileName').value = baseNameNoExt(file.name) + l('_origem_','_origin_') + toDateStamp() + '.zip';
       recomputeOrigin();
     };
     reader.onerror = ()=>{
       if(token !== zipLoadToken) return;
-      zipInfoEl.textContent = 'Não foi possível ler "' + file.name + '".';
+      zipInfoEl.textContent = l('Não foi possível ler "','Could not read "') + file.name + '".';
     };
     reader.readAsArrayBuffer(file);
   }
@@ -3887,7 +3983,7 @@
 
   document.getElementById('originPickFolderBtn').addEventListener('click', async ()=>{
     if(!('showDirectoryPicker' in window)){
-      originStatusEl.textContent = 'Este navegador não permite escolher uma pasta. O pacote será salvo nos downloads padrão.';
+      originStatusEl.textContent = l('Este navegador não permite escolher uma pasta. O pacote será salvo nos downloads padrão.','This browser cannot choose a folder. The package will be saved to the default downloads folder.');
       originStatusEl.classList.add('error');
       return;
     }
@@ -3907,13 +4003,13 @@
       if(dirHandle){
         const perm = await dirHandle.queryPermission({mode:'readwrite'});
         if(perm !== 'granted' && (await dirHandle.requestPermission({mode:'readwrite'})) !== 'granted'){
-          throw new Error('permissão negada para a pasta');
+          throw new Error(l('permissão negada para a pasta','folder permission denied'));
         }
         const fh = await dirHandle.getFileHandle(name, {create:true});
         const w = await fh.createWritable();
         await w.write(blob); await w.close();
         originStatusEl.classList.remove('error');
-        originStatusEl.textContent = 'Pacote salvo em "' + dirHandle.name + '/' + name + '".';
+        originStatusEl.textContent = l('Pacote salvo em "','Package saved to "') + dirHandle.name + '/' + name + '".';
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -3922,10 +4018,10 @@
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       originStatusEl.classList.remove('error');
-      originStatusEl.textContent = 'Pacote corrigido baixado como "' + name + '".';
+      originStatusEl.textContent = l('Pacote corrigido baixado como "','Corrected package downloaded as "') + name + '".';
     }catch(err){
       originStatusEl.classList.add('error');
-      originStatusEl.textContent = 'Não foi possível gerar o pacote: ' + err.message;
+      originStatusEl.textContent = l('Não foi possível gerar o pacote: ','Could not generate the package: ') + err.message;
     }
   });
 
@@ -3939,6 +4035,42 @@
     });
   });
 
+  function refreshLocalizedUI(){
+    const reportWasVisible = operatorReportPreview.classList.contains('visible');
+    applyStaticTranslations();
+    renderPitchPanel();
+    renderFileCards();
+    if(!importedDpv) lastRows = buildOutputRows();
+    renderPreview(lastRows);
+    renderOrientationCards();
+    renderBoardPreview();
+    renderFeederTable(lastRows);
+    if(currentStep === 2) renderDpvPreview();
+    if(reportWasVisible) renderOperatorReport();
+    updatePipelineUI();
+
+    if(importedDpv){
+      dpvImportStatus.textContent = importedDpv.fileName + l(' carregado com ',' loaded with ') + lastRows.length + ' ' + (lastRows.length === 1 ? l('componente editável.','editable component.') : l('componentes editáveis.','editable components.'));
+      bulkStatusEl.textContent = l('DPV importado. As demais tabelas do arquivo original serão preservadas na exportação.','DPV imported. The other tables from the original file will be preserved on export.')
+        + (importedDpv.sharedStations ? l(' Atenção: ',' Warning: ') + importedDpv.sharedStations + l(' posição(ões) são compartilhadas por tipos diferentes.',' position(s) are shared by different types.') : '');
+    }
+    folderNameEl.textContent = dirHandle ? dirHandle.name + l(' (válida enquanto esta aba estiver aberta)',' (available while this tab remains open)') : t('downloadsFolder');
+    document.getElementById('originFolderName').textContent = dirHandle ? dirHandle.name : t('downloadsFolder');
+    if(zipEntries){
+      zipInfoEl.textContent = zipSourceName + ' · ' + zipEntries.length + ' ' + (zipEntries.length === 1 ? l('arquivo encontrado','file found') : l('arquivos encontrados','files found'));
+      recomputeOrigin();
+    }
+  }
+
+  document.querySelectorAll('[data-lang]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.lang === currentLang) return;
+      currentLang = btn.dataset.lang;
+      refreshLocalizedUI();
+    });
+  });
+
+  applyStaticTranslations();
   goToStep(1);
   renderAll();
 })();
