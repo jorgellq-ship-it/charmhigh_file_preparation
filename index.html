@@ -220,7 +220,7 @@
   .map-field label{
     display:block;font-size:11px;color:var(--muted);margin-bottom:6px;
     font-family:var(--mono);letter-spacing:.03em;
-    height:14px;line-height:14px;
+    min-height:28px;line-height:1.3;overflow-wrap:anywhere;
   }
 
   /* --- unified control sizing: inputs/selects 36px, buttons 40px --- */
@@ -582,14 +582,14 @@
   .operator-report-preview{display:none;margin-top:14px;overflow:auto;border-radius:14px;}
   .operator-report-preview.visible{display:block;}
   .operator-sheet{
-    min-width:1060px;padding:28px;background:#fff;color:#18201e;
+    min-width:1040px;padding:28px;background:#fff;color:#18201e;
     font-family:Arial,Helvetica,sans-serif;border-radius:14px;
   }
   .operator-sheet-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:16px;}
   .operator-sheet h2{margin:0 0 5px;font-size:22px;line-height:1.15;color:#111715;}
   .operator-sheet-subtitle{font-size:11px;color:#52605c;line-height:1.45;}
   .operator-sheet-id{text-align:right;font-size:10.5px;line-height:1.55;color:#52605c;}
-  .operator-sheet-id strong{display:block;color:#18201e;font-size:12px;}
+  .operator-sheet-id strong{display:block;color:#18201e;font-size:12px;overflow-wrap:anywhere;}
   .operator-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px;}
   .operator-summary-item{padding:9px 10px;border:1px solid #cfd8d5;border-radius:7px;background:#f6f8f7;}
   .operator-summary-item strong{display:block;font-size:15px;color:#18201e;margin-bottom:2px;}
@@ -612,7 +612,8 @@
   .operator-sheet .op-status{font-weight:700;white-space:nowrap;}
   .operator-sheet .op-status.warn{color:#9a5b10;}
   .operator-sheet .op-status.ready{color:#167044;}
-  .operator-sheet .op-pn{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;}
+  .operator-sheet .op-pn{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;overflow-wrap:anywhere;}
+  .operator-sheet .op-pn-cell{background:#fff8ea!important;border-left:3px solid #c98a3e;}
   .operator-sheet .op-check{font-size:9px;white-space:nowrap;line-height:1.6;}
   .operator-sheet-footer{display:flex;justify-content:space-between;gap:24px;margin-top:16px;padding-top:12px;border-top:1px solid #aebbb7;font-size:10px;color:#52605c;}
   .operator-sheet-footer span{flex:1;}
@@ -680,11 +681,6 @@
   @media (max-width: 1100px){
     .bulk-editor{grid-template-columns:repeat(4,minmax(0,1fr));}
     .bulk-editor-copy{grid-column:1/-1;}
-  }
-
-  @media (max-width: 900px){
-    .hero-header{grid-template-columns:minmax(0,1fr) minmax(280px,.75fr);gap:24px;min-height:250px;}
-    .hero-art img{max-height:240px;}
     #feederTableWrap{overflow:visible;max-height:none;border:0;background:transparent;box-shadow:none;}
     .feeder-table,.feeder-table tbody,.feeder-table tr,.feeder-table td{display:block;width:100%;}
     .feeder-table thead{display:none;}
@@ -702,6 +698,44 @@
     .feeder-table td:nth-child(10),.feeder-table td:nth-child(11),.feeder-table td:nth-child(12){
       display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
     }
+    .grp-primary,.grp-part{
+      white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;
+    }
+
+    .operator-report-preview{overflow:visible;}
+    .operator-report-preview .operator-sheet{min-width:0;width:100%;padding:20px;}
+    .operator-report-preview .operator-sheet-header{flex-direction:column;gap:10px;}
+    .operator-report-preview .operator-sheet-id{text-align:left;}
+    .operator-report-preview .operator-instructions ol{columns:1;}
+    .operator-report-preview .operator-sheet table,
+    .operator-report-preview .operator-sheet tbody,
+    .operator-report-preview .operator-sheet tr,
+    .operator-report-preview .operator-sheet td{display:block;width:100%;}
+    .operator-report-preview .operator-sheet thead{display:none;}
+    .operator-report-preview .operator-sheet tbody tr{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+      margin-bottom:12px;border:1px solid #c5cfcc;border-radius:8px;overflow:hidden;
+      break-inside:avoid;
+    }
+    .operator-report-preview .operator-sheet tbody td{
+      min-width:0;padding:9px 10px;border:0;border-bottom:1px solid #dce3e1;
+      overflow-wrap:anywhere;background:#fff!important;
+    }
+    .operator-report-preview .operator-sheet tbody td::before{
+      content:attr(data-label);display:block;margin-bottom:4px;
+      color:#6a7773;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    }
+    .operator-report-preview .operator-sheet tbody td:nth-child(3),
+    .operator-report-preview .operator-sheet tbody td:nth-child(4),
+    .operator-report-preview .operator-sheet tbody td:nth-child(5),
+    .operator-report-preview .operator-sheet tbody td:nth-child(6),
+    .operator-report-preview .operator-sheet tbody td:nth-child(9){grid-column:1/-1;}
+    .operator-report-preview .operator-sheet .op-pn-cell{border-left:3px solid #c98a3e;}
+  }
+
+  @media (max-width: 900px){
+    .hero-header{grid-template-columns:minmax(0,1fr) minmax(280px,.75fr);gap:24px;min-height:250px;}
+    .hero-art img{max-height:240px;}
   }
 
   /* narrow screens */
@@ -722,7 +756,7 @@
     .export-bar-row > *{flex:1 1 auto !important;width:100%;}
     .pipeline-bar{flex-direction:column;align-items:stretch;}
     .pipeline-bar .btn{width:100%;}
-    .pipeline-info{order:-1;}
+    .pipeline-info{order:-1;flex:0 1 auto;}
     .stepper{gap:6px;}
     .step{flex:1 1 auto;padding:0 12px;font-size:12px;}
     .dpv-import-card{align-items:stretch;flex-direction:column;}
@@ -731,6 +765,11 @@
     .bulk-editor{grid-template-columns:repeat(2,minmax(0,1fr));}
     .bulk-editor-copy{grid-column:1/-1;}
     .bom-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .board-toolbar{height:auto;min-height:44px;padding:8px 16px;row-gap:8px;}
+    .operator-report-toolbar .btn{flex:1 1 120px;}
+    .operator-report-preview .operator-sheet{padding:16px;}
+    .operator-report-preview .operator-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .operator-report-preview .operator-sheet-footer{flex-direction:column;gap:12px;}
   }
 
   @media (max-width: 520px){
@@ -741,6 +780,9 @@
     .bulk-editor{grid-template-columns:1fr;}
     .bulk-editor-copy,.bulk-status{grid-column:1;}
     .bom-summary{grid-template-columns:1fr;}
+    .operator-report-preview .operator-summary{grid-template-columns:1fr;}
+    .operator-report-preview .operator-sheet tbody tr{grid-template-columns:1fr;}
+    .operator-report-preview .operator-sheet tbody td{grid-column:1!important;}
   }
 
   @page{size:A4 landscape;margin:9mm;}
@@ -2417,15 +2459,19 @@
   function operatorReportMarkup(data){
     const rows = data.entries.map(entry=>{
       const position = entry.position + (entry.automatic ? '*' : '');
+      const labels = currentLang === 'en'
+        ? ['Position','Status','Part Number','Value / comment','Manufacturer / footprint','Qty. / references / angle','Feeding','Process','Verification']
+        : ['Posição','Situação','Part Number','Valor / comentário','Fabricante / footprint','Qtd. / referências / ângulo','Alimentação','Processo','Conferência'];
       return '<tr>' +
-        '<td class="op-pos">' + esc(position) + '</td>' +
-        '<td class="op-status ' + (entry.pending ? 'warn' : 'ready') + '">' + esc(entry.status) + '</td>' +
-        '<td><div class="op-pn">' + esc(entry.partNumber) + '</div><div>' + esc(entry.value) + '</div></td>' +
-        '<td><strong>' + esc(entry.manufacturer) + '</strong><br>' + esc(entry.footprint) + '</td>' +
-        '<td><strong>' + esc(entry.qty) + l(' un.',' pcs.') + '</strong><br>' + esc(entry.references) + '<br>'+l('Ângulo: ','Angle: ') + esc(entry.angles) + '</td>' +
-        '<td>'+l('Avanço: ','Pitch: ')+'<strong>' + esc(entry.pitch) + '</strong><br>'+l('Cabeça: ','Head: ')+'<strong>' + esc(entry.head) + '</strong></td>' +
-        '<td>'+l('Altura: ','Height: ')+'<strong>' + esc(entry.height) + '</strong><br>'+l('Velocidade: ','Speed: ')+'<strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
-        '<td class="op-check">'+l('□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade','□ PN / reel<br>□ Feeder / position<br>□ Polarity')+'</td>' +
+        '<td class="op-pos" data-label="'+esc(labels[0])+'">' + esc(position) + '</td>' +
+        '<td class="op-status ' + (entry.pending ? 'warn' : 'ready') + '" data-label="'+esc(labels[1])+'">' + esc(entry.status) + '</td>' +
+        '<td class="op-pn-cell" data-label="'+esc(labels[2])+'"><div class="op-pn">' + esc(entry.partNumber) + '</div></td>' +
+        '<td data-label="'+esc(labels[3])+'">' + esc(entry.value) + '</td>' +
+        '<td data-label="'+esc(labels[4])+'"><strong>' + esc(entry.manufacturer) + '</strong><br>' + esc(entry.footprint) + '</td>' +
+        '<td data-label="'+esc(labels[5])+'"><strong>' + esc(entry.qty) + l(' un.',' pcs.') + '</strong><br>' + esc(entry.references) + '<br>'+l('Ângulo: ','Angle: ') + esc(entry.angles) + '</td>' +
+        '<td data-label="'+esc(labels[6])+'">'+l('Avanço: ','Pitch: ')+'<strong>' + esc(entry.pitch) + '</strong><br>'+l('Cabeça: ','Head: ')+'<strong>' + esc(entry.head) + '</strong></td>' +
+        '<td data-label="'+esc(labels[7])+'">'+l('Altura: ','Height: ')+'<strong>' + esc(entry.height) + '</strong><br>'+l('Velocidade: ','Speed: ')+'<strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
+        '<td class="op-check" data-label="'+esc(labels[8])+'">'+l('□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade','□ PN / reel<br>□ Feeder / position<br>□ Polarity')+'</td>' +
       '</tr>';
     }).join('');
 
@@ -2449,7 +2495,7 @@
         '<li>'+l('Mantenha o Skip ativo até concluir a conferência física do feeder. Libere-o somente de forma intencional.','Keep Skip enabled until the physical feeder check is complete. Release it only intentionally.')+'</li>' +
         '<li>'+l('Faça teste a seco ou monte a primeira placa em baixa velocidade e inspecione-a antes de iniciar a produção.','Run a dry test or assemble the first board at low speed and inspect it before starting production.')+'</li>' +
       '</ol></div>' +
-      '<table><thead><tr><th>'+l('Pos.','Pos.')+'</th><th>'+l('Situação','Status')+'</th><th>'+l('Part Number / valor','Part Number / value')+'</th><th>'+l('Fabricante / footprint','Manufacturer / footprint')+'</th><th>'+l('Qtd. / referências / ângulo','Qty. / references / angle')+'</th><th>'+l('Alimentação','Feeding')+'</th><th>'+l('Processo','Process')+'</th><th>'+l('Conferência','Verification')+'</th></tr></thead>' +
+      '<table><thead><tr><th>'+l('Pos.','Pos.')+'</th><th>'+l('Situação','Status')+'</th><th>Part Number</th><th>'+l('Valor / comentário','Value / comment')+'</th><th>'+l('Fabricante / footprint','Manufacturer / footprint')+'</th><th>'+l('Qtd. / referências / ângulo','Qty. / references / angle')+'</th><th>'+l('Alimentação','Feeding')+'</th><th>'+l('Processo','Process')+'</th><th>'+l('Conferência','Verification')+'</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table>' +
       '<div class="operator-sheet-footer"><span>'+l('Operador: ','Operator: ')+'____________________________________ &nbsp; '+l('Data: ','Date: ')+'____/____/______</span><span>'+l('Conferido por: ','Checked by: ')+'_______________________________ &nbsp; '+l('Data: ','Date: ')+'____/____/______</span></div>' +
     '</div>';
