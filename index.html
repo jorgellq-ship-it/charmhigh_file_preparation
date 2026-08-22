@@ -2083,8 +2083,141 @@
   });
 
   // ---------- feeder library import/export (JSON, since browser storage is not persisted) ----------
+  function feederLibraryIdentityText(value){
+    return dpvSafeText(value||'')
+      .replace(/^AUTO\s+/i, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase();
+  }
+
+  function feederLibraryAliases(group){
+    const partNumber = normalizePartNumber(group.partNumber || '');
+    const footprint = String(group.footprint||'').trim().replace(/\s+/g, ' ');
+    const comment = String(group.comment||'').trim().replace(/\s+/g, ' ');
+    const raw = [
+      [comment, footprint].filter(Boolean).join(' '),
+      [partNumber, comment].filter(Boolean).join(' '),
+      [partNumber, footprint].filter(Boolean).join(' '),
+      partNumber,
+    ].filter(Boolean);
+    const aliases = new Set();
+    raw.forEach(value=>{
+      aliases.add(feederLibraryIdentityText(value));
+      aliases.add(feederLibraryIdentityText(dpvSafeText(value, 31)));
+    });
+    aliases.delete('');
+    return aliases;
+  }
+
+  function feederLibrarySourceAliases(key, assignment, identity){
+    const raw = [];
+    if(key.startsWith('DPV::')) raw.push(key.split('::').slice(2).join('::'));
+    if(assignment && assignment.deviceName) raw.push(assignment.deviceName);
+    if(identity){
+      const pn = normalizePartNumber(identity.partNumber || '');
+      const fp = String(identity.footprint||'').trim();
+      const value = String(identity.value || identity.comment || '').trim();
+      raw.push(pn, [value, fp].filter(Boolean).join(' '), [pn, value].filter(Boolean).join(' '), [pn, fp].filter(Boolean).join(' '));
+    }
+    const aliases = new Set();
+    raw.filter(Boolean).forEach(value=>{
+      aliases.add(feederLibraryIdentityText(value));
+      aliases.add(feederLibraryIdentityText(dpvSafeText(value, 31)));
+    });
+    aliases.delete('');
+    return aliases;
+  }
+
+  function importFeederLibrary(parsed){
+    if(!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(l('formato JSON inválido','invalid JSON format'));
+    const wrapped = parsed.assignments && typeof parsed.assignments === 'object' && !Array.isArray(parsed.assignments);
+    const source = wrapped ? parsed.assignments : parsed;
+    const identities = wrapped && parsed.identities && typeof parsed.identities === 'object' ? parsed.identities : {};
+    const groups = computeGroups(lastRows);
+    const groupKeys = Object.keys(groups);
+    const aliasIndex = new Map();
+    groupKeys.forEach(key=>{
+      feederLibraryAliases(groups[key]).forEach(alias=>{
+        if(!aliasIndex.has(alias)) aliasIndex.set(alias, new Set());
+        aliasIndex.get(alias).add(key);
+      });
+    });
+
+    const unsafeKeys = new Set(['__proto__','prototype','constructor','format','version','exportedAt','identities','assignments']);
+    const sourceKeys = Object.keys(source).filter(key=>!unsafeKeys.has(key) && source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]));
+    const claimedTargets = new Set();
+    const ambiguous = [];
+    const unmatched = [];
+    let applied = 0;
+
+    sourceKeys.forEach(sourceKey=>{
+      const assignment = source[sourceKey];
+      const identity = identities[sourceKey] || null;
+      let candidates = new Set();
+
+      if(Object.prototype.hasOwnProperty.call(groups, sourceKey)){
+        candidates.add(sourceKey);
+      } else if(identity && normalizePartNumber(identity.partNumber)){
+        const pn = normalizePartNumber(identity.partNumber);
+        const fp = String(identity.footprint||'').trim().replace(/\s+/g,' ').toUpperCase();
+        groupKeys.forEach(key=>{
+          const group = groups[key];
+          if(normalizePartNumber(group.partNumber) === pn && String(group.footprint||'').trim().replace(/\s+/g,' ').toUpperCase() === fp) candidates.add(key);
+        });
+      }
+
+      if(candidates.size === 0){
+        feederLibrarySourceAliases(sourceKey, assignment, identity).forEach(alias=>{
+          const matches = aliasIndex.get(alias);
+          if(matches) matches.forEach(key=>candidates.add(key));
+        });
+      }
+
+      const label = sourceKey.startsWith('DPV::') ? sourceKey.split('::').slice(2).join('::') : sourceKey;
+      if(candidates.size > 1){
+        ambiguous.push(label);
+        return;
+      }
+      if(candidates.size === 0){
+        unmatched.push(label);
+        return;
+      }
+
+      const targetKey = Array.from(candidates)[0];
+      if(claimedTargets.has(targetKey)){
+        ambiguous.push(label);
+        return;
+      }
+      feederAssignments[targetKey] = Object.assign(defaultAssignment(), assignment);
+      claimedTargets.add(targetKey);
+      applied++;
+    });
+
+    return {total:sourceKeys.length, applied, ambiguous, unmatched};
+  }
+
   document.getElementById('exportFeederLibBtn').addEventListener('click', ()=>{
-    const blob = new Blob([JSON.stringify(feederAssignments, null, 2)], {type:'application/json'});
+    const groups = computeGroups(lastRows);
+    const identities = {};
+    Object.keys(feederAssignments).forEach(key=>{
+      const group = groups[key];
+      if(!group) return;
+      identities[key] = {
+        partNumber:group.partNumber || '',
+        footprint:group.footprint || '',
+        value:group.comment || '',
+        manufacturer:group.manufacturer || '',
+      };
+    });
+    const payload = {
+      format:'charmhigh-feeder-library',
+      version:2,
+      exportedAt:new Date().toISOString(),
+      assignments:feederAssignments,
+      identities,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = 'biblioteca_feeders_CHMT36VB.json';
@@ -2101,13 +2234,27 @@
     reader.onload = ev=>{
       try{
         const parsed = JSON.parse(ev.target.result);
-        Object.keys(parsed).forEach(k=>{ feederAssignments[k] = Object.assign(defaultAssignment(), parsed[k]); });
+        const result = importFeederLibrary(parsed);
         renderFeederTable(lastRows);
         onFeederChange();
-        const count = Object.keys(parsed).length;
-        setStatus(l('Configuração carregada: ','Configuration loaded: ')+count+' '+(count === 1 ? l('tipo de componente encontrado.','component type found.') : l('tipos de componente encontrados.','component types found.')), false);
+        const notes = [l('Configuração carregada: ','Configuration loaded: ') + result.applied + l(' de ',' of ') + result.total + l(' tipos associados.',' types matched.')];
+        if(result.ambiguous.length){
+          const ambiguousCopy = result.ambiguous.length === 1
+            ? l(' entrada antiga ambígua foi ignorada para não unir Part Numbers diferentes',' ambiguous legacy entry was ignored to avoid combining different Part Numbers')
+            : l(' entradas antigas ambíguas foram ignoradas para não unir Part Numbers diferentes',' ambiguous legacy entries were ignored to avoid combining different Part Numbers');
+          notes.push(result.ambiguous.length + ambiguousCopy + ': ' + result.ambiguous.slice(0,3).map(value=>'"'+value+'"').join(', ') + (result.ambiguous.length > 3 ? '…' : '') + '.');
+        }
+        if(result.unmatched.length){
+          notes.push(result.unmatched.length + (result.unmatched.length === 1
+            ? l(' entrada está sem correspondência no projeto atual.',' entry has no match in the current project.')
+            : l(' entradas estão sem correspondência no projeto atual.',' entries have no match in the current project.')));
+        }
+        bulkStatusEl.textContent = notes.join(' ');
+        setStatus(notes.join(' '), false);
       }catch(err){
-        setStatus(l('Não foi possível carregar esta configuração de feeders: ','Could not load this feeder configuration: ')+err.message, true);
+        const message = l('Não foi possível carregar esta configuração de feeders: ','Could not load this feeder configuration: ')+err.message;
+        bulkStatusEl.textContent = message;
+        setStatus(message, true);
       }
     };
     reader.readAsText(file);
