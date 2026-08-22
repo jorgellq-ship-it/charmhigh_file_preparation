@@ -560,6 +560,55 @@
   .grp-part .manufacturer{color:var(--muted-2);}
   .grp-part.missing{color:var(--error);}
 
+  /* operator feeder setup report */
+  .operator-report-toolbar{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:var(--surface);
+  }
+  .operator-report-toolbar-copy{flex:1 1 360px;min-width:0;}
+  .operator-report-toolbar-copy strong{display:block;font-size:13px;color:var(--text);margin-bottom:4px;}
+  .operator-report-toolbar-copy span{display:block;font-size:11.5px;line-height:1.5;color:var(--muted);}
+  .operator-report-status{width:100%;font-size:11.5px;color:var(--solder);line-height:1.45;min-height:16px;}
+  .operator-report-status.error{color:var(--error);}
+  .operator-report-preview{display:none;margin-top:14px;overflow:auto;border-radius:14px;}
+  .operator-report-preview.visible{display:block;}
+  .operator-sheet{
+    min-width:1060px;padding:28px;background:#fff;color:#18201e;
+    font-family:Arial,Helvetica,sans-serif;border-radius:14px;
+  }
+  .operator-sheet-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:16px;}
+  .operator-sheet h2{margin:0 0 5px;font-size:22px;line-height:1.15;color:#111715;}
+  .operator-sheet-subtitle{font-size:11px;color:#52605c;line-height:1.45;}
+  .operator-sheet-id{text-align:right;font-size:10.5px;line-height:1.55;color:#52605c;}
+  .operator-sheet-id strong{display:block;color:#18201e;font-size:12px;}
+  .operator-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px;}
+  .operator-summary-item{padding:9px 10px;border:1px solid #cfd8d5;border-radius:7px;background:#f6f8f7;}
+  .operator-summary-item strong{display:block;font-size:15px;color:#18201e;margin-bottom:2px;}
+  .operator-summary-item span{font-size:9.5px;color:#61706b;}
+  .operator-instructions{margin:0 0 14px;padding:11px 14px;border:1px solid #dbc49f;border-radius:7px;background:#fff9ef;}
+  .operator-instructions strong{display:block;font-size:11px;margin-bottom:5px;color:#50381b;}
+  .operator-instructions ol{margin:0;padding-left:18px;columns:2;column-gap:28px;}
+  .operator-instructions li{font-size:9.5px;line-height:1.4;color:#50381b;margin:0 0 3px;break-inside:avoid;}
+  .operator-sheet table{width:100%;border-collapse:collapse;table-layout:auto;font-family:Arial,Helvetica,sans-serif;font-size:8.5px;color:#18201e;}
+  .operator-sheet thead th{
+    position:static;height:auto;padding:6px 5px;background:#e8eeec;color:#18201e;
+    border:1px solid #aebbb7;text-align:left;white-space:normal;font-weight:700;
+  }
+  .operator-sheet tbody td{
+    height:auto;padding:6px 5px;border:1px solid #c5cfcc;color:#18201e;
+    white-space:normal;vertical-align:top;line-height:1.35;background:#fff;
+  }
+  .operator-sheet tbody tr:nth-child(even) td{background:#f7f9f8;}
+  .operator-sheet .op-pos{font-size:11px;font-weight:700;text-align:center;white-space:nowrap;}
+  .operator-sheet .op-status{font-weight:700;white-space:nowrap;}
+  .operator-sheet .op-status.warn{color:#9a5b10;}
+  .operator-sheet .op-status.ready{color:#167044;}
+  .operator-sheet .op-pn{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;}
+  .operator-sheet .op-check{font-size:9px;white-space:nowrap;line-height:1.6;}
+  .operator-sheet-footer{display:flex;justify-content:space-between;gap:24px;margin-top:16px;padding-top:12px;border-top:1px solid #aebbb7;font-size:10px;color:#52605c;}
+  .operator-sheet-footer span{flex:1;}
+  .operator-print-sheet{display:none;}
+
   /* board preview + orientation */
   .orient-grid{
     display:grid;
@@ -683,6 +732,18 @@
     .bulk-editor{grid-template-columns:1fr;}
     .bulk-editor-copy,.bulk-status{grid-column:1;}
     .bom-summary{grid-template-columns:1fr;}
+  }
+
+  @page{size:A4 landscape;margin:9mm;}
+  @media print{
+    body.print-operator-report{margin:0;padding:0;background:#fff;color:#18201e;}
+    body.print-operator-report > .wrap{display:none!important;}
+    body.print-operator-report > .operator-print-sheet{display:block!important;}
+    body.print-operator-report .operator-sheet{min-width:0;width:100%;padding:0;border-radius:0;}
+    body.print-operator-report .operator-sheet table{font-size:7.8pt;}
+    body.print-operator-report .operator-sheet thead{display:table-header-group;}
+    body.print-operator-report .operator-sheet tr{break-inside:avoid;page-break-inside:avoid;}
+    body.print-operator-report .operator-instructions{break-inside:avoid;}
   }
 </style>
 </head>
@@ -812,6 +873,20 @@
       <div class="preview-wrap" id="feederTableWrap"></div>
     </section>
 
+    <section id="operatorReportSection">
+      <p class="section-title">Lista do operador</p>
+      <div class="operator-report-toolbar">
+        <div class="operator-report-toolbar-copy">
+          <strong>Mapa de rolos e feeders para montagem</strong>
+          <span>Gere uma folha de setup com posições, Part Numbers, parâmetros e campos de conferência. Posições MStack automáticas aparecem destacadas para validação física antes de liberar o Skip.</span>
+        </div>
+        <button class="btn btn-ghost" id="buildOperatorReportBtn">Preparar lista</button>
+        <button class="btn btn-primary" id="printOperatorReportBtn" disabled>Imprimir lista</button>
+        <div class="operator-report-status" id="operatorReportStatus"></div>
+      </div>
+      <div class="operator-report-preview" id="operatorReportPreview"></div>
+    </section>
+
     <section>
       <p class="section-title">Prévia da receita DPV</p>
       <div class="preview-wrap" id="dpvPreviewWrap">
@@ -925,6 +1000,8 @@
   </div>
 
 </div>
+
+<div class="operator-print-sheet" id="operatorPrintSheet" aria-hidden="true"></div>
 
 <script>
 (function(){
@@ -1631,10 +1708,12 @@
         bomMatched:!!r._bomMatched,
         missingPartNumber:!!bomFile && !normalizePartNumber(r._partNumber || r['Part Number']),
         qty:0,
+        references:[],
         fiducial:false,
         dpvAngles:new Set(),
       };
       groups[key].qty++;
+      if(r.Designator) groups[key].references.push(String(r.Designator).trim());
       if(isFiducialRow(r)) groups[key].fiducial = true;
       const rawAngle = Number(r.Rotation);
       if(Number.isFinite(rawAngle)){
@@ -1887,6 +1966,7 @@
         const parsed = JSON.parse(ev.target.result);
         Object.keys(parsed).forEach(k=>{ feederAssignments[k] = Object.assign(defaultAssignment(), parsed[k]); });
         renderFeederTable(lastRows);
+        onFeederChange();
         const count = Object.keys(parsed).length;
         setStatus('Configuração carregada: '+count+' '+(count === 1 ? 'tipo de componente encontrado.' : 'tipos de componente encontrados.'), false);
       }catch(err){
@@ -2159,6 +2239,169 @@
     const identified = partNumber ? [partNumber, row.Comment].filter(Boolean).join(' ') : fallback;
     return (automatic ? 'AUTO ' : '') + identified;
   }
+
+  // ---------- printable feeder/reel setup list ----------
+  const buildOperatorReportBtn = document.getElementById('buildOperatorReportBtn');
+  const printOperatorReportBtn = document.getElementById('printOperatorReportBtn');
+  const operatorReportStatus = document.getElementById('operatorReportStatus');
+  const operatorReportPreview = document.getElementById('operatorReportPreview');
+  const operatorPrintSheet = document.getElementById('operatorPrintSheet');
+
+  function operatorReportData(rows){
+    if(!rows.length) throw new Error('Carregue e confirme um arquivo Pick & Place ou DPV antes de preparar a lista.');
+    const groups = computeGroups(rows);
+    const mstack = resolveMstackAssignments(rows);
+    const entries = [];
+
+    Object.keys(groups).forEach(key=>{
+      const group = groups[key];
+      const assignment = ensureAssignment(key);
+      if(assignment.remove) return;
+
+      const rawPosition = String(assignment.feederID||'').trim();
+      let position, automatic = false, noPosition = false;
+      if(rawPosition !== ''){
+        position = validFeederId(rawPosition, key);
+      } else if(autoMstack.checked){
+        position = mstack.autoByKey.get(key);
+        automatic = true;
+      } else {
+        position = 99;
+        noPosition = true;
+      }
+
+      const pending = automatic || noPosition || assignment.skip;
+      let status = 'LIBERADO';
+      if(automatic) status = 'CONFIRMAR / SKIP';
+      else if(noPosition) status = 'SEM POSIÇÃO / SKIP';
+      else if(assignment.skip) status = 'SKIP';
+
+      const references = [...new Set(group.references.filter(Boolean))]
+        .sort((a,b)=>a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
+      const angles = Array.from(group.dpvAngles).map(Number).sort((a,b)=>a-b);
+      const controls = [];
+      if(assignment.vacuum) controls.push('Vácuo');
+      if(assignment.vision) controls.push('Visão');
+
+      entries.push({
+        position,
+        automatic,
+        pending,
+        status,
+        partNumber:normalizePartNumber(group.partNumber) || 'Sem Part Number',
+        manufacturer:String(group.manufacturer||'').trim() || '—',
+        value:String(group.comment||'').trim() || '—',
+        footprint:String(group.footprint||'').trim() || '—',
+        qty:group.qty,
+        references:references.join(', ') || '—',
+        angles:angles.length ? angles.map(angle=>trimNum(angle,4) + '°').join(', ') : '—',
+        pitch:trimNum(dpvNumber(assignment.pitch, 4), 2) + ' mm',
+        head:String(assignment.head||1),
+        height:trimNum(dpvNumber(assignment.height, 1), 4),
+        speed:String(Math.max(1, Math.min(100, dpvNumber(assignment.speed, 100)))) + '%',
+        controls:controls.join(' + ') || '—',
+      });
+    });
+
+    if(!entries.length) throw new Error('Nenhum componente ativo está disponível para a lista do operador.');
+
+    entries.sort((a,b)=>a.position-b.position || a.partNumber.localeCompare(b.partNumber, undefined, {numeric:true, sensitivity:'base'}));
+    const partNumberMissing = entries.filter(entry=>entry.partNumber === 'Sem Part Number').length;
+    return {
+      entries,
+      project:safeFileBase(fileNameInput.value || (importedDpv && importedDpv.fileName) || (files[0] && files[0].name) || 'pickplace_CHMT'),
+      bom:bomFile ? bomFile.name : 'Sem BOM associada',
+      generatedAt:new Date().toLocaleString('pt-BR'),
+      placementQty:entries.reduce((total, entry)=>total + entry.qty, 0),
+      automaticCount:entries.filter(entry=>entry.automatic).length,
+      pendingCount:entries.filter(entry=>entry.pending).length,
+      partNumberMissing,
+    };
+  }
+
+  function operatorReportMarkup(data){
+    const rows = data.entries.map(entry=>{
+      const position = entry.position + (entry.automatic ? '*' : '');
+      return '<tr>' +
+        '<td class="op-pos">' + esc(position) + '</td>' +
+        '<td class="op-status ' + (entry.pending ? 'warn' : 'ready') + '">' + esc(entry.status) + '</td>' +
+        '<td><div class="op-pn">' + esc(entry.partNumber) + '</div><div>' + esc(entry.value) + '</div></td>' +
+        '<td><strong>' + esc(entry.manufacturer) + '</strong><br>' + esc(entry.footprint) + '</td>' +
+        '<td><strong>' + esc(entry.qty) + ' un.</strong><br>' + esc(entry.references) + '<br>Ângulo: ' + esc(entry.angles) + '</td>' +
+        '<td>Avanço: <strong>' + esc(entry.pitch) + '</strong><br>Cabeça: <strong>' + esc(entry.head) + '</strong></td>' +
+        '<td>Altura: <strong>' + esc(entry.height) + '</strong><br>Velocidade: <strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
+        '<td class="op-check">□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade</td>' +
+      '</tr>';
+    }).join('');
+
+    return '<div class="operator-sheet">' +
+      '<div class="operator-sheet-header">' +
+        '<div><h2>Lista de setup — CharmHigh CHM-T36/CHM-T48</h2>' +
+          '<div class="operator-sheet-subtitle">Mapa de rolos, feeders e parâmetros para preparação da máquina.<br>* Posição MStack atribuída automaticamente: confirme fisicamente antes de liberar o Skip.</div></div>' +
+        '<div class="operator-sheet-id"><strong>' + esc(data.project) + '</strong>BOM: ' + esc(data.bom) + '<br>Gerado em: ' + esc(data.generatedAt) + '</div>' +
+      '</div>' +
+      '<div class="operator-summary">' +
+        '<div class="operator-summary-item"><strong>' + esc(data.entries.length) + '</strong><span>rolos / tipos ativos</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.placementQty) + '</strong><span>componentes a montar</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.automaticCount) + '</strong><span>posições automáticas</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.pendingCount) + '</strong><span>linhas em Skip / pendentes</span></div>' +
+      '</div>' +
+      '<div class="operator-instructions"><strong>Instruções para o operador</strong><ol>' +
+        '<li>Compare a etiqueta do rolo com o Part Number, fabricante e valor. Nunca selecione o componente somente pelo valor.</li>' +
+        '<li>Instale cada rolo na posição indicada. Posições com asterisco foram atribuídas automaticamente e precisam ser confirmadas na máquina.</li>' +
+        '<li>Configure avanço da fita, cabeça, altura e velocidade conforme esta lista.</li>' +
+        '<li>Confirme polaridade, pino 1/cátodo e sentido da fita pela embalagem ou datasheet; a ferramenta não deduz o sentido de alimentação.</li>' +
+        '<li>Mantenha o Skip ativo até concluir a conferência física do feeder. Libere-o somente de forma intencional.</li>' +
+        '<li>Faça teste a seco ou monte a primeira placa em baixa velocidade e inspecione-a antes de iniciar a produção.</li>' +
+      '</ol></div>' +
+      '<table><thead><tr><th>Pos.</th><th>Situação</th><th>Part Number / valor</th><th>Fabricante / footprint</th><th>Qtd. / referências / ângulo</th><th>Alimentação</th><th>Processo</th><th>Conferência</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody></table>' +
+      '<div class="operator-sheet-footer"><span>Operador: ____________________________________ &nbsp; Data: ____/____/______</span><span>Conferido por: _______________________________ &nbsp; Data: ____/____/______</span></div>' +
+    '</div>';
+  }
+
+  function invalidateOperatorReport(){
+    operatorReportPreview.classList.remove('visible');
+    operatorReportPreview.innerHTML = '';
+    operatorPrintSheet.innerHTML = '';
+    printOperatorReportBtn.disabled = true;
+    operatorReportStatus.classList.remove('error');
+    operatorReportStatus.textContent = '';
+  }
+
+  function renderOperatorReport(){
+    try{
+      const data = operatorReportData(lastRows);
+      const markup = operatorReportMarkup(data);
+      operatorReportPreview.innerHTML = markup;
+      operatorPrintSheet.innerHTML = markup;
+      operatorReportPreview.classList.add('visible');
+      printOperatorReportBtn.disabled = false;
+      operatorReportStatus.classList.remove('error');
+      const notes = ['Lista preparada com ' + data.entries.length + ' ' + (data.entries.length === 1 ? 'rolo' : 'rolos') + ' e ' + data.placementQty + ' componentes.'];
+      if(data.automaticCount) notes.push(data.automaticCount + ' posições automáticas permanecem em Skip até a conferência.');
+      if(data.partNumberMissing) notes.push(data.partNumberMissing + ' linhas estão sem Part Number; associe a BOM antes da liberação.');
+      operatorReportStatus.textContent = notes.join(' ');
+      return true;
+    }catch(err){
+      operatorReportStatus.classList.add('error');
+      operatorReportStatus.textContent = 'Não foi possível preparar a lista: ' + err.message;
+      printOperatorReportBtn.disabled = true;
+      return false;
+    }
+  }
+
+  buildOperatorReportBtn.addEventListener('click', renderOperatorReport);
+  printOperatorReportBtn.addEventListener('click', ()=>{
+    if(!renderOperatorReport()) return;
+    document.body.classList.add('print-operator-report');
+    operatorPrintSheet.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(()=>window.print());
+  });
+  window.addEventListener('afterprint', ()=>{
+    document.body.classList.remove('print-operator-report');
+    operatorPrintSheet.setAttribute('aria-hidden', 'true');
+  });
 
   function buildDpvString(rows, outBasename){
     if(importedDpv) return buildImportedDpvString(outBasename);
@@ -2862,6 +3105,7 @@
 
   function renderAll(){
     invalidateDownstream();
+    invalidateOperatorReport();
     dpvValidationError = '';
     renderPitchPanel();
     renderFileCards();
@@ -2876,6 +3120,7 @@
 
   function onFeederChange(){
     if(currentStep === 2) renderDpvPreview();
+    if(operatorReportPreview.classList.contains('visible')) renderOperatorReport();
     updatePipelineUI();
   }
 
