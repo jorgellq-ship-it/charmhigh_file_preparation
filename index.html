@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Converta Pick &amp; Place em CSV e DPV para a CharmHigh CHMT36VB, configure feeders e MStack e corrija a origem dos Gerbers diretamente no navegador.">
-<title>Preparador de arquivos CharmHigh · CSV, DPV e Gerbers</title>
+<meta name="description" content="Prepare arquivos Pick &amp; Place, CSV, DPV e Gerbers para máquinas CharmHigh CHM-T36 e CHM-T48 diretamente no navegador.">
+<title>Preparador de arquivos para CharmHigh CHM-T36/CHM-T48</title>
 <style>
   :root{
     --bg: #0b0f0e;
@@ -39,34 +39,58 @@
   .wrap{width:100%;max-width:1520px;margin:0 auto;}
 
   /* header */
-  header{margin-bottom:32px;}
+  .hero-header{
+    display:grid;
+    grid-template-columns:minmax(0,1.08fr) minmax(340px,.82fr);
+    align-items:center;
+    gap:44px;
+    min-height:290px;
+    margin-bottom:30px;
+  }
+  .hero-copy{min-width:0;padding:10px 0;}
   h1{
     font-family:var(--sans);
     font-weight:800;
-    font-size:34px;
-    letter-spacing:-0.02em;
-    line-height:1.15;
-    margin:0 0 12px;
+    font-size:clamp(34px,3.4vw,52px);
+    letter-spacing:-0.035em;
+    line-height:1.07;
+    max-width:820px;
+    margin:0 0 18px;
     background:linear-gradient(120deg,#f4f1ea 0%,#f4f1ea 55%,var(--copper) 100%);
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
   }
-  header p{
+  .hero-copy p{
     color:var(--muted);
-    font-size:15px;
-    line-height:1.6;
-    max-width:660px;
+    font-size:15.5px;
+    line-height:1.65;
+    max-width:700px;
     margin:0;
   }
-  header .eyebrow{
-    color:var(--solder);
-    font-size:11px;
-    font-weight:750;
-    letter-spacing:0.14em;
-    line-height:1.3;
-    margin:0 0 10px;
-    text-transform:uppercase;
+  .hero-art{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    min-width:0;
+  }
+  .hero-art::before{
+    content:"";
+    position:absolute;
+    inset:14% 8%;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(201,138,62,.16),rgba(201,138,62,0) 68%);
+    filter:blur(18px);
+    pointer-events:none;
+  }
+  .hero-art img{
+    position:relative;
+    display:block;
+    width:min(100%,520px);
+    max-height:300px;
+    object-fit:contain;
+    filter:drop-shadow(0 22px 28px rgba(0,0,0,.38));
   }
   code, .mono{font-family:var(--mono);}
   code{
@@ -578,6 +602,8 @@
   }
 
   @media (max-width: 900px){
+    .hero-header{grid-template-columns:minmax(0,1fr) minmax(280px,.75fr);gap:24px;min-height:250px;}
+    .hero-art img{max-height:240px;}
     #feederTableWrap{overflow:visible;max-height:none;border:0;background:transparent;box-shadow:none;}
     .feeder-table,.feeder-table tbody,.feeder-table tr,.feeder-table td{display:block;width:100%;}
     .feeder-table thead{display:none;}
@@ -600,8 +626,12 @@
   /* narrow screens */
   @media (max-width: 720px){
     body{padding:32px 16px 48px;}
-    h1{font-size:27px;}
-    header p{font-size:14px;}
+    .hero-header{grid-template-columns:1fr;gap:10px;min-height:0;margin-bottom:26px;}
+    .hero-copy{padding:0;}
+    h1{font-size:34px;margin-bottom:14px;}
+    .hero-copy p{font-size:14px;}
+    .hero-art{justify-content:center;}
+    .hero-art img{width:min(100%,460px);max-height:220px;}
     .tool-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;}
     .tool-tab{
       width:100%;min-width:0;margin:0;padding:0 8px 11px;
@@ -622,6 +652,8 @@
   }
 
   @media (max-width: 520px){
+    h1{font-size:30px;}
+    .hero-art img{max-height:180px;}
     .stepper{display:grid;grid-template-columns:1fr;gap:7px;}
     .step{width:100%;justify-content:flex-start;}
     .bulk-editor{grid-template-columns:1fr;}
@@ -632,10 +664,14 @@
 <body>
 <div class="wrap">
 
-  <header>
-    <p class="eyebrow">Do CAD à máquina, com mais confiança</p>
-    <h1>Preparador de arquivos para CharmHigh</h1>
-    <p>Transforme arquivos Pick &amp; Place em CSV e DPV prontos para revisão na CHMT36VB. Confira a orientação da placa, organize feeders e MStack e corrija a origem dos Gerbers — tudo direto no navegador.</p>
+  <header class="hero-header">
+    <div class="hero-copy">
+      <h1>Preparador de arquivos para CharmHigh CHM-T36/CHM-T48</h1>
+      <p>Transforme arquivos Pick &amp; Place em CSV e DPV prontos para revisão. Confira a orientação da placa, organize feeders e MStack e corrija a origem dos Gerbers — tudo direto no navegador.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <img src="assets/pick-and-place-chmt.webp" alt="" width="1100" height="734" decoding="async" fetchpriority="high">
+    </div>
   </header>
 
   <nav class="tool-tabs">
