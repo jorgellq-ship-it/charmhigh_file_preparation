@@ -679,7 +679,7 @@
   <div class="pane" id="pane2" style="display:none;">
     <section>
       <p class="section-title">Componentes, feeders e MStack</p>
-      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
+      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. A rotação do CSV continua sendo aplicada individualmente a cada referência; o campo <strong>Ajuste extra</strong> serve apenas para somar uma correção do encapsulamento. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
       <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
         <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
         <span><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
@@ -870,13 +870,15 @@
     padx:       ['pad x','padx','pad-x','pad-x mm'],
     pady:       ['pad y','pady','pad-y','pad-y mm'],
     layer:      ['side','layer'],
-    rotation:   ['rot','rotation','angle'],
+    rotation:   ['rot','rotation','angle','rotacao','angulo','orientation'],
     comment:    ['val','value','comment','description','part value'],
   };
 
   function normHeader(h){
     return (h||'').toString().toLowerCase()
-      .replace(/[()]/g,' ')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/\b(?:deg|degree|degrees|grau|graus)\b/g,' ')
+      .replace(/[()[\]{}°.]/g,' ')
       .replace(/[_\-]/g,' ')
       .replace(/\s+/g,' ')
       .trim();
@@ -1399,7 +1401,7 @@
     const table = document.createElement('table');
     table.className = 'feeder-table';
     const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Correção angular (°)</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
+    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ajuste extra (°)</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
     const tbody = document.createElement('tbody');
 
     keys.forEach(key=>{
@@ -1500,7 +1502,7 @@
       });
       applyRemovedState();
 
-      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Correção angular','Skip','Verificar vácuo','Usar visão'];
+      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ajuste extra','Skip','Verificar vácuo','Usar visão'];
       Array.from(tr.children).forEach((td, index)=>{ td.dataset.label = responsiveLabels[index]; });
 
       tbody.appendChild(tr);
@@ -1881,9 +1883,11 @@
       }
 
       let rot = parseFloat(r.Rotation); if(isNaN(rot)) rot = 0;
+      // buildOutputRows already applies each requested board reflection to both
+      // the coordinates and the CSV angle. The CHMT frame only needs its fixed
+      // -90-degree conversion here; flipping bottom rows again mirrors twice.
       rot = rot - 90 + (a.angleComp||0);
       rot = normalizeAngle(rot);
-      if((r.Layer||'').toUpperCase() === 'B') rot = -rot;
 
       let mount = 0;
       if(!place) mount += 1;
