@@ -33,9 +33,10 @@
     font-family:var(--sans);
     min-height:100vh;
     padding:48px 22px 60px;
+    overflow-x:hidden;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:1520px;margin:0 auto;}
+  .wrap{width:100%;max-width:1520px;margin:0 auto;}
 
   /* header */
   header{margin-bottom:32px;}
@@ -94,11 +95,11 @@
   .dropzone{
     border:1.5px dashed var(--border);
     border-radius:16px;
-    padding:40px 20px;
+    min-height:140px;padding:28px 20px;
     text-align:center;
     background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
     transition:border-color .2s ease, background .2s ease;
-    cursor:pointer;
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;
   }
   .dropzone:hover{border-color:var(--copper-dim);background:rgba(255,255,255,0.02);}
   .dropzone.drag{border-color:var(--copper);background:rgba(201,138,62,0.06);}
@@ -107,13 +108,13 @@
   input[type=file]{display:none;}
   .dpv-import-card{
     display:flex;align-items:center;justify-content:space-between;gap:18px;
-    margin-top:14px;padding:16px 18px;border:1px solid var(--border);
+    min-height:74px;margin-top:14px;padding:16px 18px;border:1px solid var(--border);
     border-radius:14px;background:var(--surface);
   }
   .dpv-import-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
   .dpv-import-copy strong{font-size:13px;color:var(--text);font-weight:650;}
   .dpv-import-copy span{font-size:11.5px;line-height:1.45;color:var(--muted);}
-  .dpv-import-card .btn{flex:0 0 auto;}
+  .dpv-import-card .btn{flex:0 0 auto;min-width:164px;}
   .dpv-import-status{font-size:12px;color:var(--solder);margin:9px 2px 0;min-height:16px;}
   .dpv-import-status.error{color:var(--error);}
 
@@ -218,7 +219,7 @@
   /* preview / table cards */
   .preview-wrap{
     border:1px solid var(--border);
-    border-radius:16px 0 0 16px;
+    border-radius:16px;
     overflow:auto;
     max-height:340px;
     background:var(--surface);
@@ -249,6 +250,7 @@
     white-space:nowrap;
   }
   thead th:first-child{border-top-left-radius:16px;}
+  thead th:last-child{border-top-right-radius:16px;}
   tbody tr:last-child td{border-bottom:none;}
   tbody tr:last-child td:first-child{border-bottom-left-radius:16px;}
   tbody td{
@@ -271,7 +273,7 @@
     border-radius:10px;border:1px solid transparent;
     cursor:pointer;white-space:nowrap;
     transition:transform .1s ease, opacity .15s ease, box-shadow .15s ease, border-color .15s ease;
-    display:inline-flex;align-items:center;justify-content:center;
+    display:inline-flex;align-items:center;justify-content:center;line-height:1;
   }
   .btn:active:not(:disabled){transform:scale(0.98);}
   .btn:disabled{opacity:0.4;cursor:not-allowed;}
@@ -317,13 +319,13 @@
 
   /* tool tabs */
   .tool-tabs{
-    display:flex;gap:4px;margin-bottom:26px;
+    display:flex;align-items:stretch;gap:28px;margin-bottom:26px;
     border-bottom:1px solid var(--border-soft);
   }
   .tool-tab{
     background:transparent;border:none;border-bottom:2px solid transparent;
     color:var(--muted);font-family:var(--sans);font-size:14px;font-weight:600;
-    padding:0 4px 12px;margin-right:22px;cursor:pointer;white-space:nowrap;
+    padding:0 4px 12px;margin:0;cursor:pointer;white-space:nowrap;line-height:1.3;
     transition:color .15s ease, border-color .15s ease;
   }
   .tool-tab:hover{color:var(--text);}
@@ -438,20 +440,23 @@
   .pitch-field input{height:32px;font-size:11.5px;}
 
   .feeder-lib-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .feeder-lib-row .btn{min-width:240px;}
   .bulk-editor{
-    display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;
+    display:grid;grid-template-columns:minmax(240px,1fr) repeat(4,minmax(150px,160px));
+    align-items:end;gap:10px;
     background:var(--surface);border:1px solid var(--border);border-radius:14px;
-    padding:13px 14px;margin-bottom:14px;
+    padding:14px;margin-bottom:14px;
   }
-  .bulk-editor-copy{flex:1 1 220px;align-self:center;min-width:200px;}
+  .bulk-editor-copy{align-self:center;min-width:0;}
   .bulk-editor-copy strong{display:block;font-size:12.5px;color:var(--text);margin-bottom:3px;}
   .bulk-editor-copy span{display:block;font-size:11px;color:var(--muted);line-height:1.4;}
-  .bulk-field{display:flex;flex-direction:column;gap:5px;flex:0 1 160px;min-width:138px;}
-  .bulk-field label{font-size:10.5px;color:var(--muted);font-family:var(--mono);}
-  .bulk-field-row{display:flex;gap:6px;}
+  .bulk-field{display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .bulk-field label{height:12px;line-height:12px;font-size:10.5px;color:var(--muted);font-family:var(--mono);}
+  .bulk-field-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;}
   .bulk-field-row input,.bulk-field-row select{height:32px;min-width:0;}
-  .bulk-field-row .btn{height:32px;padding:0 10px;flex:0 0 auto;}
-  .bulk-status{flex-basis:100%;font-size:11.5px;color:var(--solder);min-height:14px;}
+  .bulk-field-row .btn{height:32px;min-width:64px;padding:0 10px;}
+  .bulk-status{grid-column:1/-1;font-size:11.5px;color:var(--solder);line-height:1.4;min-height:16px;}
+  .bulk-status:empty{display:none;}
   #feederTableWrap{overflow-x:hidden;max-height:520px;border-radius:16px;}
   .feeder-table{table-layout:fixed;font-size:10.5px;}
   .feeder-table th{white-space:normal;line-height:1.15;padding:6px 3px;text-align:center;overflow-wrap:anywhere;}
@@ -462,7 +467,7 @@
     width:100%;height:30px;padding:0 5px;font-size:10.5px;min-width:0;
   }
   .feeder-table select{width:100%;min-width:0;height:30px;padding:0 2px;font-size:10px;}
-  .feeder-table th:nth-child(1){width:27%;}
+  .feeder-table th:nth-child(1){width:29%;}
   .feeder-table th:nth-child(2){width:3%;}
   .feeder-table th:nth-child(3){width:6%;}
   .feeder-table th:nth-child(4){width:8%;}
@@ -487,7 +492,7 @@
   }
   .feeder-table td.qty{color:var(--muted);}
   .feeder-table td.dpv-angle-list{
-    white-space:normal;text-align:center;color:var(--accent);font-family:var(--mono);
+    white-space:normal;text-align:center;color:var(--copper);font-family:var(--mono);
     font-size:10px;line-height:1.35;overflow-wrap:anywhere;
   }
   .fid-badge{
@@ -567,6 +572,11 @@
     font-size:12px;color:var(--muted-2);line-height:1.55;margin:10px 0 0;
   }
 
+  @media (max-width: 1100px){
+    .bulk-editor{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .bulk-editor-copy{grid-column:1/-1;}
+  }
+
   @media (max-width: 900px){
     #feederTableWrap{overflow:visible;max-height:none;border:0;background:transparent;box-shadow:none;}
     .feeder-table,.feeder-table tbody,.feeder-table tr,.feeder-table td{display:block;width:100%;}
@@ -592,6 +602,11 @@
     body{padding:32px 16px 48px;}
     h1{font-size:27px;}
     header p{font-size:14px;}
+    .tool-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;}
+    .tool-tab{
+      width:100%;min-width:0;margin:0;padding:0 8px 11px;
+      text-align:center;white-space:normal;font-size:12.5px;
+    }
     .export-bar-row{flex-direction:column;align-items:stretch;}
     .export-bar-row > *{flex:1 1 auto !important;width:100%;}
     .pipeline-bar{flex-direction:column;align-items:stretch;}
@@ -600,8 +615,17 @@
     .stepper{gap:6px;}
     .step{flex:1 1 auto;padding:0 12px;font-size:12px;}
     .dpv-import-card{align-items:stretch;flex-direction:column;}
-    .dpv-import-card .btn{width:100%;}
-    .bulk-field{flex:1 1 calc(50% - 8px);min-width:128px;}
+    .dpv-import-card .btn{width:100%;min-width:0;}
+    .feeder-lib-row .btn{flex:1 1 100%;min-width:0;width:100%;}
+    .bulk-editor{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .bulk-editor-copy{grid-column:1/-1;}
+  }
+
+  @media (max-width: 520px){
+    .stepper{display:grid;grid-template-columns:1fr;gap:7px;}
+    .step{width:100%;justify-content:flex-start;}
+    .bulk-editor{grid-template-columns:1fr;}
+    .bulk-editor-copy,.bulk-status{grid-column:1;}
   }
 </style>
 </head>
@@ -683,7 +707,7 @@
   <div class="pane" id="pane2" style="display:none;">
     <section>
       <p class="section-title">Componentes, feeders e MStack</p>
-      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. A coluna <strong>Ângulo no DPV</strong> mostra o valor final que será enviado à máquina; quando as referências do grupo tiverem rotações diferentes, todos os ângulos utilizados serão exibidos. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
+      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. A coluna <strong>Ângulo</strong> mostra o valor final que será enviado à máquina; quando as referências do grupo tiverem rotações diferentes, todos os ângulos utilizados serão exibidos. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
       <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
         <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
         <span><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
@@ -1410,7 +1434,7 @@
     const table = document.createElement('table');
     table.className = 'feeder-table';
     const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ângulo no DPV</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
+    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ângulo</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
     const tbody = document.createElement('tbody');
 
     keys.forEach(key=>{
@@ -1511,7 +1535,7 @@
       });
       applyRemovedState();
 
-      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo no DPV','Skip','Verificar vácuo','Usar visão'];
+      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo','Skip','Verificar vácuo','Usar visão'];
       Array.from(tr.children).forEach((td, index)=>{ td.dataset.label = responsiveLabels[index]; });
 
       tbody.appendChild(tr);
