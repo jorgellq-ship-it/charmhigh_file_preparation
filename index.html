@@ -486,6 +486,10 @@
     overflow:hidden;text-overflow:ellipsis;padding-left:8px;
   }
   .feeder-table td.qty{color:var(--muted);}
+  .feeder-table td.dpv-angle-list{
+    white-space:normal;text-align:center;color:var(--accent);font-family:var(--mono);
+    font-size:10px;line-height:1.35;overflow-wrap:anywhere;
+  }
   .fid-badge{
     display:inline-block;
     font-family:var(--sans);font-weight:600;font-size:10px;letter-spacing:.02em;
@@ -679,7 +683,7 @@
   <div class="pane" id="pane2" style="display:none;">
     <section>
       <p class="section-title">Componentes, feeders e MStack</p>
-      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. A rotação do CSV continua sendo aplicada individualmente a cada referência; o campo <strong>Ajuste extra</strong> serve apenas para somar uma correção do encapsulamento. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
+      <p class="note">Cada linha representa um tipo de componente, agrupado por footprint e valor. A coluna <strong>Ângulo no DPV</strong> mostra o valor final que será enviado à máquina; quando as referências do grupo tiverem rotações diferentes, todos os ângulos utilizados serão exibidos. Informe a posição física do feeder na CHMT36VB ou marque <strong>Remover</strong> para excluir o grupo da receita. Referências iniciadas por <code>FID</code> são reconhecidas automaticamente como fiduciais.</p>
       <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
         <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
         <span><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
@@ -1298,7 +1302,7 @@
   }
 
   // ---------- feeder assignment (for .dpv generation) ----------
-  let feederAssignments = {}; // groupKey -> {feederID, deviceName, head, height, speed, angleComp, skip, vacuum, vision}
+  let feederAssignments = {}; // groupKey -> {feederID, deviceName, head, height, speed, skip, vacuum, vision}
   let importedDpv = null; // original DPV template, preserved while its editable fields are changed
 
   function groupKey(row){
@@ -1310,7 +1314,7 @@
   }
 
   function defaultAssignment(){
-    return {feederID:'', deviceName:'', head:1, height:1.0, pitch:4, pitchAuto:true, speed:100, angleComp:0, remove:false, skip:false, vacuum:false, vision:false};
+    return {feederID:'', deviceName:'', head:1, height:1.0, pitch:4, pitchAuto:true, speed:100, remove:false, skip:false, vacuum:false, vision:false};
   }
 
   function ensureAssignment(key){
@@ -1319,12 +1323,17 @@
   }
 
   function computeGroups(rows){
-    const groups = {}; // key -> {footprint, comment, qty, fiducial}
+    const groups = {}; // key -> {footprint, comment, qty, fiducial, dpvAngles}
     rows.forEach(r=>{
       const key = groupKey(r);
-      if(!groups[key]) groups[key] = {footprint:r.Footprint, comment:r.Comment, qty:0, fiducial:false};
+      if(!groups[key]) groups[key] = {footprint:r.Footprint, comment:r.Comment, qty:0, fiducial:false, dpvAngles:new Set()};
       groups[key].qty++;
       if(isFiducialRow(r)) groups[key].fiducial = true;
+      const rawAngle = Number(r.Rotation);
+      if(Number.isFinite(rawAngle)){
+        const dpvAngle = importedDpv ? normalizeAngle(rawAngle) : normalizeAngle(rawAngle - 90);
+        groups[key].dpvAngles.add(trimNum(dpvAngle, 4));
+      }
     });
     // Fiducials belong in the CalibPoint table, not the placement list, so default them to removed
     Object.keys(groups).forEach(k=>{
@@ -1401,7 +1410,7 @@
     const table = document.createElement('table');
     table.className = 'feeder-table';
     const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ajuste extra (°)</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
+    thead.innerHTML = '<tr><th>Componente</th><th>Qtd.</th><th>Remover</th><th>Posição / ID</th><th>Avanço (mm)</th><th>Cabeça</th><th>Altura (mm)</th><th>Velocidade (%)</th><th>Ângulo no DPV</th><th>Skip</th><th>Verificar vácuo</th><th>Usar visão</th></tr>';
     const tbody = document.createElement('tbody');
 
     keys.forEach(key=>{
@@ -1465,10 +1474,10 @@
       tr.appendChild(tdSpeed);
 
       const tdAngle = document.createElement('td');
-      const angleInput = document.createElement('input');
-      angleInput.type='number'; angleInput.step='1'; angleInput.value=a.angleComp;
-      angleInput.addEventListener('input', ()=>{ a.angleComp = parseFloat(angleInput.value)||0; onFeederChange(); });
-      tdAngle.appendChild(angleInput);
+      tdAngle.className = 'dpv-angle-list';
+      const angles = Array.from(g.dpvAngles).map(Number).sort((x,y)=>x-y);
+      tdAngle.textContent = angles.length ? angles.map(angle=>trimNum(angle,4) + '°').join(', ') : '—';
+      tdAngle.title = 'Ângulo final gravado nas linhas EComponent deste grupo';
       tr.appendChild(tdAngle);
 
       const tdSkip = document.createElement('td');
@@ -1490,7 +1499,7 @@
       tr.appendChild(tdVis);
 
       // When "Remover" is checked the rest of the row is irrelevant, so grey it out and lock it
-      const rowFields = [feederInput, pitchInput, headSel, heightInput, speedInput, angleInput, skipCb, vacCb, visCb];
+      const rowFields = [feederInput, pitchInput, headSel, heightInput, speedInput, skipCb, vacCb, visCb];
       function applyRemovedState(){
         tr.style.opacity = a.remove ? '0.4' : '1';
         rowFields.forEach(el=>{ el.disabled = a.remove; });
@@ -1502,7 +1511,7 @@
       });
       applyRemovedState();
 
-      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ajuste extra','Skip','Verificar vácuo','Usar visão'];
+      const responsiveLabels = ['Componente','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo no DPV','Skip','Verificar vácuo','Usar visão'];
       Array.from(tr.children).forEach((td, index)=>{ td.dataset.label = responsiveLabels[index]; });
 
       tbody.appendChild(tr);
@@ -1683,7 +1692,6 @@
           pitch:station ? dpvNumber(station.fields[5], 4) : 4,
           pitchAuto:false,
           speed:dpvNumber(fields[10], station ? dpvNumber(station.fields[8], 100) : 100),
-          angleComp:0,
           remove:false,
           skip:(status & 1) !== 0,
           vacuum:(status & 2) !== 0,
@@ -1730,7 +1738,7 @@
         const idRaw = (a.feederID||'').trim();
         fields[3] = String(a.head || 1);
         fields[4] = String(idRaw === '' ? 99 : validFeederId(idRaw, record.key));
-        fields[7] = trimNum(normalizeAngle(record.originalAngle + (a.angleComp||0)), 4);
+        fields[7] = trimNum(normalizeAngle(record.originalAngle), 4);
         fields[8] = trimNum(dpvNumber(a.height, 1), 4);
         let status = idRaw === '' || a.skip ? 1 : 0;
         if(a.vacuum) status += 2;
@@ -1886,7 +1894,7 @@
       // buildOutputRows already applies each requested board reflection to both
       // the coordinates and the CSV angle. The CHMT frame only needs its fixed
       // -90-degree conversion here; flipping bottom rows again mirrors twice.
-      rot = rot - 90 + (a.angleComp||0);
+      rot = rot - 90;
       rot = normalizeAngle(rot);
 
       let mount = 0;

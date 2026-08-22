@@ -8,6 +8,7 @@ Aplicação web para transformar arquivos Pick & Place em CSV e receitas DPV par
 - importação de receitas DPV existentes para revisão e nova exportação, preservando as demais tabelas da máquina;
 - atribuição manual de feeders;
 - alteração individual ou em massa de velocidade, `Skip`, verificação de vácuo e uso da visão;
+- exibição dos ângulos finais gravados no DPV para cada grupo de componentes;
 - geração automática do MStack para cada grupo de componente sem feeder;
 - associações automáticas com `Skip` ativado por segurança;
 - tabela responsiva, sem rolagem horizontal;
