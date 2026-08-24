@@ -474,9 +474,9 @@
   /* feeder table */
   .pitch-panel{
     background:var(--surface);border:1px solid var(--border);border-radius:14px;
-    padding:16px 18px;margin-bottom:14px;
+    padding:16px 18px;margin:0 0 14px;
   }
-  .note.auto-mstack-option{margin:14px 0 22px;}
+  .note.feeder-required-note{margin:14px 0 22px;}
   .pitch-panel-head{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
   .pitch-panel-head strong{font-size:13px;font-weight:600;color:var(--text);}
   .pitch-panel-head span{font-size:11.5px;color:var(--muted-2);line-height:1.5;}
@@ -894,10 +894,7 @@
     <section>
       <p class="section-title" data-i18n="componentsSection">Componentes, feeders e MStack</p>
       <p class="note" id="groupingNote">Cada linha representa um tipo de componente. Adicione a BOM para agrupar por Part Number e evitar que componentes de mesmo valor, mas especificações diferentes, compartilhem a mesma posição.</p>
-      <label class="note auto-mstack-option" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
-        <span data-i18n="autoMstackHelp"><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 1 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
-      </label>
+      <p class="note feeder-required-note" data-i18n="feederRequiredHelp"><strong>Posições de feeder obrigatórias.</strong> Importe uma biblioteca de feeders ou preencha manualmente a coluna Posição / ID. Nenhuma posição será atribuída automaticamente.</p>
       <div class="pitch-panel">
         <div class="pitch-panel-head">
           <strong data-i18n="pitchTitle">Passo padrão da fita (mm)</strong>
@@ -1096,7 +1093,7 @@
     emptyConversion:['Adicione um arquivo Pick & Place para visualizar a conversão.','Add a Pick & Place file to preview the conversion.'],
     confirmConversion:['Confirmar conversão →','Confirm conversion →'],
     componentsSection:['Componentes, feeders e MStack','Components, feeders and MStack'],
-    autoMstackHelp:['<strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 1 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.','<strong>Create MStack positions automatically.</strong> Every component without a feeder receives a free, unique position from 1 to 35. For safety, these assignments are exported with <strong>Skip</strong> enabled until you confirm the physical position on the machine.'],
+    feederRequiredHelp:['<strong>Posições de feeder obrigatórias.</strong> Importe uma biblioteca de feeders ou preencha manualmente a coluna Posição / ID. Nenhuma posição será atribuída automaticamente.','<strong>Feeder positions are required.</strong> Import a feeder library or fill in the Position / ID column manually. No position will be assigned automatically.'],
     pitchTitle:['Passo padrão da fita (mm)','Default tape pitch (mm)'],
     pitchHelp:['Usado nos grupos que ainda não foram ajustados manualmente. A EIA-481 permite 2 ou 4 mm em fitas de 8 mm e 2, 4 ou 8 mm em fitas de 12 mm.','Used for groups that have not been adjusted manually. EIA-481 allows 2 or 4 mm pitch on 8 mm tape, and 2, 4, or 8 mm on 12 mm tape.'],
     loadFeeders:['Carregar configuração de feeders','Load feeder configuration'],
@@ -1408,7 +1405,6 @@
   const dpvPreviewWrap = document.getElementById('dpvPreviewWrap');
   const wantCsv = document.getElementById('wantCsv');
   const wantDpv = document.getElementById('wantDpv');
-  const autoMstack = document.getElementById('autoMstack');
   const fileNameInput = document.getElementById('fileNameInput');
 
   function buildMappingSelect(fileObj, fieldKey){
@@ -1970,7 +1966,7 @@
       const tdFeeder = document.createElement('td');
       const feederInput = document.createElement('input');
       feederInput.type='number'; feederInput.min='1'; feederInput.max='99'; feederInput.step='1';
-      feederInput.placeholder=autoMstack.checked ? l('automática','automatic') : l('ex.: 12','e.g. 12'); feederInput.value=a.feederID;
+      feederInput.placeholder=l('obrigatória','required'); feederInput.value=a.feederID;
       feederInput.addEventListener('input', ()=>{ a.feederID = feederInput.value.trim(); onFeederChange(); });
       tdFeeder.appendChild(feederInput);
       tr.appendChild(tdFeeder);
@@ -2487,48 +2483,42 @@
     return output.join('\r\n').replace(/(?:\r\n)+$/,'') + '\r\n';
   }
 
-  // The CHMT36 uses the left feeder bank (IDs 1..35). When the user only wants
-  // to associate parts with positions, assign each unconfigured component group
-  // to a distinct free slot and keep it disabled until the physical setup is confirmed.
-  function resolveMstackAssignments(rows){
+  function validateFeederAssignments(rows){
     const groups = computeGroups(rows);
     const explicitById = new Map();
-    const autoByKey = new Map();
     const activeKeys = Object.keys(groups).filter(key => !ensureAssignment(key).remove);
+    const missingKeys = activeKeys.filter(key => (ensureAssignment(key).feederID||'').trim() === '');
+
+    if(missingKeys.length){
+      const names = missingKeys.slice(0,4).map(key=>{
+        const group = groups[key];
+        return normalizePartNumber(group.partNumber) || [group.comment, group.footprint].filter(Boolean).join(' / ') || key;
+      });
+      throw new Error(missingKeys.length + (missingKeys.length === 1
+        ? l(' tipo de componente ativo está sem posição de feeder: ',' active component type has no feeder position: ')
+        : l(' tipos de componente ativos estão sem posição de feeder: ',' active component types have no feeder position: '))
+        + names.map(name=>'"'+dpvSafeText(name)+'"').join(', ') + (missingKeys.length > names.length ? '…' : '')
+        + l('. Importe uma biblioteca de feeders ou preencha a coluna Posição / ID.','. Import a feeder library or fill in the Position / ID column.'));
+    }
 
     activeKeys.forEach(key=>{
       const a = ensureAssignment(key);
       const raw = (a.feederID||'').trim();
-      if(raw === '') return;
       const id = validFeederId(raw, key);
       if(explicitById.has(id) && explicitById.get(id) !== key){
-        throw new Error(l('A posição MStack ','MStack position ') + id + l(' foi atribuída a dois componentes diferentes: "',' was assigned to two different components: "') +
+        throw new Error(l('A posição de feeder ','Feeder position ') + id + l(' foi atribuída a dois componentes diferentes: "',' was assigned to two different components: "') +
           dpvSafeText(explicitById.get(id)) + l('" e "','" and "') + dpvSafeText(key) + l('". Use uma posição exclusiva para cada componente.','". Use a unique position for each component.'));
       }
       explicitById.set(id, key);
     });
-
-    if(autoMstack.checked){
-      const freeIds = [];
-      for(let id=1; id<=35; id++){
-        if(!explicitById.has(id)) freeIds.push(id);
-      }
-      const pendingKeys = activeKeys.filter(key => (ensureAssignment(key).feederID||'').trim() === '');
-      if(pendingKeys.length > freeIds.length){
-        throw new Error(l('Não há posições livres suficientes no MStack esquerdo (1–35): ','There are not enough free positions in the left MStack (1–35): ') + pendingKeys.length +
-          l(' componentes estão sem feeder, mas só existem ',' components have no feeder, but only ') + freeIds.length + l(' posições livres. Atribua feeders/trays manualmente ou remova grupos não montados.',' positions are free. Assign feeders/trays manually or remove non-fitted groups.'));
-      }
-      pendingKeys.forEach((key, i)=> autoByKey.set(key, freeIds[i]));
-    }
-
-    return {autoByKey, explicitById};
+    return explicitById;
   }
 
-  function componentDpvNote(row, automatic){
+  function componentDpvNote(row){
     const partNumber = String(row._partNumber || row['Part Number'] || '').trim();
     const fallback = [row.Comment, row.Footprint].filter(Boolean).join(' ');
     const identified = partNumber ? [partNumber, row.Comment].filter(Boolean).join(' ') : fallback;
-    return (automatic ? 'AUTO ' : '') + identified;
+    return identified;
   }
 
   // ---------- printable feeder/reel setup list ----------
@@ -2688,6 +2678,7 @@
   });
 
   function buildDpvString(rows, outBasename){
+    validateFeederAssignments(rows);
     if(importedDpv) return buildImportedDpvString(outBasename);
     const L = [];
     const push = s => L.push(s);
@@ -2703,32 +2694,18 @@
     push('PANELYPE,0');
 
     // Resolve per-row placement data, skipping NoMount groups entirely.
-    // Automatic MStack assignments are unique per component group and always skipped.
-    const mstack = resolveMstackAssignments(rows);
     const placed = [];
-    const usedFeeders = {}; // numeric Station.ID -> {a, note, forceSkip}
+    const usedFeeders = {}; // numeric Station.ID -> {a, note}
     rows.forEach(r=>{
       const key = groupKey(r);
       const a = ensureAssignment(key);
       if(a.remove) return; // excluded from the file entirely (equivalent to the original script's NoMount)
       const idRaw = (a.feederID||'').trim();
 
-      let feederIdOut, place, note, automatic = false;
-      if(idRaw === '' && autoMstack.checked){
-        feederIdOut = mstack.autoByKey.get(key);
-        place = false;
-        automatic = true;
-        note = componentDpvNote(r, true);
-      } else if(idRaw === ''){
-        feederIdOut = 99; place = false;
-        note = componentDpvNote(r, false);
-      } else {
-        feederIdOut = validFeederId(idRaw, key); place = !a.skip;
-        note = a.deviceName || componentDpvNote(r, false);
-      }
-      if(idRaw !== '' || automatic){
-        if(!usedFeeders[feederIdOut]) usedFeeders[feederIdOut] = {a, note, forceSkip:automatic};
-      }
+      const feederIdOut = validFeederId(idRaw, key);
+      const place = !a.skip;
+      const note = a.deviceName || componentDpvNote(r);
+      if(!usedFeeders[feederIdOut]) usedFeeders[feederIdOut] = {a, note};
 
       const x = Number(r['Mid X']), y = Number(r['Mid Y']);
       if(!Number.isFinite(x) || !Number.isFinite(y)){
@@ -2764,9 +2741,9 @@
     push('Table,No.,ID,DeltX,DeltY,FeedRates,Note,Height,Speed,Status,nPixSizeX,nPixSizeY,HeightTake,DelayTake,nPullStripSpeed,nThreshold,nVisualRadio');
     let stationNo = 0;
     Object.keys(usedFeeders).forEach(id=>{
-      const {a, note, forceSkip} = usedFeeders[id];
+      const {a, note} = usedFeeders[id];
       let mount = 0;
-      if(a.skip || forceSkip) mount += 1;
+      if(a.skip) mount += 1;
       if(a.vacuum) mount += 2;
       if(a.vision) mount += 4;
       push(['Station', stationNo, id, 0, 0, trimNum(a.pitch||0,2), dpvSafeText(note,31), trimNum(a.height||1.0,4), a.speed||100, mount, 0, 0, 0, 0, 0, 0, 0].join(','));
@@ -3364,9 +3341,7 @@
         + assigned + l(' de ',' of ') + keys.length + l(' tipos já têm uma posição definida',' types already have a defined position')
         + (removed ? '; ' + removed + l(' serão removidos da receita',' will be removed from the recipe') : '')
         + (pending
-          ? (autoMstack.checked
-            ? l('. Os ','. The remaining ') + pending + l(' restantes receberão posições MStack automáticas e exclusivas, com Skip ativado.',' will receive unique automatic MStack positions with Skip enabled.')
-            : l('. Os ','. The remaining ') + pending + l(' restantes usarão a posição 99, com Skip ativado.',' will use position 99 with Skip enabled.'))
+          ? l('. Faltam posições para ','. Positions are still required for ') + pending + l(' tipos ativos; importe uma biblioteca ou preencha Posição / ID.',' active types; import a library or fill in Position / ID.')
           : '.');
     }
 
@@ -3406,11 +3381,6 @@
     if(operatorReportPreview.classList.contains('visible')) renderOperatorReport();
     updatePipelineUI();
   }
-
-  autoMstack.addEventListener('change', ()=>{
-    renderFeederTable(lastRows);
-    onFeederChange();
-  });
 
   function renderDpvPreview(){
     if(lastRows.length === 0){
