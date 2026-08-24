@@ -325,6 +325,7 @@
     display:inline-flex;align-items:center;justify-content:center;line-height:1;
   }
   .btn:active:not(:disabled){transform:scale(0.98);}
+  .btn[hidden]{display:none!important;}
   .btn:disabled{opacity:0.4;cursor:not-allowed;}
   .btn:focus-visible{outline:2px solid var(--copper);outline-offset:2px;}
   .btn-ghost{background:transparent;border-color:var(--border);color:var(--text);}
@@ -590,7 +591,7 @@
   .operator-sheet-subtitle{font-size:11px;color:#52605c;line-height:1.45;}
   .operator-sheet-id{text-align:right;font-size:10.5px;line-height:1.55;color:#52605c;}
   .operator-sheet-id strong{display:block;color:#18201e;font-size:12px;overflow-wrap:anywhere;}
-  .operator-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px;}
+  .operator-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;}
   .operator-summary-item{padding:9px 10px;border:1px solid #cfd8d5;border-radius:7px;background:#f6f8f7;}
   .operator-summary-item strong{display:block;font-size:15px;color:#18201e;margin-bottom:2px;}
   .operator-summary-item span{font-size:9.5px;color:#61706b;}
@@ -725,11 +726,11 @@
       content:attr(data-label);display:block;margin-bottom:4px;
       color:#6a7773;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
     }
+    .operator-report-preview .operator-sheet tbody td:nth-child(2),
     .operator-report-preview .operator-sheet tbody td:nth-child(3),
     .operator-report-preview .operator-sheet tbody td:nth-child(4),
     .operator-report-preview .operator-sheet tbody td:nth-child(5),
-    .operator-report-preview .operator-sheet tbody td:nth-child(6),
-    .operator-report-preview .operator-sheet tbody td:nth-child(9){grid-column:1/-1;}
+    .operator-report-preview .operator-sheet tbody td:nth-child(8){grid-column:1/-1;}
     .operator-report-preview .operator-sheet .op-pn-cell{border-left:3px solid #c98a3e;}
   }
 
@@ -891,7 +892,7 @@
       <p class="note" id="groupingNote">Cada linha representa um tipo de componente. Adicione a BOM para agrupar por Part Number e evitar que componentes de mesmo valor, mas especificações diferentes, compartilhem a mesma posição.</p>
       <label class="note" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
         <input type="checkbox" id="autoMstack" checked style="margin-top:2px;">
-        <span data-i18n="autoMstackHelp"><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
+        <span data-i18n="autoMstackHelp"><strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 1 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.</span>
       </label>
       <div class="pitch-panel">
         <div class="pitch-panel-head">
@@ -937,9 +938,10 @@
       <div class="operator-report-toolbar">
         <div class="operator-report-toolbar-copy">
           <strong data-i18n="operatorMapTitle">Mapa de rolos e feeders para montagem</strong>
-          <span data-i18n="operatorMapHelp">Gere uma folha de setup com posições, Part Numbers, parâmetros e campos de conferência. Posições MStack automáticas aparecem destacadas para validação física antes de liberar o Skip.</span>
+          <span data-i18n="operatorMapHelp">Gere uma folha de setup somente com os componentes que possuem feeder informado, incluindo Part Numbers, parâmetros e campos de conferência.</span>
         </div>
         <button class="btn btn-ghost" id="buildOperatorReportBtn" data-i18n="prepareList">Preparar lista</button>
+        <button class="btn btn-ghost" id="closeOperatorReportBtn" data-i18n="closeList" hidden>Fechar lista</button>
         <button class="btn btn-primary" id="printOperatorReportBtn" disabled data-i18n="printList">Imprimir lista</button>
         <div class="operator-report-status" id="operatorReportStatus"></div>
       </div>
@@ -1090,7 +1092,7 @@
     emptyConversion:['Adicione um arquivo Pick & Place para visualizar a conversão.','Add a Pick & Place file to preview the conversion.'],
     confirmConversion:['Confirmar conversão →','Confirm conversion →'],
     componentsSection:['Componentes, feeders e MStack','Components, feeders and MStack'],
-    autoMstackHelp:['<strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 0 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.','<strong>Create MStack positions automatically.</strong> Every component without a feeder receives a free, unique position from 0 to 35. For safety, these assignments are exported with <strong>Skip</strong> enabled until you confirm the physical position on the machine.'],
+    autoMstackHelp:['<strong>Criar posições MStack automaticamente.</strong> Todo componente sem feeder recebe uma posição livre e exclusiva entre 1 e 35. Por segurança, essas associações saem com <strong>Skip</strong> ativado até você confirmar a posição física na máquina.','<strong>Create MStack positions automatically.</strong> Every component without a feeder receives a free, unique position from 1 to 35. For safety, these assignments are exported with <strong>Skip</strong> enabled until you confirm the physical position on the machine.'],
     pitchTitle:['Passo padrão da fita (mm)','Default tape pitch (mm)'],
     pitchHelp:['Usado nos grupos que ainda não foram ajustados manualmente. A EIA-481 permite 2 ou 4 mm em fitas de 8 mm e 2, 4 ou 8 mm em fitas de 12 mm.','Used for groups that have not been adjusted manually. EIA-481 allows 2 or 4 mm pitch on 8 mm tape, and 2, 4, or 8 mm on 12 mm tape.'],
     loadFeeders:['Carregar configuração de feeders','Load feeder configuration'],
@@ -1101,8 +1103,8 @@
     apply:['Aplicar','Apply'], enable:['Ativar','Enable'], disable:['Desativar','Disable'],
     operatorList:['Lista do operador','Operator list'],
     operatorMapTitle:['Mapa de rolos e feeders para montagem','Reel and feeder setup map'],
-    operatorMapHelp:['Gere uma folha de setup com posições, Part Numbers, parâmetros e campos de conferência. Posições MStack automáticas aparecem destacadas para validação física antes de liberar o Skip.','Generate a setup sheet with positions, Part Numbers, parameters, and verification fields. Automatic MStack positions are highlighted for physical validation before Skip is released.'],
-    prepareList:['Preparar lista','Prepare list'], printList:['Imprimir lista','Print list'],
+    operatorMapHelp:['Gere uma folha de setup somente com os componentes que possuem feeder informado, incluindo Part Numbers, parâmetros e campos de conferência.','Generate a setup sheet containing only components with an assigned feeder, including Part Numbers, parameters, and verification fields.'],
+    prepareList:['Preparar lista','Prepare list'], closeList:['Fechar lista','Close list'], printList:['Imprimir lista','Print list'],
     dpvPreview:['Prévia da receita DPV','DPV recipe preview'], reviewConversion:['← Rever conversão','← Review conversion'], confirmDpv:['Confirmar DPV →','Confirm DPV →'],
     chooseFiles:['Escolha os arquivos que deseja gerar','Choose the files to generate'],
     csvHelp:['Tabela de montagem convertida para o software CharmHigh','Assembly table converted for CharmHigh software'],
@@ -1963,7 +1965,8 @@
 
       const tdFeeder = document.createElement('td');
       const feederInput = document.createElement('input');
-      feederInput.type='text'; feederInput.placeholder=autoMstack.checked ? l('automática','automatic') : l('ex.: 12','e.g. 12'); feederInput.value=a.feederID;
+      feederInput.type='number'; feederInput.min='1'; feederInput.max='99'; feederInput.step='1';
+      feederInput.placeholder=autoMstack.checked ? l('automática','automatic') : l('ex.: 12','e.g. 12'); feederInput.value=a.feederID;
       feederInput.addEventListener('input', ()=>{ a.feederID = feederInput.value.trim(); onFeederChange(); });
       tdFeeder.appendChild(feederInput);
       tr.appendChild(tdFeeder);
@@ -2295,11 +2298,11 @@
 
   function validFeederId(raw, key){
     if(!/^\d+$/.test(raw)){
-      throw new Error(l('Posição inválida para "','Invalid position for "') + dpvSafeText(key) + l('": informe um ID inteiro entre 0 e 99.','": enter an integer ID from 0 to 99.'));
+      throw new Error(l('Posição inválida para "','Invalid position for "') + dpvSafeText(key) + l('": informe um ID inteiro entre 1 e 99.','": enter an integer ID from 1 to 99.'));
     }
     const id = Number(raw);
-    if(!Number.isInteger(id) || id < 0 || id > 99){
-      throw new Error(l('Posição fora da faixa para "','Position out of range for "') + dpvSafeText(key) + l('": a CHMT36VB aceita IDs de 0 a 99.','": the CHMT36VB accepts IDs from 0 to 99.'));
+    if(!Number.isInteger(id) || id < 1 || id > 99){
+      throw new Error(l('Posição fora da faixa para "','Position out of range for "') + dpvSafeText(key) + l('": use uma posição de feeder entre 1 e 99.','": use a feeder position from 1 to 99.'));
     }
     return id;
   }
@@ -2480,7 +2483,7 @@
     return output.join('\r\n').replace(/(?:\r\n)+$/,'') + '\r\n';
   }
 
-  // The CHMT36 uses the left feeder bank (IDs 0..35). When the user only wants
+  // The CHMT36 uses the left feeder bank (IDs 1..35). When the user only wants
   // to associate parts with positions, assign each unconfigured component group
   // to a distinct free slot and keep it disabled until the physical setup is confirmed.
   function resolveMstackAssignments(rows){
@@ -2503,12 +2506,12 @@
 
     if(autoMstack.checked){
       const freeIds = [];
-      for(let id=0; id<=35; id++){
+      for(let id=1; id<=35; id++){
         if(!explicitById.has(id)) freeIds.push(id);
       }
       const pendingKeys = activeKeys.filter(key => (ensureAssignment(key).feederID||'').trim() === '');
       if(pendingKeys.length > freeIds.length){
-        throw new Error(l('Não há posições livres suficientes no MStack esquerdo (0–35): ','There are not enough free positions in the left MStack (0–35): ') + pendingKeys.length +
+        throw new Error(l('Não há posições livres suficientes no MStack esquerdo (1–35): ','There are not enough free positions in the left MStack (1–35): ') + pendingKeys.length +
           l(' componentes estão sem feeder, mas só existem ',' components have no feeder, but only ') + freeIds.length + l(' posições livres. Atribua feeders/trays manualmente ou remova grupos não montados.',' positions are free. Assign feeders/trays manually or remove non-fitted groups.'));
       }
       pendingKeys.forEach((key, i)=> autoByKey.set(key, freeIds[i]));
@@ -2526,6 +2529,7 @@
 
   // ---------- printable feeder/reel setup list ----------
   const buildOperatorReportBtn = document.getElementById('buildOperatorReportBtn');
+  const closeOperatorReportBtn = document.getElementById('closeOperatorReportBtn');
   const printOperatorReportBtn = document.getElementById('printOperatorReportBtn');
   const operatorReportStatus = document.getElementById('operatorReportStatus');
   const operatorReportPreview = document.getElementById('operatorReportPreview');
@@ -2534,8 +2538,8 @@
   function operatorReportData(rows){
     if(!rows.length) throw new Error(l('Carregue e confirme um arquivo Pick & Place ou DPV antes de preparar a lista.','Load and confirm a Pick & Place or DPV file before preparing the list.'));
     const groups = computeGroups(rows);
-    const mstack = resolveMstackAssignments(rows);
     const entries = [];
+    const occupiedPositions = new Map();
 
     Object.keys(groups).forEach(key=>{
       const group = groups[key];
@@ -2543,35 +2547,24 @@
       if(assignment.remove) return;
 
       const rawPosition = String(assignment.feederID||'').trim();
-      let position, automatic = false, noPosition = false;
-      if(rawPosition !== ''){
-        position = validFeederId(rawPosition, key);
-      } else if(autoMstack.checked){
-        position = mstack.autoByKey.get(key);
-        automatic = true;
-      } else {
-        position = 99;
-        noPosition = true;
+      if(rawPosition === '') return;
+      const position = validFeederId(rawPosition, key);
+      if(occupiedPositions.has(position) && occupiedPositions.get(position) !== key){
+        throw new Error(l('A posição de feeder ','Feeder position ') + position + l(' está atribuída a dois componentes diferentes. Use uma posição exclusiva para cada Part Number.',' is assigned to two different components. Use a unique position for each Part Number.'));
       }
-
-      const pending = automatic || noPosition || assignment.skip;
-      let status = l('LIBERADO','RELEASED');
-      if(automatic) status = l('CONFIRMAR / SKIP','CONFIRM / SKIP');
-      else if(noPosition) status = l('SEM POSIÇÃO / SKIP','NO POSITION / SKIP');
-      else if(assignment.skip) status = 'SKIP';
+      occupiedPositions.set(position, key);
 
       const references = [...new Set(group.references.filter(Boolean))]
         .sort((a,b)=>a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
       const angles = Array.from(group.dpvAngles).map(Number).sort((a,b)=>a-b);
       const controls = [];
+      if(assignment.skip) controls.push('Skip');
       if(assignment.vacuum) controls.push(l('Vácuo','Vacuum'));
       if(assignment.vision) controls.push(l('Visão','Vision'));
 
       entries.push({
         position,
-        automatic,
-        pending,
-        status,
+        skip:!!assignment.skip,
         partNumber:normalizePartNumber(group.partNumber) || l('Sem Part Number','No Part Number'),
         manufacturer:String(group.manufacturer||'').trim() || '—',
         value:String(group.comment||'').trim() || '—',
@@ -2587,7 +2580,7 @@
       });
     });
 
-    if(!entries.length) throw new Error(l('Nenhum componente ativo está disponível para a lista do operador.','No active components are available for the operator list.'));
+    if(!entries.length) throw new Error(l('Nenhum componente possui uma posição de feeder informada. Preencha a coluna Posição / ID antes de preparar a lista.','No component has an assigned feeder position. Fill in the Position / ID column before preparing the list.'));
 
     entries.sort((a,b)=>a.position-b.position || a.partNumber.localeCompare(b.partNumber, undefined, {numeric:true, sensitivity:'base'}));
     const partNumberMissing = entries.filter(entry=>entry.partNumber === l('Sem Part Number','No Part Number')).length;
@@ -2597,52 +2590,48 @@
       bom:bomFile ? bomFile.name : l('Sem BOM associada','No BOM linked'),
       generatedAt:new Date().toLocaleString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
       placementQty:entries.reduce((total, entry)=>total + entry.qty, 0),
-      automaticCount:entries.filter(entry=>entry.automatic).length,
-      pendingCount:entries.filter(entry=>entry.pending).length,
+      skipCount:entries.filter(entry=>entry.skip).length,
       partNumberMissing,
     };
   }
 
   function operatorReportMarkup(data){
     const rows = data.entries.map(entry=>{
-      const position = entry.position + (entry.automatic ? '*' : '');
       const labels = currentLang === 'en'
-        ? ['Position','Status','Part Number','Value / comment','Manufacturer / footprint','Qty. / references / angle','Feeding','Process','Verification']
-        : ['Posição','Situação','Part Number','Valor / comentário','Fabricante / footprint','Qtd. / referências / ângulo','Alimentação','Processo','Conferência'];
+        ? ['Position','Part Number','Value / comment','Manufacturer / footprint','Qty. / references / angle','Feeding','Process','Verification']
+        : ['Posição','Part Number','Valor / comentário','Fabricante / footprint','Qtd. / referências / ângulo','Alimentação','Processo','Conferência'];
       return '<tr>' +
-        '<td class="op-pos" data-label="'+esc(labels[0])+'">' + esc(position) + '</td>' +
-        '<td class="op-status ' + (entry.pending ? 'warn' : 'ready') + '" data-label="'+esc(labels[1])+'">' + esc(entry.status) + '</td>' +
-        '<td class="op-pn-cell" data-label="'+esc(labels[2])+'"><div class="op-pn">' + esc(entry.partNumber) + '</div></td>' +
-        '<td data-label="'+esc(labels[3])+'">' + esc(entry.value) + '</td>' +
-        '<td data-label="'+esc(labels[4])+'"><strong>' + esc(entry.manufacturer) + '</strong><br>' + esc(entry.footprint) + '</td>' +
-        '<td data-label="'+esc(labels[5])+'"><strong>' + esc(entry.qty) + l(' un.',' pcs.') + '</strong><br>' + esc(entry.references) + '<br>'+l('Ângulo: ','Angle: ') + esc(entry.angles) + '</td>' +
-        '<td data-label="'+esc(labels[6])+'">'+l('Avanço: ','Pitch: ')+'<strong>' + esc(entry.pitch) + '</strong><br>'+l('Cabeça: ','Head: ')+'<strong>' + esc(entry.head) + '</strong></td>' +
-        '<td data-label="'+esc(labels[7])+'">'+l('Altura: ','Height: ')+'<strong>' + esc(entry.height) + '</strong><br>'+l('Velocidade: ','Speed: ')+'<strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
-        '<td class="op-check" data-label="'+esc(labels[8])+'">'+l('□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade','□ PN / reel<br>□ Feeder / position<br>□ Polarity')+'</td>' +
+        '<td class="op-pos" data-label="'+esc(labels[0])+'">' + esc(entry.position) + '</td>' +
+        '<td class="op-pn-cell" data-label="'+esc(labels[1])+'"><div class="op-pn">' + esc(entry.partNumber) + '</div></td>' +
+        '<td data-label="'+esc(labels[2])+'">' + esc(entry.value) + '</td>' +
+        '<td data-label="'+esc(labels[3])+'"><strong>' + esc(entry.manufacturer) + '</strong><br>' + esc(entry.footprint) + '</td>' +
+        '<td data-label="'+esc(labels[4])+'"><strong>' + esc(entry.qty) + l(' un.',' pcs.') + '</strong><br>' + esc(entry.references) + '<br>'+l('Ângulo: ','Angle: ') + esc(entry.angles) + '</td>' +
+        '<td data-label="'+esc(labels[5])+'">'+l('Avanço: ','Pitch: ')+'<strong>' + esc(entry.pitch) + '</strong><br>'+l('Cabeça: ','Head: ')+'<strong>' + esc(entry.head) + '</strong></td>' +
+        '<td data-label="'+esc(labels[6])+'">'+l('Altura: ','Height: ')+'<strong>' + esc(entry.height) + '</strong><br>'+l('Velocidade: ','Speed: ')+'<strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
+        '<td class="op-check" data-label="'+esc(labels[7])+'">'+l('□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade','□ PN / reel<br>□ Feeder / position<br>□ Polarity')+'</td>' +
       '</tr>';
     }).join('');
 
     return '<div class="operator-sheet">' +
       '<div class="operator-sheet-header">' +
         '<div><h2>'+l('Lista de setup','Setup list')+' — CharmHigh CHM-T36/CHM-T48</h2>' +
-          '<div class="operator-sheet-subtitle">'+l('Mapa de rolos, feeders e parâmetros para preparação da máquina.<br>* Posição MStack atribuída automaticamente: confirme fisicamente antes de liberar o Skip.','Reel, feeder, and parameter map for machine setup.<br>* Automatically assigned MStack position: physically confirm it before releasing Skip.')+'</div></div>' +
+          '<div class="operator-sheet-subtitle">'+l('Mapa dos rolos instalados nos feeders e seus parâmetros para preparação da máquina.','Map of reels installed in feeders and their machine setup parameters.')+'</div></div>' +
         '<div class="operator-sheet-id"><strong>' + esc(data.project) + '</strong>BOM: ' + esc(data.bom) + '<br>'+l('Gerado em: ','Generated: ') + esc(data.generatedAt) + '</div>' +
       '</div>' +
       '<div class="operator-summary">' +
         '<div class="operator-summary-item"><strong>' + esc(data.entries.length) + '</strong><span>'+l('rolos / tipos ativos','active reels / types')+'</span></div>' +
         '<div class="operator-summary-item"><strong>' + esc(data.placementQty) + '</strong><span>'+l('componentes a montar','components to place')+'</span></div>' +
-        '<div class="operator-summary-item"><strong>' + esc(data.automaticCount) + '</strong><span>'+l('posições automáticas','automatic positions')+'</span></div>' +
-        '<div class="operator-summary-item"><strong>' + esc(data.pendingCount) + '</strong><span>'+l('linhas em Skip / pendentes','Skip / pending rows')+'</span></div>' +
+        '<div class="operator-summary-item"><strong>' + esc(data.skipCount) + '</strong><span>'+l('feeders com Skip ativo','feeders with Skip enabled')+'</span></div>' +
       '</div>' +
       '<div class="operator-instructions"><strong>'+l('Instruções para o operador','Operator instructions')+'</strong><ol>' +
         '<li>'+l('Compare a etiqueta do rolo com o Part Number, fabricante e valor. Nunca selecione o componente somente pelo valor.','Compare the reel label with the Part Number, manufacturer, and value. Never select a component by value alone.')+'</li>' +
-        '<li>'+l('Instale cada rolo na posição indicada. Posições com asterisco foram atribuídas automaticamente e precisam ser confirmadas na máquina.','Install each reel in the indicated position. Positions marked with an asterisk were assigned automatically and must be confirmed on the machine.')+'</li>' +
+        '<li>'+l('Instale cada rolo na posição de feeder indicada e confirme a numeração física antes de ligar a máquina.','Install each reel in the indicated feeder position and confirm the physical numbering before powering the machine.')+'</li>' +
         '<li>'+l('Configure avanço da fita, cabeça, altura e velocidade conforme esta lista.','Configure tape pitch, head, height, and speed according to this list.')+'</li>' +
         '<li>'+l('Confirme polaridade, pino 1/cátodo e sentido da fita pela embalagem ou datasheet; a ferramenta não deduz o sentido de alimentação.','Confirm polarity, pin 1/cathode, and tape direction from the packaging or datasheet; the tool does not infer feed direction.')+'</li>' +
         '<li>'+l('Mantenha o Skip ativo até concluir a conferência física do feeder. Libere-o somente de forma intencional.','Keep Skip enabled until the physical feeder check is complete. Release it only intentionally.')+'</li>' +
         '<li>'+l('Faça teste a seco ou monte a primeira placa em baixa velocidade e inspecione-a antes de iniciar a produção.','Run a dry test or assemble the first board at low speed and inspect it before starting production.')+'</li>' +
       '</ol></div>' +
-      '<table><thead><tr><th>'+l('Pos.','Pos.')+'</th><th>'+l('Situação','Status')+'</th><th>Part Number</th><th>'+l('Valor / comentário','Value / comment')+'</th><th>'+l('Fabricante / footprint','Manufacturer / footprint')+'</th><th>'+l('Qtd. / referências / ângulo','Qty. / references / angle')+'</th><th>'+l('Alimentação','Feeding')+'</th><th>'+l('Processo','Process')+'</th><th>'+l('Conferência','Verification')+'</th></tr></thead>' +
+      '<table><thead><tr><th>'+l('Pos.','Pos.')+'</th><th>Part Number</th><th>'+l('Valor / comentário','Value / comment')+'</th><th>'+l('Fabricante / footprint','Manufacturer / footprint')+'</th><th>'+l('Qtd. / referências / ângulo','Qty. / references / angle')+'</th><th>'+l('Alimentação','Feeding')+'</th><th>'+l('Processo','Process')+'</th><th>'+l('Conferência','Verification')+'</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table>' +
       '<div class="operator-sheet-footer"><span>'+l('Operador: ','Operator: ')+'____________________________________ &nbsp; '+l('Data: ','Date: ')+'____/____/______</span><span>'+l('Conferido por: ','Checked by: ')+'_______________________________ &nbsp; '+l('Data: ','Date: ')+'____/____/______</span></div>' +
     '</div>';
@@ -2652,6 +2641,7 @@
     operatorReportPreview.classList.remove('visible');
     operatorReportPreview.innerHTML = '';
     operatorPrintSheet.innerHTML = '';
+    closeOperatorReportBtn.hidden = true;
     printOperatorReportBtn.disabled = true;
     operatorReportStatus.classList.remove('error');
     operatorReportStatus.textContent = '';
@@ -2664,10 +2654,11 @@
       operatorReportPreview.innerHTML = markup;
       operatorPrintSheet.innerHTML = markup;
       operatorReportPreview.classList.add('visible');
+      closeOperatorReportBtn.hidden = false;
       printOperatorReportBtn.disabled = false;
       operatorReportStatus.classList.remove('error');
       const notes = [l('Lista preparada com ','List prepared with ') + data.entries.length + ' ' + (data.entries.length === 1 ? l('rolo','reel') : l('rolos','reels')) + l(' e ',' and ') + data.placementQty + l(' componentes.',' components.')];
-      if(data.automaticCount) notes.push(data.automaticCount + l(' posições automáticas permanecem em Skip até a conferência.',' automatic positions remain in Skip until verification.'));
+      if(data.skipCount) notes.push(data.skipCount + l(' feeder(s) permanecem com Skip ativo.',' feeder(s) remain with Skip enabled.'));
       if(data.partNumberMissing) notes.push(data.partNumberMissing + l(' linhas estão sem Part Number; associe a BOM antes da liberação.',' rows have no Part Number; link the BOM before release.'));
       operatorReportStatus.textContent = notes.join(' ');
       return true;
@@ -2680,6 +2671,7 @@
   }
 
   buildOperatorReportBtn.addEventListener('click', renderOperatorReport);
+  closeOperatorReportBtn.addEventListener('click', invalidateOperatorReport);
   printOperatorReportBtn.addEventListener('click', ()=>{
     if(!renderOperatorReport()) return;
     document.body.classList.add('print-operator-report');
