@@ -7,15 +7,20 @@ Aplicação web para transformar arquivos Pick & Place em CSV e receitas DPV par
 - conversão de Pick & Place para CSV e DPV;
 - importação de receitas DPV existentes para revisão e nova exportação, preservando as demais tabelas da máquina;
 - atribuição manual de feeders;
-- alteração individual ou em massa de velocidade, `Skip`, verificação de vácuo e uso da visão;
+- alteração individual ou em massa de velocidade, Pull Speed, `Skip`, verificação de vácuo e uso da visão;
 - exibição dos ângulos finais gravados no DPV para cada grupo de componentes;
-- geração automática do MStack para cada grupo de componente sem feeder;
-- associações automáticas com `Skip` ativado por segurança;
+- geração do MStack a partir das posições preenchidas manualmente ou importadas da biblioteca, sem atribuição automática de números;
 - tabela responsiva, sem rolagem horizontal;
 - correção de origem e visualização de contornos Gerber;
 - importação e exportação da biblioteca de feeders.
 
 Todo o processamento acontece localmente no navegador: os arquivos selecionados não são enviados para um servidor.
+
+### Pull Speed
+
+Na etapa **Configurar montagem**, use **Ajustes em massa → Pull Speed → Aplicar** para atualizar todos os tipos ativos (não marcados como **Remover**), ou edite o campo individual na tabela. O valor é salvo em `Station.nPullStripSpeed`, na biblioteca de feeders e na lista do operador; não altera a velocidade de montagem nem os ângulos.
+
+DPVs importados mantêm o Pull Speed de cada Station. Bibliotecas antigas sem esse campo mantêm o valor atual. O editor aceita inteiros não negativos; `0` é o valor nominal descrito no [manual CharmHigh, seção 10.1.2](https://www.charmhigh-smt.com/file/datasheet/chm-t36va_user_manual.pdf). Essa validação de formato não substitui a conferência dos valores aceitos pelo firmware da sua máquina.
 
 ## Executar localmente
 
@@ -39,4 +44,4 @@ O botão de deploy direto exige que o repositório seja público. Para repositó
 
 ## Segurança da máquina
 
-As posições MStack criadas automaticamente ficam com `Skip` ligado. Confirme feeder, altura, passo da fita, cabeça, rotação e coordenadas antes de liberar a montagem. Faça o primeiro teste em baixa velocidade e sem componentes nas cabeças.
+Importe uma biblioteca de feeders ou informe cada posição física manualmente. Confirme feeder, altura, passo da fita, Pull Speed, cabeça, rotação e coordenadas antes de liberar a montagem. Faça o primeiro teste em baixa velocidade e sem componentes nas cabeças.

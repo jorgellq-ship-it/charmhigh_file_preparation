@@ -493,12 +493,12 @@
   .feeder-lib-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .feeder-lib-row .btn{min-width:240px;}
   .bulk-editor{
-    display:grid;grid-template-columns:minmax(240px,1fr) repeat(4,minmax(150px,160px));
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
     align-items:end;gap:10px;
     background:var(--surface);border:1px solid var(--border);border-radius:14px;
     padding:14px;margin-bottom:14px;
   }
-  .bulk-editor-copy{align-self:center;min-width:0;}
+  .bulk-editor-copy{grid-column:1/-1;align-self:center;min-width:0;}
   .bulk-editor-copy strong{display:block;font-size:12.5px;color:var(--text);margin-bottom:3px;}
   .bulk-editor-copy span{display:block;font-size:11px;color:var(--muted);line-height:1.4;}
   .bulk-field{display:flex;flex-direction:column;gap:5px;min-width:0;}
@@ -508,6 +508,7 @@
   .bulk-field-row .btn{height:32px;min-width:64px;padding:0 10px;}
   .bulk-status{grid-column:1/-1;font-size:11.5px;color:var(--solder);line-height:1.4;min-height:16px;}
   .bulk-status:empty{display:none;}
+  #pullSpeedHelp{margin:0 0 14px;}
   #feederTableWrap{overflow-x:hidden;max-height:520px;border-radius:16px;}
   .feeder-table{table-layout:fixed;font-size:10.5px;}
   .feeder-table th{white-space:normal;line-height:1.15;padding:6px 3px;text-align:center;overflow-wrap:anywhere;}
@@ -518,24 +519,25 @@
     width:100%;height:30px;padding:0 5px;font-size:10.5px;min-width:0;
   }
   .feeder-table select{width:100%;min-width:0;height:30px;padding:0 2px;font-size:10px;}
-  .feeder-table th:nth-child(1){width:29%;}
+  .feeder-table th:nth-child(1){width:24%;}
   .feeder-table th:nth-child(2){width:3%;}
-  .feeder-table th:nth-child(3){width:6%;}
+  .feeder-table th:nth-child(3){width:5%;}
   .feeder-table th:nth-child(4){width:8%;}
   .feeder-table th:nth-child(5){width:7%;}
   .feeder-table th:nth-child(6){width:7%;}
   .feeder-table th:nth-child(7){width:7%;}
   .feeder-table th:nth-child(8){width:7%;}
-  .feeder-table th:nth-child(9){width:8%;}
-  .feeder-table th:nth-child(10){width:5%;}
-  .feeder-table th:nth-child(11){width:7%;}
+  .feeder-table th:nth-child(9){width:7%;}
+  .feeder-table th:nth-child(10){width:8%;}
+  .feeder-table th:nth-child(11){width:5%;}
   .feeder-table th:nth-child(12){width:6%;}
-  /* checkbox columns: Qtd(2), Remover(3), Pular(10), Vácuo(11), Visão(12) */
+  .feeder-table th:nth-child(13){width:6%;}
+  /* centered columns: Qtd(2), Remover(3), Pular(11), Vácuo(12), Visão(13) */
   .feeder-table th:nth-child(2),  .feeder-table td:nth-child(2),
   .feeder-table th:nth-child(3),  .feeder-table td:nth-child(3),
-  .feeder-table th:nth-child(10), .feeder-table td:nth-child(10),
   .feeder-table th:nth-child(11), .feeder-table td:nth-child(11),
-  .feeder-table th:nth-child(12), .feeder-table td:nth-child(12){
+  .feeder-table th:nth-child(12), .feeder-table td:nth-child(12),
+  .feeder-table th:nth-child(13), .feeder-table td:nth-child(13){
     text-align:center;
   }
   .feeder-table td:nth-child(1){
@@ -684,7 +686,7 @@
   }
 
   @media (max-width: 1100px){
-    .bulk-editor{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .bulk-editor{grid-template-columns:repeat(3,minmax(0,1fr));}
     .bulk-editor-copy{grid-column:1/-1;}
     #feederTableWrap{overflow:visible;max-height:none;border:0;background:transparent;box-shadow:none;}
     .feeder-table,.feeder-table tbody,.feeder-table tr,.feeder-table td{display:block;width:100%;}
@@ -700,7 +702,7 @@
     }
     .feeder-table td:first-child{grid-column:1/-1;min-height:auto;padding:0;white-space:normal;}
     .feeder-table td:nth-child(2),.feeder-table td:nth-child(3),
-    .feeder-table td:nth-child(10),.feeder-table td:nth-child(11),.feeder-table td:nth-child(12){
+    .feeder-table td:nth-child(11),.feeder-table td:nth-child(12),.feeder-table td:nth-child(13){
       display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
     }
     .grp-primary,.grp-part{
@@ -918,6 +920,10 @@
           <div class="bulk-field-row"><input type="number" id="bulkSpeed" min="1" max="100" step="1" value="100"><button class="btn btn-ghost" data-bulk="speed" data-i18n="apply">Aplicar</button></div>
         </div>
         <div class="bulk-field">
+          <label for="bulkPullSpeed">Pull Speed</label>
+          <div class="bulk-field-row"><input type="number" id="bulkPullSpeed" min="0" step="1" value="0" aria-describedby="pullSpeedHelp"><button class="btn btn-ghost" data-bulk="pullSpeed" data-i18n="apply">Aplicar</button></div>
+        </div>
+        <div class="bulk-field">
           <label for="bulkSkip">Skip</label>
           <div class="bulk-field-row"><select id="bulkSkip"><option value="true" data-i18n="enable">Ativar</option><option value="false" data-i18n="disable">Desativar</option></select><button class="btn btn-ghost" data-bulk="skip" data-i18n="apply">Aplicar</button></div>
         </div>
@@ -931,6 +937,7 @@
         </div>
         <div class="bulk-status" id="bulkStatus"></div>
       </div>
+      <p class="note" id="pullSpeedHelp" data-i18n="pullSpeedHelp">Pull Speed: velocidade de avanço da fita (nPullStripSpeed no DPV), independente da velocidade de montagem. 0 é o valor nominal. Confira o ajuste na máquina antes de produzir.</p>
       <div class="preview-wrap" id="feederTableWrap"></div>
     </section>
 
@@ -1100,6 +1107,7 @@
     saveFeeders:['Salvar configuração de feeders','Save feeder configuration'],
     bulkTitle:['Ajustes em massa','Bulk settings'],
     bulkHelp:['Aplique o mesmo valor a todos os componentes ativos da tabela.','Apply the same value to all active components in the table.'],
+    pullSpeedHelp:['Pull Speed: velocidade de avanço da fita (nPullStripSpeed no DPV), independente da velocidade de montagem. 0 é o valor nominal. Confira o ajuste na máquina antes de produzir.','Pull Speed: tape advance speed (nPullStripSpeed in the DPV), independent of placement speed. 0 is the nominal value. Check the setting on the machine before production.'],
     speed:['Velocidade (%)','Speed (%)'], vacuum:['Verificar vácuo','Check vacuum'], vision:['Usar visão','Use vision'],
     apply:['Aplicar','Apply'], enable:['Ativar','Enable'], disable:['Desativar','Disable'],
     operatorList:['Lista do operador','Operator list'],
@@ -1824,7 +1832,7 @@
   }
 
   function defaultAssignment(){
-    return {feederID:'', deviceName:'', head:1, height:1.0, pitch:4, pitchAuto:true, speed:100, remove:false, skip:false, vacuum:false, vision:false};
+    return {feederID:'', deviceName:'', head:1, height:1.0, pitch:4, pitchAuto:true, speed:100, pullSpeed:0, remove:false, skip:false, vacuum:false, vision:false};
   }
 
   function ensureAssignment(key){
@@ -1938,7 +1946,7 @@
     const table = document.createElement('table');
     table.className = 'feeder-table';
     const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>'+l('Componente / Part Number','Component / Part Number')+'</th><th>'+l('Qtd.','Qty.')+'</th><th>'+l('Remover','Remove')+'</th><th>'+l('Posição / ID','Position / ID')+'</th><th>'+l('Avanço (mm)','Pitch (mm)')+'</th><th>'+l('Cabeça','Head')+'</th><th>'+l('Altura (mm)','Height (mm)')+'</th><th>'+l('Velocidade (%)','Speed (%)')+'</th><th>'+l('Ângulo','Angle')+'</th><th>Skip</th><th>'+l('Verificar vácuo','Check vacuum')+'</th><th>'+l('Usar visão','Use vision')+'</th></tr>';
+    thead.innerHTML = '<tr><th>'+l('Componente / Part Number','Component / Part Number')+'</th><th>'+l('Qtd.','Qty.')+'</th><th>'+l('Remover','Remove')+'</th><th>'+l('Posição / ID','Position / ID')+'</th><th>'+l('Avanço (mm)','Pitch (mm)')+'</th><th>'+l('Cabeça','Head')+'</th><th>'+l('Altura (mm)','Height (mm)')+'</th><th>'+l('Velocidade (%)','Speed (%)')+'</th><th>Pull Speed</th><th>'+l('Ângulo','Angle')+'</th><th>Skip</th><th>'+l('Verificar vácuo','Check vacuum')+'</th><th>'+l('Usar visão','Use vision')+'</th></tr>';
     const tbody = document.createElement('tbody');
 
     keys.forEach(key=>{
@@ -2005,6 +2013,19 @@
       tdSpeed.appendChild(speedInput);
       tr.appendChild(tdSpeed);
 
+      const tdPullSpeed = document.createElement('td');
+      const pullSpeedInput = document.createElement('input');
+      pullSpeedInput.type='number'; pullSpeedInput.step='1'; pullSpeedInput.min='0'; pullSpeedInput.value=a.pullSpeed ?? 0;
+      pullSpeedInput.setAttribute('aria-label', 'Pull Speed · ' + (g.partNumber || g.comment || g.footprint || key));
+      pullSpeedInput.setAttribute('aria-describedby', 'pullSpeedHelp');
+      pullSpeedInput.addEventListener('input', ()=>{
+        // Keep invalid/empty input visible; validation must block export, not silently write zero.
+        a.pullSpeed = pullSpeedInput.value;
+        onFeederChange();
+      });
+      tdPullSpeed.appendChild(pullSpeedInput);
+      tr.appendChild(tdPullSpeed);
+
       const tdAngle = document.createElement('td');
       tdAngle.className = 'dpv-angle-list';
       const angles = Array.from(g.dpvAngles).map(Number).sort((x,y)=>x-y);
@@ -2031,7 +2052,7 @@
       tr.appendChild(tdVis);
 
       // When "Remover" is checked the rest of the row is irrelevant, so grey it out and lock it
-      const rowFields = [feederInput, pitchInput, headSel, heightInput, speedInput, skipCb, vacCb, visCb];
+      const rowFields = [feederInput, pitchInput, headSel, heightInput, speedInput, pullSpeedInput, skipCb, vacCb, visCb];
       function applyRemovedState(){
         tr.style.opacity = a.remove ? '0.4' : '1';
         rowFields.forEach(el=>{ el.disabled = a.remove; });
@@ -2044,8 +2065,8 @@
       applyRemovedState();
 
       const responsiveLabels = currentLang === 'en'
-        ? ['Component / Part Number','Quantity','Remove','Position / ID','Pitch','Head','Height','Speed','Angle','Skip','Check vacuum','Use vision']
-        : ['Componente / Part Number','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Ângulo','Skip','Verificar vácuo','Usar visão'];
+        ? ['Component / Part Number','Quantity','Remove','Position / ID','Pitch','Head','Height','Speed','Pull Speed','Angle','Skip','Check vacuum','Use vision']
+        : ['Componente / Part Number','Quantidade','Remover','Posição / ID','Avanço','Cabeça','Altura','Velocidade','Pull Speed','Ângulo','Skip','Verificar vácuo','Usar visão'];
       Array.from(tr.children).forEach((td, index)=>{ td.dataset.label = responsiveLabels[index]; });
 
       tbody.appendChild(tr);
@@ -2073,12 +2094,15 @@
           bulkStatusEl.textContent = l('Informe uma velocidade entre 1% e 100%.','Enter a speed between 1% and 100%.');
           return;
         }
+      } else if(field === 'pullSpeed'){
+        try { value = validPullSpeed(document.getElementById('bulkPullSpeed').value); }
+        catch(error){ bulkStatusEl.textContent = error.message; return; }
       } else {
         const inputId = field === 'skip' ? 'bulkSkip' : (field === 'vacuum' ? 'bulkVacuum' : 'bulkVision');
         value = document.getElementById(inputId).value === 'true';
       }
       keys.forEach(key=>{ ensureAssignment(key)[field] = value; });
-      const labels = currentLang === 'en' ? {speed:'Speed', skip:'Skip', vacuum:'Vacuum check', vision:'Vision'} : {speed:'Velocidade', skip:'Skip', vacuum:'Verificação de vácuo', vision:'Visão'};
+      const labels = currentLang === 'en' ? {speed:'Speed', pullSpeed:'Pull Speed', skip:'Skip', vacuum:'Vacuum check', vision:'Vision'} : {speed:'Velocidade', pullSpeed:'Pull Speed', skip:'Skip', vacuum:'Verificação de vácuo', vision:'Visão'};
       bulkStatusEl.textContent = labels[field] + l(' atualizado em ',' updated for ') + keys.length + ' ' + (keys.length === 1 ? l('componente.','component.') : l('componentes.','components.'));
       renderFeederTable(lastRows);
       onFeederChange();
@@ -2192,7 +2216,9 @@
         ambiguous.push(label);
         return;
       }
-      feederAssignments[targetKey] = Object.assign(defaultAssignment(), assignment);
+      // Older libraries do not contain Pull Speed; keep the current DPV setting in that case.
+      const pullSpeed = ensureAssignment(targetKey).pullSpeed ?? 0;
+      feederAssignments[targetKey] = Object.assign(defaultAssignment(), {pullSpeed}, assignment);
       claimedTargets.add(targetKey);
       applied++;
     });
@@ -2312,6 +2338,18 @@
     return Number.isFinite(n) ? n : fallback;
   }
 
+  function validPullSpeed(value, key){
+    // nPullStripSpeed is an integer machine setting, not a placement-speed percentage.
+    // Zero is nominal and remains the default for files/libraries predating this field.
+    const raw = value === undefined ? '0' : String(value ?? '').trim();
+    const n = Number(raw);
+    if(raw === '' || !Number.isSafeInteger(n) || n < 0){
+      throw new Error(l('Pull Speed inválido','Invalid Pull Speed') + (key ? ' (' + dpvSafeText(key) + ')' : '')
+        + l(': informe um número inteiro maior ou igual a 0.',': enter a whole number greater than or equal to 0.'));
+    }
+    return n;
+  }
+
   function parseEditableDpv(text, fileName){
     const lines = String(text||'').replace(/^\uFEFF/, '').split(/\r\n|\r|\n/);
     const stationRows = [];
@@ -2374,6 +2412,7 @@
           pitch:station ? dpvNumber(station.fields[5], 4) : 4,
           pitchAuto:false,
           speed:dpvNumber(fields[10], station ? dpvNumber(station.fields[8], 100) : 100),
+          pullSpeed:station && String(station.fields[14] ?? '').trim() !== '' ? station.fields[14] : 0,
           remove:false,
           skip:(status & 1) !== 0,
           vacuum:(status & 2) !== 0,
@@ -2409,6 +2448,12 @@
       else if(line.startsWith('DATE,')) lines[index] = 'DATE,' + now.getFullYear() + '/' + pad(now.getMonth()+1) + '/' + pad(now.getDate());
       else if(line.startsWith('TIME,')) lines[index] = 'TIME,' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
     });
+    if(source.stationHeaderIndex >= 0){
+      const header = lines[source.stationHeaderIndex].split(',');
+      const stationColumns = ['Table','No.','ID','DeltX','DeltY','FeedRates','Note','Height','Speed','Status','nPixSizeX','nPixSizeY','HeightTake','DelayTake','nPullStripSpeed'];
+      while(header.length < stationColumns.length) header.push(stationColumns[header.length]);
+      lines[source.stationHeaderIndex] = header.join(',');
+    }
 
     const componentReplacement = new Map();
     let componentNo = 0;
@@ -2444,7 +2489,7 @@
       const id = String(validFeederId(idRaw, key));
       if(desiredStations.has(id) && id !== meta.originalStationId) return;
       const original = meta.station ? meta.station.fields.slice() : [];
-      const fieldCount = Math.max(14, original.length || 0);
+      const fieldCount = Math.max(15, original.length || 0);
       const fields = original.length ? original : ['Station','0',id,'0','0','4',meta.label,'1','100','0'];
       while(fields.length < fieldCount) fields.push('0');
       fields[0] = 'Station';
@@ -2453,6 +2498,7 @@
       fields[6] = dpvSafeText(a.deviceName || meta.label, 31);
       fields[7] = trimNum(dpvNumber(a.height, 1), 4);
       fields[8] = String(Math.max(1, Math.min(100, dpvNumber(a.speed, 100))));
+      fields[14] = String(validPullSpeed(a.pullSpeed, key));
       let status = a.skip ? 1 : 0;
       if(a.vacuum) status += 2;
       if(a.vision) status += 4;
@@ -2503,6 +2549,7 @@
 
     activeKeys.forEach(key=>{
       const a = ensureAssignment(key);
+      validPullSpeed(a.pullSpeed, key);
       const raw = (a.feederID||'').trim();
       const id = validFeederId(raw, key);
       if(explicitById.has(id) && explicitById.get(id) !== key){
@@ -2570,6 +2617,7 @@
         head:String(assignment.head||1),
         height:trimNum(dpvNumber(assignment.height, 1), 4),
         speed:String(Math.max(1, Math.min(100, dpvNumber(assignment.speed, 100)))) + '%',
+        pullSpeed:String(validPullSpeed(assignment.pullSpeed, key)),
         controls:controls.join(' + ') || '—',
       });
     });
@@ -2600,7 +2648,7 @@
         '<td data-label="'+esc(labels[2])+'">' + esc(entry.value) + '</td>' +
         '<td data-label="'+esc(labels[3])+'"><strong>' + esc(entry.manufacturer) + '</strong><br>' + esc(entry.footprint) + '</td>' +
         '<td data-label="'+esc(labels[4])+'"><strong>' + esc(entry.qty) + l(' un.',' pcs.') + '</strong><br>' + esc(entry.references) + '<br>'+l('Ângulo: ','Angle: ') + esc(entry.angles) + '</td>' +
-        '<td data-label="'+esc(labels[5])+'">'+l('Avanço: ','Pitch: ')+'<strong>' + esc(entry.pitch) + '</strong><br>'+l('Cabeça: ','Head: ')+'<strong>' + esc(entry.head) + '</strong></td>' +
+        '<td data-label="'+esc(labels[5])+'">'+l('Avanço: ','Pitch: ')+'<strong>' + esc(entry.pitch) + '</strong><br>Pull Speed: <strong>' + esc(entry.pullSpeed) + '</strong><br>'+l('Cabeça: ','Head: ')+'<strong>' + esc(entry.head) + '</strong></td>' +
         '<td data-label="'+esc(labels[6])+'">'+l('Altura: ','Height: ')+'<strong>' + esc(entry.height) + '</strong><br>'+l('Velocidade: ','Speed: ')+'<strong>' + esc(entry.speed) + '</strong><br>' + esc(entry.controls) + '</td>' +
         '<td class="op-check" data-label="'+esc(labels[7])+'">'+l('□ PN / rolo<br>□ Feeder / posição<br>□ Polaridade','□ PN / reel<br>□ Feeder / position<br>□ Polarity')+'</td>' +
       '</tr>';
@@ -2746,7 +2794,7 @@
       if(a.skip) mount += 1;
       if(a.vacuum) mount += 2;
       if(a.vision) mount += 4;
-      push(['Station', stationNo, id, 0, 0, trimNum(a.pitch||0,2), dpvSafeText(note,31), trimNum(a.height||1.0,4), a.speed||100, mount, 0, 0, 0, 0, 0, 0, 0].join(','));
+      push(['Station', stationNo, id, 0, 0, trimNum(a.pitch||0,2), dpvSafeText(note,31), trimNum(a.height||1.0,4), a.speed||100, mount, 0, 0, 0, 0, validPullSpeed(a.pullSpeed), 0, 0].join(','));
       stationNo++;
     });
 
